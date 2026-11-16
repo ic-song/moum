@@ -1,0 +1,7 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { normalizeChart, chartExtent } from '../src/model.js';
+const sample = { labels: ['A', 'B'], datasets: [{ label: '매출', data: [20, -10] }] };
+test('charts: validates numeric data, preserves null gaps and isolates caller data', () => { const input = structuredClone(sample); input.datasets[0].data[1] = null; const data = normalizeChart(input); input.labels[0] = 'changed'; assert.equal(data.labels[0], 'A'); assert.equal(data.datasets[0].data[1], null); assert.deepEqual(chartExtent([-10, 20]), [-10, 20]); assert.deepEqual(chartExtent([]), [0, 1]); });
+test('charts: rejects invalid, mismatched, excessive and incompatible data', () => { assert.throws(() => normalizeChart(sample, 'pie'), /음수/); assert.throws(() => normalizeChart(sample, 'unknown')); assert.throws(() => normalizeChart({ ...sample, labels: [] }), /길이/); for (const value of [NaN, Infinity, '12']) assert.throws(() => normalizeChart({ labels: ['A'], datasets: [{ data: [value] }] })); assert.throws(() => normalizeChart({ labels: [], datasets: [{ data: [], color: 'url(https://example.com)' }] })); });
+test('charts: scatter supports independent x/y coordinates', () => { const data = normalizeChart({ labels: [], datasets: [{ data: [{ x: -20, y: 0 }, null, { x: 8, y: 30 }] }] }, 'scatter'); assert.equal(data.datasets[0].data[0].x, -20); assert.throws(() => normalizeChart(sample, 'scatter')); });

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 사용법과 예제
+    url: https://github.com/ic-song/moum/blob/main/docs/getting-started.md
+    about: 파일 복사·패키지 설치·프레임워크 연결
+  - name: 보안 제보 안내
+    url: https://github.com/ic-song/moum/blob/main/SECURITY.md
+    about: 민감한 내용을 공개 이슈에 올리기 전에 확인하세요.

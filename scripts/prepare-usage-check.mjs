@@ -1,0 +1,11 @@
+import { mkdir } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import path from 'node:path';
+const npm = process.env.npm_execpath;
+if (!npm) throw Error('Run this helper through npm run test:usage.');
+const run = promisify(execFile), output = path.resolve('output/npm'); await mkdir(output, { recursive: true });
+const result = await run(process.execPath, [npm, 'pack', './packages/grid', '--pack-destination', output, '--json']);
+const archive = path.join(output, JSON.parse(result.stdout)[0].filename);
+await run(process.execPath, [npm, 'install', '--prefix', path.resolve('output/usage-consumer'), '--offline', '--ignore-scripts', '--package-lock=false', '--no-audit', '--no-fund', archive]);
+console.log('Prepared an isolated consumer from the locally packed archive without registry access.');

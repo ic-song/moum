@@ -1,0 +1,30 @@
+.moum-gantt { --moum-gantt-ink: oklch(27% .02 165); --moum-gantt-line: oklch(86% .01 165); --moum-gantt-action: oklch(43% .09 165); --moum-gantt-paper: white; --moum-gantt-row: 48px; --moum-gantt-list: 230px; color: var(--moum-gantt-ink); background: var(--moum-gantt-paper); font: 14px/1.6 "Segoe UI", "Malgun Gothic", sans-serif; border: 1px solid var(--moum-gantt-line); font-variant-numeric: tabular-nums; min-width: 0; }
+.moum-gantt * { box-sizing: border-box; }
+.moum-gantt-toolbar, .moum-gantt-editor { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px; }
+.moum-gantt button, .moum-gantt input, .moum-gantt select { font: inherit; color: inherit; min-height: 44px; border: 1px solid var(--moum-gantt-line); border-radius: 4px; background: var(--moum-gantt-paper); padding: 8px 12px; max-width: 100%; }
+.moum-gantt button { cursor: pointer; }
+.moum-gantt button:disabled { opacity: .5; cursor: default; }
+.moum-gantt :focus-visible { outline: 2px solid var(--moum-gantt-action); outline-offset: 2px; }
+.moum-gantt-scroll { overflow: auto; max-height: 560px; border-block: 1px solid var(--moum-gantt-line); position: relative; }
+.moum-gantt-header { position: sticky; top: 0; z-index: 4; display: flex; background: #f1f5f3; border-bottom: 1px solid var(--moum-gantt-line); }
+.moum-gantt-name { width: var(--moum-gantt-list); flex: none; position: sticky; left: 0; z-index: 3; background: var(--moum-gantt-paper); display: flex; align-items: center; padding-inline: 12px; border-right: 1px solid var(--moum-gantt-line); overflow: hidden; }
+.moum-gantt-header .moum-gantt-name { background: #f1f5f3; z-index: 5; }
+.moum-gantt-ticks { position: relative; overflow: hidden; }
+.moum-gantt-ticks span { position: absolute; top: 12px; padding-left: 4px; white-space: nowrap; font-size: 12px; }
+.moum-gantt-body { position: relative; }
+.moum-gantt-row { display: flex; border-bottom: 1px solid var(--moum-gantt-line); }
+.moum-gantt .moum-gantt-task-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 0; text-align: left; background: none; padding-inline: 4px; min-width: 0; width: 100%; }
+.moum-gantt .moum-gantt-toggle { flex: none; padding: 0 8px; border: 0; background: none; }
+.moum-gantt-lane { position: relative; background-image: linear-gradient(to right, var(--moum-gantt-line) 1px, transparent 1px); }
+.moum-gantt .moum-gantt-bar { position: absolute; top: 8px; height: 32px; min-height: 32px; border: 0; padding: 0; border-radius: 4px; background: #d9e9e2; color: #153d2e; overflow: hidden; text-align: left; z-index: 1; touch-action: pan-y; user-select: none; }
+.moum-gantt-progress { position: absolute; inset: 0 auto 0 0; background: #93bfaa; pointer-events: none; }
+.moum-gantt-bar-label { position: relative; display: block; padding: 3px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+.moum-gantt-resize { position: absolute; right: 0; top: 0; width: 10px; height: 100%; cursor: ew-resize; border-left: 2px solid var(--moum-gantt-action); }
+.moum-gantt .is-milestone { background: transparent; color: var(--moum-gantt-action); overflow: visible; font-size: 26px; }
+.moum-gantt-links { position: absolute; top: 0; pointer-events: none; color: #4c665b; z-index: 2; }
+.moum-gantt-row.is-selected .moum-gantt-name { background: #e9f3ee; }
+.moum-gantt-status, .moum-gantt-empty { margin: 0; padding: 12px; overflow-wrap: anywhere; }
+.moum-gantt-status[role="alert"] { color: #a02626; }
+.moum-gantt-editor label { display: grid; gap: 4px; min-width: 0; }
+.moum-gantt-editor strong { flex-basis: 100%; overflow-wrap: anywhere; }
+@media (max-width: 640px) { .moum-gantt-editor label { flex: 1 1 130px; } .moum-gantt-editor input { width: 100%; } }

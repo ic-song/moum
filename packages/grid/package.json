@@ -1,0 +1,46 @@
+{
+  "name": "@moum/grid",
+  "version": "0.7.0",
+  "type": "module",
+  "description": "Dependency-free editable data grid with range selection and transactional clipboard operations.",
+  "license": "MIT",
+  "main": "dist/moum-grid.cjs",
+  "module": "dist/moum-grid.mjs",
+  "browser": "dist/moum-grid.js",
+  "exports": {
+    ".": {
+      "import": "./dist/moum-grid.mjs",
+      "require": "./dist/moum-grid.cjs"
+    },
+    "./style.css": "./dist/moum-grid.css",
+    "./realgrid-compat": {
+      "import": "./dist/moum-realgrid.mjs",
+      "require": "./dist/moum-realgrid.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "vendor",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "SHA256SUMS.txt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ic-song/moum.git",
+    "directory": "packages/grid"
+  },
+  "homepage": "https://github.com/ic-song/moum/tree/main/packages/grid",
+  "bugs": {
+    "url": "https://github.com/ic-song/moum/issues"
+  },
+  "keywords": [
+    "grid",
+    "datagrid",
+    "javascript",
+    "offline",
+    "spreadsheet",
+    "clipboard"
+  ]
+}

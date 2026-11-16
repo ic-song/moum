@@ -1,0 +1,19 @@
+.moum-charts { --moum-chart-ink: oklch(27% .02 165); --moum-chart-line: oklch(86% .01 165); --moum-chart-action: oklch(43% .09 165); --moum-chart-surface: white; color: var(--moum-chart-ink); background: var(--moum-chart-surface); font: 14px/1.6 "Segoe UI", "Malgun Gothic", sans-serif; border: 1px solid var(--moum-chart-line); padding: 16px; font-variant-numeric: tabular-nums; min-width: 0; }
+.moum-charts * { box-sizing: border-box; }
+.moum-charts h3 { margin: 0 0 12px; font-size: 17px; }
+.moum-charts-legend { display: flex; flex-wrap: wrap; gap: 8px; }
+.moum-charts button { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: inherit; border: 1px solid var(--moum-chart-line); border-radius: 4px; min-height: 44px; padding: 8px 12px; font: inherit; cursor: pointer; }
+.moum-charts button[aria-pressed="false"] { text-decoration: line-through; background: #f0f2f1; }
+.moum-charts-swatch { width: 12px; height: 12px; flex: none; border-radius: 2px; }
+.moum-charts-plot { display: block; width: 100%; min-height: 220px; max-height: 480px; }
+.moum-charts-grid { stroke: var(--moum-chart-line); }
+.moum-charts-label { fill: currentColor; font-size: 13px; }
+.moum-charts-total { fill: currentColor; font-size: 24px; font-weight: 600; }
+.moum-charts [role="button"] { cursor: pointer; }
+.moum-charts :focus-visible { outline: 2px solid var(--moum-chart-action); outline-offset: 3px; }
+.moum-charts-status { min-height: 24px; margin: 8px 0; overflow-wrap: anywhere; }
+.moum-charts summary { padding: 8px 0; cursor: pointer; }
+.moum-charts-table-scroll { overflow: auto; max-height: 340px; }
+.moum-charts table { width: 100%; border-collapse: collapse; text-align: left; }
+.moum-charts th, .moum-charts td { border-bottom: 1px solid var(--moum-chart-line); padding: 8px 12px; white-space: nowrap; }
+@media (max-width: 640px) { .moum-charts { padding: 12px; } .moum-charts-plot { min-height: 200px; } }

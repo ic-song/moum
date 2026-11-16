@@ -1,0 +1,20 @@
+name: Package
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run check
+      - run: mkdir -p output/npm && npm pack ./packages/grid ./packages/charts ./packages/gantt ./packages/uploader ./packages/calendar --pack-destination output/npm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: javascript-library-packages
+          path: output/npm/*.tgz
+          retention-days: 30

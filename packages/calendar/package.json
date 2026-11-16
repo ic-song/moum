@@ -1,0 +1,35 @@
+{
+  "name": "@moum/calendar",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Offline month/week/day/agenda calendar with editing and bounded daily/weekly recurrence.",
+  "license": "MIT",
+  "main": "dist/moum-calendar.cjs",
+  "module": "dist/moum-calendar.mjs",
+  "browser": "dist/moum-calendar.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/moum-calendar.mjs",
+      "require": "./dist/moum-calendar.cjs"
+    },
+    "./style.css": "./dist/moum-calendar.css"
+  },
+  "files": [
+    "dist",
+    "index.d.ts",
+    "README.md",
+    "LICENSE",
+    "SHA256SUMS.txt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ic-song/moum.git",
+    "directory": "packages/calendar"
+  },
+  "homepage": "https://github.com/ic-song/moum/tree/main/packages/calendar",
+  "bugs": {
+    "url": "https://github.com/ic-song/moum/issues"
+  }
+}

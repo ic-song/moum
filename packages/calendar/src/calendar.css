@@ -1,0 +1,34 @@
+.moum-calendar { --moum-calendar-ink: oklch(27% .02 165); --moum-calendar-line: oklch(86% .01 165); --moum-calendar-action: oklch(43% .09 165); --moum-calendar-paper: white; --moum-calendar-hour: 48px; color: var(--moum-calendar-ink); background: var(--moum-calendar-paper); font: 14px/1.6 "Segoe UI", "Malgun Gothic", sans-serif; border: 1px solid var(--moum-calendar-line); min-width: 0; font-variant-numeric: tabular-nums; }
+.moum-calendar * { box-sizing: border-box; }
+.moum-calendar-toolbar { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; align-items: center; }
+.moum-calendar button, .moum-calendar input, .moum-calendar select, .moum-calendar textarea { font: inherit; color: inherit; background: var(--moum-calendar-paper); border: 1px solid var(--moum-calendar-line); border-radius: 4px; padding: 8px 12px; min-height: 44px; max-width: 100%; }
+.moum-calendar button { cursor: pointer; }
+.moum-calendar :disabled { opacity: .5; cursor: default; }
+.moum-calendar :focus-visible { outline: 2px solid var(--moum-calendar-action); outline-offset: 2px; }
+.moum-calendar-status { margin: 0; padding: 0 12px 12px; overflow-wrap: anywhere; }
+.moum-calendar-status[role="alert"] { color: #a02626; }
+.moum-calendar-scroll { overflow: auto; border-top: 1px solid var(--moum-calendar-line); max-height: 780px; }
+.moum-calendar-month { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); min-width: 630px; }
+.moum-calendar-weekday { text-align: center; padding: 8px; background: #f1f5f3; border-bottom: 1px solid var(--moum-calendar-line); }
+.moum-calendar-day { min-height: 112px; padding: 4px; border-right: 1px solid var(--moum-calendar-line); border-bottom: 1px solid var(--moum-calendar-line); min-width: 0; }
+.moum-calendar-day.is-outside { background: #f5f6f5; }
+.moum-calendar .moum-calendar-day-number { border: 0; background: none; padding: 4px 10px; }
+.moum-calendar .is-today .moum-calendar-day-number { background: var(--moum-calendar-action); color: white; }
+.moum-calendar .moum-calendar-event { display: block; width: 100%; text-align: left; min-height: 32px; font-size: 12px; line-height: 1.5; padding: 5px 7px; margin-bottom: 4px; background: #e1efe8; border-left: 3px solid var(--moum-calendar-action); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.moum-calendar-agenda { padding: 12px; }
+.moum-calendar-agenda-row { display: grid; grid-template-columns: minmax(210px, 1fr) 2fr; gap: 16px; align-items: center; padding-block: 8px; border-top: 1px solid var(--moum-calendar-line); }
+.moum-calendar-time-scroll { max-height: 600px; }
+.moum-calendar-time { display: grid; align-items: start; }
+.moum-calendar-time-heading { height: 110px; overflow: auto; padding: 8px; border-bottom: 1px solid var(--moum-calendar-line); background: #f1f5f3; position: sticky; top: 0; z-index: 2; }
+.moum-calendar-time-column, .moum-calendar-axis { min-width: 0; border-right: 1px solid var(--moum-calendar-line); }
+.moum-calendar-hours, .moum-calendar-time-lane { height: calc(24 * var(--moum-calendar-hour)); position: relative; }
+.moum-calendar-hours span { position: absolute; font-size: 12px; padding-left: 4px; }
+.moum-calendar-time-lane { background: repeating-linear-gradient(to bottom, transparent 0, transparent 47px, var(--moum-calendar-line) 47px, var(--moum-calendar-line) 48px); }
+.moum-calendar .moum-calendar-time-event { position: absolute; border: 1px solid var(--moum-calendar-action); white-space: normal; margin: 0; min-height: 24px; }
+.moum-calendar-editor { padding: 16px; border-top: 1px solid var(--moum-calendar-line); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.moum-calendar-editor h3, .moum-calendar-editor-actions { grid-column: 1 / -1; margin: 0; }
+.moum-calendar-editor label { display: grid; gap: 4px; min-width: 0; }
+.moum-calendar-editor input, .moum-calendar-editor textarea { width: 100%; }
+.moum-calendar-editor input[type="checkbox"] { width: 24px; }
+.moum-calendar-editor-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 640px) { .moum-calendar-editor, .moum-calendar-agenda-row { grid-template-columns: 1fr; } }

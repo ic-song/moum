@@ -1,0 +1,2085 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-16",
+  "projectName": "MOUM (working name)",
+  "baseline": {
+    "product": "RealGrid2",
+    "release": "2.10.2",
+    "releaseDate": "2026-10-22",
+    "releaseSource": "https://docs.realgrid.com/changelog/releases",
+    "userRuntimeVersion": "unknown",
+    "coverage": "공식 가이드 기반 1차 기능 후보 목록. 모든 API·옵션·버전 차이의 완전한 조사 또는 호환성 인증이 아님."
+  },
+  "categories": [
+    {
+      "id": "BASE",
+      "title": "기본 구성과 데이터"
+    },
+    {
+      "id": "SELECT",
+      "title": "포커스·선택·엑셀 조작"
+    },
+    {
+      "id": "EDIT",
+      "title": "편집기와 검증"
+    },
+    {
+      "id": "COLUMN",
+      "title": "컬럼·레이아웃·병합"
+    },
+    {
+      "id": "QUERY",
+      "title": "정렬·필터·검색·페이지"
+    },
+    {
+      "id": "SUMMARY",
+      "title": "헤더·푸터·그룹·집계"
+    },
+    {
+      "id": "RENDER",
+      "title": "셀 렌더러와 표시"
+    },
+    {
+      "id": "TREE",
+      "title": "트리 그리드"
+    },
+    {
+      "id": "EXPORT",
+      "title": "엑셀·파일 교환"
+    },
+    {
+      "id": "STYLE",
+      "title": "개인화·이벤트·테마"
+    },
+    {
+      "id": "EXT",
+      "title": "MOUM 추가 요구사항·확장 제안"
+    },
+    {
+      "id": "RELATED",
+      "title": "별도 제품·연동 후보"
+    }
+  ],
+  "features": [
+    {
+      "id": "BASE-001",
+      "category": "BASE",
+      "name": "컬럼·필드 정의",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/set-column"
+      ],
+      "acceptance": "중복 field 거부 및 읽기 전용 컬럼 설정"
+    },
+    {
+      "id": "BASE-002",
+      "category": "BASE",
+      "name": "독립 데이터 모델",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/fill-data/provider-sharing"
+      ],
+      "acceptance": "UI와 분리된 모델에서 셀 변경과 이력 관리; 다중 뷰 공유는 후속"
+    },
+    {
+      "id": "BASE-003",
+      "category": "BASE",
+      "name": "JSON 객체 배열 입력",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/fill-data/load-json-data"
+      ],
+      "acceptance": "입력 배열을 직접 변경하지 않고 행 컨테이너 복사"
+    },
+    {
+      "id": "BASE-004",
+      "category": "BASE",
+      "name": "문자·숫자·불린 타입",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/data-manager/data-type"
+      ],
+      "acceptance": "편집 값의 타입 변환과 잘못된 입력 거부"
+    },
+    {
+      "id": "BASE-005",
+      "category": "BASE",
+      "name": "날짜·시간 타입",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/data-manager/datetime-field"
+      ],
+      "acceptance": "저장 형식과 표시 형식 구분 및 유효 날짜 검사"
+    },
+    {
+      "id": "BASE-006",
+      "category": "BASE",
+      "name": "Object 필드",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/data-manager/object-type"
+      ],
+      "acceptance": "객체 값을 표시할 콜백과 복사 정책 정의"
+    },
+    {
+      "id": "BASE-007",
+      "category": "BASE",
+      "name": "서브타입",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/data-manager/subtypes"
+      ],
+      "acceptance": "하위 타입별 변환·검증 계약 작성"
+    },
+    {
+      "id": "BASE-008",
+      "category": "BASE",
+      "name": "XML 입력",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/fill-data/load-xml-data"
+      ],
+      "acceptance": "XML 필드 매핑 및 파싱 오류 표시"
+    },
+    {
+      "id": "BASE-009",
+      "category": "BASE",
+      "name": "행·셀 값 조회 및 변경",
+      "phase": "M0",
+      "status": "partial",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/crud/get-values"
+      ],
+      "acceptance": "전체 조회와 모델 변경 구현; 공개 셀 단위 API 정리 필요"
+    },
+    {
+      "id": "BASE-010",
+      "category": "BASE",
+      "name": "행 추가·삽입",
+      "phase": "M1",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/crud/insert"
+      ],
+      "acceptance": "행 기본값과 추가·삽입을 지원하고 한 번의 Undo/Redo로 복원"
+    },
+    {
+      "id": "BASE-011",
+      "category": "BASE",
+      "name": "행 삭제",
+      "phase": "M1",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/crud/delete"
+      ],
+      "acceptance": "표시 좌표를 원본 행으로 매핑하여 삭제; 트리 부모는 자손까지 한 번에 처리"
+    },
+    {
+      "id": "BASE-012",
+      "category": "BASE",
+      "name": "행 단위 수정",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/crud/update"
+      ],
+      "acceptance": "한 행의 여러 필드를 하나의 트랜잭션으로 변경"
+    },
+    {
+      "id": "BASE-013",
+      "category": "BASE",
+      "name": "행 변경 상태",
+      "phase": "M1",
+      "status": "partial",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editing/row-states"
+      ],
+      "acceptance": "서버 save 모드의 추가·수정·삭제 차이와 저장 후 기준점 재설정; RealGrid 행 상태 API·soft delete는 후속"
+    },
+    {
+      "id": "BASE-014",
+      "category": "BASE",
+      "name": "원본 롤백",
+      "phase": "M1",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/data-manager/data-rollback"
+      ],
+      "acceptance": "로컬 recovery와 서버 save 모드에서 마지막 저장 기준점으로 취소. Undo와 별도 API 사용; RealGrid 교체 호환은 아님"
+    },
+    {
+      "id": "BASE-015",
+      "category": "BASE",
+      "name": "계산 필드",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/data-manager/calc-field"
+      ],
+      "acceptance": "콜백 기반 파생값 재계산 및 읽기 전용 처리"
+    },
+    {
+      "id": "BASE-016",
+      "category": "BASE",
+      "name": "Provider 공유",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/fill-data/provider-sharing"
+      ],
+      "acceptance": "두 그리드가 같은 모델을 구독하고 해제 후 누수 없음"
+    },
+    {
+      "id": "BASE-017",
+      "category": "BASE",
+      "name": "마스터·디테일",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/fill-data/master-detail"
+      ],
+      "acceptance": "상위 선택으로 상세 데이터 교체; 미확정 편집 처리"
+    },
+    {
+      "id": "BASE-018",
+      "category": "BASE",
+      "name": "Lazy Loading 연동",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/fill-data/lazy-loading"
+      ],
+      "acceptance": "사용자 데이터 공급 콜백으로 다음 구간 로드"
+    },
+    {
+      "id": "SELECT-001",
+      "category": "SELECT",
+      "name": "마우스 드래그 범위 선택",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-components/selecting"
+      ],
+      "acceptance": "사각형 범위를 표시하고 현재 셀과 선택 기준점 분리"
+    },
+    {
+      "id": "SELECT-002",
+      "category": "SELECT",
+      "name": "Shift+방향키 범위 확장",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/tutorial/defaultKeyboardAndMouseControll"
+      ],
+      "acceptance": "선택 기준점을 유지하며 확장·축소"
+    },
+    {
+      "id": "SELECT-003",
+      "category": "SELECT",
+      "name": "방향키·Tab 셀 이동",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/tutorial/defaultKeyboardAndMouseControll"
+      ],
+      "acceptance": "셀 이동 및 표 경계에서 Tab으로 빠져나가기"
+    },
+    {
+      "id": "SELECT-004",
+      "category": "SELECT",
+      "name": "Home·End 이동",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/tutorial/defaultKeyboardAndMouseControll"
+      ],
+      "acceptance": "행 시작·끝 및 Ctrl 조합으로 데이터 시작·끝 이동"
+    },
+    {
+      "id": "SELECT-005",
+      "category": "SELECT",
+      "name": "현재 셀 포커스 표시",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-components/focused"
+      ],
+      "acceptance": "활성 셀 한 곳만 tabIndex 0 유지"
+    },
+    {
+      "id": "SELECT-006",
+      "category": "SELECT",
+      "name": "전체 선택",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-components/selecting"
+      ],
+      "acceptance": "그리드 내부 Ctrl+A로 표시된 데이터 선택"
+    },
+    {
+      "id": "SELECT-007",
+      "category": "SELECT",
+      "name": "여러 독립 영역 선택",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-components/multi-selection"
+      ],
+      "acceptance": "Ctrl 선택 영역의 복사·삭제 순서 명세화"
+    },
+    {
+      "id": "SELECT-008",
+      "category": "SELECT",
+      "name": "행 체크바",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-components/check-bar"
+      ],
+      "acceptance": "셀 범위 선택과 독립된 행 체크 상태 관리"
+    },
+    {
+      "id": "SELECT-009",
+      "category": "SELECT",
+      "name": "체크바·필드 연결",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-components/check-bar-link-field"
+      ],
+      "acceptance": "체크 상태와 데이터 필드 양방향 동기화"
+    },
+    {
+      "id": "SELECT-010",
+      "category": "SELECT",
+      "name": "행 번호 표시",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-components/indicator"
+      ],
+      "acceptance": "정렬·검색 후 화면 순서 기준 번호 표시"
+    },
+    {
+      "id": "SELECT-011",
+      "category": "SELECT",
+      "name": "행 상태 표시바",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-components/state-bar"
+      ],
+      "acceptance": "추가·수정·삭제 표시와 텍스트 대체 정보"
+    },
+    {
+      "id": "SELECT-012",
+      "category": "SELECT",
+      "name": "범위 복사 Ctrl+C",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editing/copy-and-paste"
+      ],
+      "acceptance": "선택 사각형을 탭·줄바꿈 형식으로 복사"
+    },
+    {
+      "id": "SELECT-013",
+      "category": "SELECT",
+      "name": "범위 붙여넣기 Ctrl+V",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editing/copy-and-paste"
+      ],
+      "acceptance": "등록·편집 그리드에서 직사각형 데이터를 한 작업으로 적용"
+    },
+    {
+      "id": "SELECT-014",
+      "category": "SELECT",
+      "name": "선택 영역 Delete",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/refs/Class/GridBase"
+      ],
+      "acceptance": "선택 셀 값만 비우고 행과 읽기 전용 값 보존"
+    },
+    {
+      "id": "SELECT-015",
+      "category": "SELECT",
+      "name": "붙여넣기·삭제 Undo",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editing/undo"
+      ],
+      "acceptance": "Ctrl+Z 한 번으로 다중 셀 작업 전체 복원"
+    },
+    {
+      "id": "SELECT-016",
+      "category": "SELECT",
+      "name": "Redo Ctrl+Y",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editing/undo"
+      ],
+      "acceptance": "Undo된 작업 전체 재적용; 새 편집 시 재실행 이력 제거"
+    },
+    {
+      "id": "SELECT-017",
+      "category": "SELECT",
+      "name": "엑셀 TSV 특수문자",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editing/copy-and-paste"
+      ],
+      "acceptance": "한글·따옴표·셀 내부 줄바꿈·탭·빈 셀 왕복 보존"
+    },
+    {
+      "id": "SELECT-018",
+      "category": "SELECT",
+      "name": "드래그 행 재배치",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/drag-and-drop/row-drag-and-drop"
+      ],
+      "acceptance": "정렬·필터 상태에서 원본 행 순서 정책 명시"
+    },
+    {
+      "id": "SELECT-019",
+      "category": "SELECT",
+      "name": "그리드 간 이동·복사",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/drag-and-drop/grid-to-grid"
+      ],
+      "acceptance": "필드 매핑과 이동 취소를 정의"
+    },
+    {
+      "id": "SELECT-020",
+      "category": "SELECT",
+      "name": "외부 영역으로 드래그",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/drag-and-drop/grid-to-div"
+      ],
+      "acceptance": "사용자 drop 콜백과 데이터 계약 제공"
+    },
+    {
+      "id": "EDIT-001",
+      "category": "EDIT",
+      "name": "텍스트 편집",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editor/text-editor"
+      ],
+      "acceptance": "F2·더블클릭·문자 입력으로 진입; Enter 확정·Esc 취소"
+    },
+    {
+      "id": "EDIT-002",
+      "category": "EDIT",
+      "name": "숫자 편집",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editor/number-editor"
+      ],
+      "acceptance": "숫자 변환과 비유한 값 거부; 정교한 표시 마스크는 후속"
+    },
+    {
+      "id": "EDIT-003",
+      "category": "EDIT",
+      "name": "읽기 전용 그리드·컬럼",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/column-properties"
+      ],
+      "acceptance": "Delete·붙여넣기·직접 편집 모두 같은 보호 규칙 사용"
+    },
+    {
+      "id": "EDIT-004",
+      "category": "EDIT",
+      "name": "멀티라인 편집기",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editor/multiline-editor"
+      ],
+      "acceptance": "셀 내부 줄바꿈 입력과 편집 확정 단축키 분리"
+    },
+    {
+      "id": "EDIT-005",
+      "category": "EDIT",
+      "name": "드롭다운 편집기",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editor/dropdown-editor"
+      ],
+      "acceptance": "코드·레이블 분리 및 키보드 선택"
+    },
+    {
+      "id": "EDIT-006",
+      "category": "EDIT",
+      "name": "다중선택 드롭다운",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editor/dropdown-multi-selection"
+      ],
+      "acceptance": "여러 선택값의 저장·표시·복사 형식 정의"
+    },
+    {
+      "id": "EDIT-007",
+      "category": "EDIT",
+      "name": "날짜 편집기",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editor/date-editor"
+      ],
+      "acceptance": "로컬 달력과 키보드 입력; 외부 요청 없음"
+    },
+    {
+      "id": "EDIT-008",
+      "category": "EDIT",
+      "name": "마스크 편집기",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editor/mask-editor"
+      ],
+      "acceptance": "입력 패턴과 빈 자리 처리"
+    },
+    {
+      "id": "EDIT-009",
+      "category": "EDIT",
+      "name": "입력 문자 제한",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editor/line-cell-editor"
+      ],
+      "acceptance": "붙여넣기와 IME 조합 완료 시 동일한 제한 적용"
+    },
+    {
+      "id": "EDIT-010",
+      "category": "EDIT",
+      "name": "동적 목록 편집기",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editor/list-callback"
+      ],
+      "acceptance": "행 값에 따라 선택 목록 갱신"
+    },
+    {
+      "id": "EDIT-011",
+      "category": "EDIT",
+      "name": "동적 편집기 전환",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tip/dynamic-editor"
+      ],
+      "acceptance": "셀별 편집기 결정 및 생성·해제 수명 관리"
+    },
+    {
+      "id": "EDIT-012",
+      "category": "EDIT",
+      "name": "컬럼 사용자 검증",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/validation/custom-column-validation"
+      ],
+      "acceptance": "검증 오류 시 값 반영 차단 및 오류 안내"
+    },
+    {
+      "id": "EDIT-013",
+      "category": "EDIT",
+      "name": "행 사용자 검증",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/validation/custom-row-validation"
+      ],
+      "acceptance": "여러 필드 조합을 검증한 뒤 확정"
+    },
+    {
+      "id": "EDIT-014",
+      "category": "EDIT",
+      "name": "전체 데이터 검증",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/validation/check-validation"
+      ],
+      "acceptance": "오류 셀 목록과 첫 오류 위치 이동 제공"
+    },
+    {
+      "id": "EDIT-015",
+      "category": "EDIT",
+      "name": "오류·경고 확정 수준",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/validation/commit-level-validation"
+      ],
+      "acceptance": "경고 허용과 오류 차단 규칙 분리"
+    },
+    {
+      "id": "EDIT-016",
+      "category": "EDIT",
+      "name": "병합 셀 일괄 편집",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/editing/edit-merge"
+      ],
+      "acceptance": "병합된 실제 대상 행 전체를 한 작업으로 수정"
+    },
+    {
+      "id": "COLUMN-001",
+      "category": "COLUMN",
+      "name": "컬럼 표시·편집 속성 변경",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/column-properties"
+      ],
+      "acceptance": "실행 중 숨김·읽기 전용 변경 후 선택 유효성 보장"
+    },
+    {
+      "id": "COLUMN-002",
+      "category": "COLUMN",
+      "name": "컬럼 너비 변경",
+      "phase": "M1",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/column-resizing"
+      ],
+      "acceptance": "마우스 및 키보드로 64~1000px 열 너비 조절"
+    },
+    {
+      "id": "COLUMN-003",
+      "category": "COLUMN",
+      "name": "컬럼 너비 자동 맞춤",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/grid-fitting"
+      ],
+      "acceptance": "헤더·표본 데이터 기반 너비 산정"
+    },
+    {
+      "id": "COLUMN-004",
+      "category": "COLUMN",
+      "name": "컬럼 순서 변경",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/column-moving"
+      ],
+      "acceptance": "화면 순서 변경 후 원본 필드와 클립보드 대응 유지"
+    },
+    {
+      "id": "COLUMN-005",
+      "category": "COLUMN",
+      "name": "열 고정",
+      "phase": "M1",
+      "status": "partial",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-components/fixed-columns"
+      ],
+      "acceptance": "왼쪽 열 고정 구현; 오른쪽 열·고정 영역별 권한 설정은 후속"
+    },
+    {
+      "id": "COLUMN-006",
+      "category": "COLUMN",
+      "name": "행 고정",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-components/fixed-rows"
+      ],
+      "acceptance": "세로 스크롤·편집·집계와 고정 행 정합성"
+    },
+    {
+      "id": "COLUMN-007",
+      "category": "COLUMN",
+      "name": "그룹 헤더",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/layout"
+      ],
+      "acceptance": "다단 헤더의 열 범위와 읽기 순서 보장"
+    },
+    {
+      "id": "COLUMN-008",
+      "category": "COLUMN",
+      "name": "한 레코드 다중행 레이아웃",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/layout"
+      ],
+      "acceptance": "세로 레이아웃에서 이동·복사 좌표 계약 정의"
+    },
+    {
+      "id": "COLUMN-009",
+      "category": "COLUMN",
+      "name": "레이아웃 동적 변경",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/layout-properties"
+      ],
+      "acceptance": "잘못된 레이아웃 거부 시 이전 레이아웃 유지"
+    },
+    {
+      "id": "COLUMN-010",
+      "category": "COLUMN",
+      "name": "그룹 컬럼 접기·펼치기",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/layout-expand"
+      ],
+      "acceptance": "접기 후 활성 셀과 너비 재계산"
+    },
+    {
+      "id": "COLUMN-011",
+      "category": "COLUMN",
+      "name": "레이아웃 추가·제거",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/layout-add-remove"
+      ],
+      "acceptance": "필드 데이터 보존하며 표현만 변경"
+    },
+    {
+      "id": "COLUMN-012",
+      "category": "COLUMN",
+      "name": "상수 컬럼",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/literal-column"
+      ],
+      "acceptance": "필드 없이 고정 텍스트 표시"
+    },
+    {
+      "id": "COLUMN-013",
+      "category": "COLUMN",
+      "name": "같은 값 세로 병합",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/cell-components/cell-merging"
+      ],
+      "acceptance": "정렬·필터 후 병합 범위 다시 계산"
+    },
+    {
+      "id": "COLUMN-014",
+      "category": "COLUMN",
+      "name": "가로 병합",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/layout-span-callback"
+      ],
+      "acceptance": "병합 범위의 선택·편집·복사 정책 고정"
+    },
+    {
+      "id": "COLUMN-015",
+      "category": "COLUMN",
+      "name": "같은 값 반복 표시 생략",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/cell-components/blank-cell"
+      ],
+      "acceptance": "원본 값과 표시 생략 구분"
+    },
+    {
+      "id": "COLUMN-016",
+      "category": "COLUMN",
+      "name": "병합 조건 콜백",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tip/merge-callback"
+      ],
+      "acceptance": "셀 값 외 조건으로 병합 가능"
+    },
+    {
+      "id": "QUERY-001",
+      "category": "QUERY",
+      "name": "단일 컬럼 정렬",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/column-sorting"
+      ],
+      "acceptance": "숫자·문자 정렬과 빈 값 처리; 원본 인덱스 보존"
+    },
+    {
+      "id": "QUERY-002",
+      "category": "QUERY",
+      "name": "다중 컬럼 정렬",
+      "phase": "M1",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/column-sorting"
+      ],
+      "acceptance": "Shift+헤더 클릭 및 API로 정렬 우선순위·방향 표시"
+    },
+    {
+      "id": "QUERY-003",
+      "category": "QUERY",
+      "name": "고유값 자동 필터",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/column-auto-filtering"
+      ],
+      "acceptance": "필드의 고유값을 목록으로 선택"
+    },
+    {
+      "id": "QUERY-004",
+      "category": "QUERY",
+      "name": "조건 필터",
+      "phase": "M1",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/column-filtering"
+      ],
+      "acceptance": "포함·일치·수치 비교·범위·빈 값 및 전체 조건 AND/OR 연결; RealGrid 컬럼별 논리와 차이"
+    },
+    {
+      "id": "QUERY-005",
+      "category": "QUERY",
+      "name": "필터 패널",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/column-filter-panel"
+      ],
+      "acceptance": "조건 추가·해제·초기화 화면"
+    },
+    {
+      "id": "QUERY-006",
+      "category": "QUERY",
+      "name": "필터 목록 순서",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/column/filter-selector-data-order"
+      ],
+      "acceptance": "표시 순서와 빈 값 위치 제어"
+    },
+    {
+      "id": "QUERY-007",
+      "category": "QUERY",
+      "name": "전체 문자열 검색",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/data-manager/search-item"
+      ],
+      "acceptance": "현재 구현은 전체 열 포함 검색; RealGrid 검색 API와는 별도"
+    },
+    {
+      "id": "QUERY-008",
+      "category": "QUERY",
+      "name": "셀 검색·다음 결과 이동",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/data-manager/search-item"
+      ],
+      "acceptance": "대소문자·부분일치·역방향·순환 검색"
+    },
+    {
+      "id": "QUERY-009",
+      "category": "QUERY",
+      "name": "로컬 페이징",
+      "phase": "M1",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/paging/paging1"
+      ],
+      "acceptance": "로컬 표시행 페이징·페이지 크기/번호 이동·원본 매핑·마지막 페이지 삭제 보정·선택/Undo 검증"
+    },
+    {
+      "id": "QUERY-010",
+      "category": "QUERY",
+      "name": "서버 페이징 연동",
+      "phase": "M2",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/paging/paging3"
+      ],
+      "acceptance": "조회전용 서버 offset/limit/total·검색/정렬/필터·취소/최신응답·재시도·시간초과·페이지보정, 실제HTTP 검증"
+    },
+    {
+      "id": "SUMMARY-001",
+      "category": "SUMMARY",
+      "name": "헤더 높이·다중행",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/header-and-footer/header-height"
+      ],
+      "acceptance": "긴 헤더와 행 높이 변경에도 본문 정렬 유지"
+    },
+    {
+      "id": "SUMMARY-002",
+      "category": "SUMMARY",
+      "name": "헤더 전체 체크",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/header-and-footer/header-checkbox"
+      ],
+      "acceptance": "전체·일부·해제 상태와 필터 대상 정책"
+    },
+    {
+      "id": "SUMMARY-003",
+      "category": "SUMMARY",
+      "name": "컬럼 푸터 집계",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/header-and-footer/column-footer"
+      ],
+      "acceptance": "합계·평균·개수·최솟값·최댓값 제공"
+    },
+    {
+      "id": "SUMMARY-004",
+      "category": "SUMMARY",
+      "name": "푸터 병합",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/header-and-footer/footer-user-spans"
+      ],
+      "acceptance": "병합 경계와 집계 위치 일치"
+    },
+    {
+      "id": "SUMMARY-005",
+      "category": "SUMMARY",
+      "name": "상단 요약",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/header-and-footer/header-summary"
+      ],
+      "acceptance": "필터·편집 후 재계산"
+    },
+    {
+      "id": "SUMMARY-006",
+      "category": "SUMMARY",
+      "name": "헤더·푸터 템플릿",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/header-and-footer/header-template"
+      ],
+      "acceptance": "직접 DOM 렌더 콜백과 키보드·수명 계약"
+    },
+    {
+      "id": "SUMMARY-007",
+      "category": "SUMMARY",
+      "name": "다단 행 그룹",
+      "phase": "M2",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/row-group/row-grouping"
+      ],
+      "acceptance": "복수 필드 계층 그룹과 접기·펼치기"
+    },
+    {
+      "id": "SUMMARY-008",
+      "category": "SUMMARY",
+      "name": "그룹 API·이벤트",
+      "phase": "M2",
+      "status": "partial",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/row-group/grouping-api"
+      ],
+      "acceptance": "그룹 설정 API와 UI 접기·펼치기 구현; 취소·전후 이벤트 계약은 후속"
+    },
+    {
+      "id": "SUMMARY-009",
+      "category": "SUMMARY",
+      "name": "그룹별 소계·다중 푸터",
+      "phase": "M2",
+      "status": "partial",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/row-group/row-grouping"
+      ],
+      "acceptance": "그룹별 숫자 합계 구현; 다중 푸터와 사용자 집계는 후속"
+    },
+    {
+      "id": "SUMMARY-010",
+      "category": "SUMMARY",
+      "name": "행 병합 그룹",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/row-group/merged-row-grouping"
+      ],
+      "acceptance": "계층 그룹과 다른 병합 표시 모드"
+    },
+    {
+      "id": "SUMMARY-011",
+      "category": "SUMMARY",
+      "name": "행 높이 조절·자동 높이",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/row-group/row-height"
+      ],
+      "acceptance": "줄바꿈과 사용자 크기 변경 후 스크롤 오차 없음"
+    },
+    {
+      "id": "SUMMARY-012",
+      "category": "SUMMARY",
+      "name": "데이터에 맞는 그리드 높이",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/row-group/sync-grid-height"
+      ],
+      "acceptance": "최대 높이와 내부 스크롤 경계 제어"
+    },
+    {
+      "id": "RENDER-001",
+      "category": "RENDER",
+      "name": "안전한 텍스트 렌더",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/renderer/text-renderer"
+      ],
+      "acceptance": "데이터를 HTML로 해석하지 않고 문자로 표시"
+    },
+    {
+      "id": "RENDER-002",
+      "category": "RENDER",
+      "name": "체크박스 렌더",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/renderer/check-renderer"
+      ],
+      "acceptance": "불린 값의 키보드 전환과 Undo 연동"
+    },
+    {
+      "id": "RENDER-003",
+      "category": "RENDER",
+      "name": "다중 체크 렌더",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/renderer/multicheck-renderer"
+      ],
+      "acceptance": "개별 체크 상태와 편집 계약"
+    },
+    {
+      "id": "RENDER-004",
+      "category": "RENDER",
+      "name": "바 렌더",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/renderer/bar-renderer"
+      ],
+      "acceptance": "최솟값·최댓값과 텍스트 대체 정보"
+    },
+    {
+      "id": "RENDER-005",
+      "category": "RENDER",
+      "name": "이미지 렌더",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/renderer/image-renderer"
+      ],
+      "acceptance": "로컬 리소스와 로딩 실패 대체 표시"
+    },
+    {
+      "id": "RENDER-006",
+      "category": "RENDER",
+      "name": "아이콘 렌더",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/renderer/icon-renderer"
+      ],
+      "acceptance": "사용자 로컬 아이콘과 레이블 매핑"
+    },
+    {
+      "id": "RENDER-007",
+      "category": "RENDER",
+      "name": "도형·시그널 렌더",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/renderer/shape-renderer"
+      ],
+      "acceptance": "의미 있는 대체 텍스트 제공"
+    },
+    {
+      "id": "RENDER-008",
+      "category": "RENDER",
+      "name": "링크 렌더",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/renderer/link-renderer"
+      ],
+      "acceptance": "허용 프로토콜과 키보드 활성화"
+    },
+    {
+      "id": "RENDER-009",
+      "category": "RENDER",
+      "name": "성과·목표 렌더",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/renderer/actual-target-renderer"
+      ],
+      "acceptance": "목표 대비 실적 표현과 수치 제공"
+    },
+    {
+      "id": "RENDER-010",
+      "category": "RENDER",
+      "name": "HTML·커스텀 렌더",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/renderer/class-custom-renderer"
+      ],
+      "acceptance": "DOM 생성 콜백·갱신·해제 수명 계약"
+    },
+    {
+      "id": "RENDER-011",
+      "category": "RENDER",
+      "name": "바코드 렌더",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/renderer/barcode-renderer"
+      ],
+      "acceptance": "지원 규격별 인코딩과 로컬 출력"
+    },
+    {
+      "id": "RENDER-012",
+      "category": "RENDER",
+      "name": "시리즈·스파크 컬럼",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/series/spark-column"
+      ],
+      "acceptance": "셀 안의 시계열과 데이터 대체 텍스트"
+    },
+    {
+      "id": "RENDER-013",
+      "category": "RENDER",
+      "name": "Lookup 코드·표시값",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/cell-components/lookup-column"
+      ],
+      "acceptance": "저장은 코드·화면은 레이블; 붙여넣기 변환 명세"
+    },
+    {
+      "id": "RENDER-014",
+      "category": "RENDER",
+      "name": "Lookup 트리",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/cell-components/lookup-tree"
+      ],
+      "acceptance": "계층 코드 목록 탐색과 선택"
+    },
+    {
+      "id": "RENDER-015",
+      "category": "RENDER",
+      "name": "표시값 콜백·포맷",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/cell-components/display-value"
+      ],
+      "acceptance": "원본·화면·복사·내보내기 값 구분"
+    },
+    {
+      "id": "RENDER-016",
+      "category": "RENDER",
+      "name": "셀·그룹 헤더 툴팁",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/cell-components/tooltip"
+      ],
+      "acceptance": "포커스와 마우스 모두로 내용 접근"
+    },
+    {
+      "id": "RENDER-017",
+      "category": "RENDER",
+      "name": "셀 버튼·팝업 버튼",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/cell-components/cell-button"
+      ],
+      "acceptance": "키보드 실행과 클릭 이벤트 분리"
+    },
+    {
+      "id": "RENDER-018",
+      "category": "RENDER",
+      "name": "Placeholder",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/cell-components/place-holder"
+      ],
+      "acceptance": "빈 값 안내가 실제 데이터에 저장되지 않음"
+    },
+    {
+      "id": "TREE-001",
+      "category": "TREE",
+      "name": "트리 데이터 모델·뷰",
+      "phase": "M2",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tree/tree-view"
+      ],
+      "acceptance": "ID·부모 ID 기반 트리와 셀 편집"
+    },
+    {
+      "id": "TREE-002",
+      "category": "TREE",
+      "name": "배열·객체 트리 입력",
+      "phase": "M2",
+      "status": "partial",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tree/tree-array-data"
+      ],
+      "acceptance": "부모 키가 있는 평면 배열 입력 구현; 중첩 Object 입력은 후속"
+    },
+    {
+      "id": "TREE-003",
+      "category": "TREE",
+      "name": "XML 트리 입력",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tree/tree-xml-data"
+      ],
+      "acceptance": "XML 노드 매핑과 중복 키 검사"
+    },
+    {
+      "id": "TREE-004",
+      "category": "TREE",
+      "name": "노드 추가·삭제·펼침",
+      "phase": "M2",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tree/tree-node-control"
+      ],
+      "acceptance": "노드 추가·자손 포함 삭제·접기·펼치기 및 데이터 Undo"
+    },
+    {
+      "id": "TREE-005",
+      "category": "TREE",
+      "name": "트리 아이콘·템플릿",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tree/tree-template"
+      ],
+      "acceptance": "접힘·펼침·리프의 로컬 시각 표시"
+    },
+    {
+      "id": "TREE-006",
+      "category": "TREE",
+      "name": "트리 이벤트·노드 조회",
+      "phase": "M2",
+      "status": "partial",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tree/tree-event"
+      ],
+      "acceptance": "ID·부모·자식 모델과 공통 변경 콜백 제공; 전용 취소 이벤트는 후속"
+    },
+    {
+      "id": "TREE-007",
+      "category": "TREE",
+      "name": "트리 지연 로드",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tree/tree-lazy-loading"
+      ],
+      "acceptance": "펼칠 때 호스트가 자식 데이터 공급"
+    },
+    {
+      "id": "TREE-008",
+      "category": "TREE",
+      "name": "노드 이동",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tree/tree-node-move"
+      ],
+      "acceptance": "자기 하위 이동 방지와 부모 변경"
+    },
+    {
+      "id": "TREE-009",
+      "category": "TREE",
+      "name": "하위 노드 집계",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tree/tree-subnode-calculation"
+      ],
+      "acceptance": "자손 합계의 편집 후 갱신"
+    },
+    {
+      "id": "TREE-010",
+      "category": "TREE",
+      "name": "Expander 컬럼",
+      "phase": "M3",
+      "status": "implemented",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tree/tree-expander-column"
+      ],
+      "acceptance": "labelField로 트리 expander를 표시할 컬럼 지정"
+    },
+    {
+      "id": "TREE-011",
+      "category": "TREE",
+      "name": "부모·자식 체크 연동",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tip/tree-check-bar"
+      ],
+      "acceptance": "부분 체크와 비활성 노드 정책"
+    },
+    {
+      "id": "TREE-012",
+      "category": "TREE",
+      "name": "계층 정렬·필터",
+      "phase": "M3",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tree/tree-view"
+      ],
+      "acceptance": "형제 정렬·계층 유지; 검색·필터 시 상위 경로 보존은 RealGrid 기본 동작과 차이"
+    },
+    {
+      "id": "EXPORT-001",
+      "category": "EXPORT",
+      "name": "XLSX 내보내기",
+      "phase": "M1",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/excels/excel-export"
+      ],
+      "acceptance": "로컬 XLSX 다운로드: 현재 페이지/불러온 행·검색정렬 결과·전체·선택 범위, 숫자/한글/빈 결과·오프라인 검증"
+    },
+    {
+      "id": "EXPORT-002",
+      "category": "EXPORT",
+      "name": "XLSX 가져오기",
+      "phase": "M1",
+      "status": "implemented",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tip/excel-import"
+      ],
+      "acceptance": "로컬 파일 첫 시트 또는 지정 시트, 헤더 매핑·타입·검증·전체 Undo/Redo"
+    },
+    {
+      "id": "EXPORT-003",
+      "category": "EXPORT",
+      "name": "그룹·소계 내보내기",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/excels/row-group-export"
+      ],
+      "acceptance": "그룹 구조와 집계값 보존"
+    },
+    {
+      "id": "EXPORT-004",
+      "category": "EXPORT",
+      "name": "복합 레이아웃 내보내기",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/excels/layout-export"
+      ],
+      "acceptance": "다단 헤더·병합 범위 보존"
+    },
+    {
+      "id": "EXPORT-005",
+      "category": "EXPORT",
+      "name": "여러 그리드·시트 내보내기",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/excels/multi-export"
+      ],
+      "acceptance": "시트명 검증과 데이터 구간 구분"
+    },
+    {
+      "id": "EXPORT-006",
+      "category": "EXPORT",
+      "name": "문서 제목·사용자 셀",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/excels/document-title-export"
+      ],
+      "acceptance": "제목·주석 데이터와 표 시작 위치 지정"
+    },
+    {
+      "id": "EXPORT-007",
+      "category": "EXPORT",
+      "name": "엑셀 서식",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/excels/export-style"
+      ],
+      "acceptance": "숫자·날짜·색상·테두리와 표시값 구분"
+    },
+    {
+      "id": "EXPORT-008",
+      "category": "EXPORT",
+      "name": "이미지·도형 내보내기",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/excels/image-export"
+      ],
+      "acceptance": "로컬 이미지 포함과 위치·크기 보존"
+    },
+    {
+      "id": "EXPORT-009",
+      "category": "EXPORT",
+      "name": "시트 보호",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/excels/sheet-protection"
+      ],
+      "acceptance": "셀 잠금과 시트 옵션; 암호화와 구분"
+    },
+    {
+      "id": "EXPORT-010",
+      "category": "EXPORT",
+      "name": "셀 메모 내보내기",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/excels/excel-memo"
+      ],
+      "acceptance": "메모 본문과 셀 위치 보존"
+    },
+    {
+      "id": "EXPORT-011",
+      "category": "EXPORT",
+      "name": "수식 내보내기",
+      "phase": "M3",
+      "status": "partial",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/excels/excel-formula"
+      ],
+      "acceptance": "opt-in A1 수식·계산 캐시 XLSX 출력, 헤더 참조 변환·동일 컬럼 순서 가져오기; 전체 Excel 문법·스타일 미지원"
+    },
+    {
+      "id": "STYLE-001",
+      "category": "STYLE",
+      "name": "컨텍스트 메뉴",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-components/context-menu"
+      ],
+      "acceptance": "키보드 열기·닫기와 비활성 항목"
+    },
+    {
+      "id": "STYLE-002",
+      "category": "STYLE",
+      "name": "알림·로딩 표시",
+      "phase": "M1",
+      "status": "partial",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-components/toast-view"
+      ],
+      "acceptance": "현재 상태·오류 안내 구현; 비동기 로딩 API는 후속"
+    },
+    {
+      "id": "STYLE-003",
+      "category": "STYLE",
+      "name": "로케일",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/setting/locale"
+      ],
+      "acceptance": "문구·날짜·숫자 형식을 호스트에서 지정"
+    },
+    {
+      "id": "STYLE-004",
+      "category": "STYLE",
+      "name": "CSS 테마",
+      "phase": "M0",
+      "status": "partial",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-style/themes"
+      ],
+      "acceptance": "현재 CSS 변수 테마 구현; 여러 테마·전환은 후속"
+    },
+    {
+      "id": "STYLE-005",
+      "category": "STYLE",
+      "name": "행·셀 동적 스타일",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-style/cell-dynamic-style"
+      ],
+      "acceptance": "값·행 상태별 클래스 지정"
+    },
+    {
+      "id": "STYLE-006",
+      "category": "STYLE",
+      "name": "영역별 스타일",
+      "phase": "M1",
+      "status": "partial",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/grid-style/realgrid-2-custom-styles-0-intro"
+      ],
+      "acceptance": "기본 CSS 분리 완료; 공개 스타일 계약 정리 필요"
+    },
+    {
+      "id": "STYLE-007",
+      "category": "STYLE",
+      "name": "개인화 저장·복원",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/personal/personal"
+      ],
+      "acceptance": "컬럼·정렬·필터 상태 직렬화와 버전 처리"
+    },
+    {
+      "id": "STYLE-008",
+      "category": "STYLE",
+      "name": "이벤트 순서",
+      "phase": "M1",
+      "status": "partial",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/events/event-order"
+      ],
+      "acceptance": "현재 onChange·onSelectionChange 제공; 취소·사전 이벤트 정리 필요"
+    },
+    {
+      "id": "STYLE-009",
+      "category": "STYLE",
+      "name": "클릭·렌더 완료 이벤트",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/events/click-event"
+      ],
+      "acceptance": "데이터 좌표와 화면 좌표 구분"
+    },
+    {
+      "id": "STYLE-010",
+      "category": "STYLE",
+      "name": "복수 그리드 스크롤 동기화",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/events/scroll-event"
+      ],
+      "acceptance": "재귀 이벤트와 서로 다른 행 높이 처리"
+    },
+    {
+      "id": "STYLE-011",
+      "category": "STYLE",
+      "name": "접근성",
+      "phase": "M0",
+      "status": "partial",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/tutorial/realgrid-webaccessbility"
+      ],
+      "acceptance": "키보드·ARIA·상태 안내, 3엔진 서버화면 자동WCAG검사; 네이티브 IME·실제스크린리더 추가수용시험"
+    },
+    {
+      "id": "STYLE-012",
+      "category": "STYLE",
+      "name": "대량 데이터 성능",
+      "phase": "M2",
+      "status": "partial",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/guides/performance/large-data-load-test"
+      ],
+      "acceptance": "10만 행×12열 및 1천 행×200열 Chromium 실측·가상 DOM 수 검사; 전체 메모리·다른 엔진·서버 공급 후속"
+    },
+    {
+      "id": "STYLE-013",
+      "category": "STYLE",
+      "name": "React 연동",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/tutorial/react-tutorial/on-initialized"
+      ],
+      "acceptance": "마운트·갱신·언마운트와 StrictMode 해제 계약"
+    },
+    {
+      "id": "STYLE-014",
+      "category": "STYLE",
+      "name": "Vue 연동",
+      "phase": "M2",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/tutorial/vue-tutorial/on-initialized"
+      ],
+      "acceptance": "반응형 데이터 갱신과 언마운트 해제 계약"
+    },
+    {
+      "id": "STYLE-015",
+      "category": "STYLE",
+      "name": "RealGrid API 이행 어댑터",
+      "phase": "M3",
+      "status": "partial",
+      "evidence": "body-reviewed",
+      "sources": [
+        "https://docs.realgrid.com/refs/Class/GridBase",
+        "https://docs.realgrid.com/refs/Class/LocalDataProvider",
+        "https://docs.realgrid.com/refs/Class/DataProviderBase"
+      ],
+      "acceptance": "공개 API 일부 이행 계층·지원 인수 문서·공유 provider 회귀 검사; 전체 RealGrid 대조 시험·API 호환 아님"
+    },
+    {
+      "id": "EXT-001",
+      "category": "EXT",
+      "name": "폐쇄망 무통신 실행",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "기본 JS·CSS·예제에 CDN·외부 폰트·인증·텔레메트리 요청 없음"
+    },
+    {
+      "id": "EXT-002",
+      "category": "EXT",
+      "name": "오프라인 빌드·모델 테스트",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "Node 내장 기능만으로 build와 test 실행; npm install 불필요"
+    },
+    {
+      "id": "EXT-003",
+      "category": "EXT",
+      "name": "전체 붙여넣기 원자성",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "잘못된 값·범위 초과가 하나라도 있으면 전체 반영 취소"
+    },
+    {
+      "id": "EXT-004",
+      "category": "EXT",
+      "name": "실행 취소 가능한 범위 지우기",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "읽기 전용 보호; 필수값 오류 시 전체 삭제 취소"
+    },
+    {
+      "id": "EXT-005",
+      "category": "EXT",
+      "name": "CSV 내보내기",
+      "phase": "M0",
+      "status": "implemented",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "UTF-8 BOM·따옴표·줄바꿈·수식 문자열 완화 처리"
+    },
+    {
+      "id": "EXT-006",
+      "category": "EXT",
+      "name": "가상 스크롤",
+      "phase": "M2",
+      "status": "implemented",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "200행/30열 초과 시 행·열 가상 렌더링, 고정 열·키보드·화면 밖 범위 조작; 고정 48px·수동 병합 제외"
+    },
+    {
+      "id": "EXT-007",
+      "category": "EXT",
+      "name": "선택 영역 채우기 핸들",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "동일 값 복제와 연속값 채우기를 구분"
+    },
+    {
+      "id": "EXT-008",
+      "category": "EXT",
+      "name": "엑셀식 수식 엔진",
+      "phase": "M3",
+      "status": "partial",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "opt-in A1/$ 참조·범위·산술·비교·13개 함수·오류·Undo/Redo·XLSX; 주소 구조 자동 재작성·전체 Excel 문법 제외"
+    },
+    {
+      "id": "EXT-009",
+      "category": "EXT",
+      "name": "TypeScript 타입 선언",
+      "phase": "M1",
+      "status": "planned",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "공개 옵션·이벤트·좌표·변경 레코드의 타입 계약"
+    },
+    {
+      "id": "EXT-010",
+      "category": "EXT",
+      "name": "오프라인 배포 검증",
+      "phase": "M1",
+      "status": "implemented",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "배포 파일 SHA256SUMS·선택 의존성 라이선스·로컬 동봉·망 차단 검증"
+    },
+    {
+      "id": "EXT-011",
+      "category": "EXT",
+      "name": "성능·호환 회귀 스위트",
+      "phase": "M1",
+      "status": "partial",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "단위·기존Chromium·실제Excel·서버HTTP 3엔진·자동WCAG검사; 전체기능 타엔진·네이티브IME·스크린리더는 후속"
+    },
+    {
+      "id": "EXT-012",
+      "category": "EXT",
+      "name": "패키지별 배포·독립 사용",
+      "phase": "M0",
+      "status": "partial",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "현재 grid JS·CSS 독립 제공; npm 등록과 향후 모듈은 미실행"
+    },
+    {
+      "id": "EXT-013",
+      "category": "EXT",
+      "name": "폼·트리·다이얼로그 독립 모듈",
+      "phase": "M3",
+      "status": "planned",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "그리드 공통 코드의 실제 재사용 근거가 생길 때 패키지 분리"
+    },
+    {
+      "id": "RELATED-001",
+      "category": "RELATED",
+      "name": "피벗 분석 모듈",
+      "phase": "LATER",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/pivotguides/pivot-tutorial"
+      ],
+      "acceptance": "별도 라이브러리 후보; Grid 기본 제공 기능으로 집계하지 않음"
+    },
+    {
+      "id": "RELATED-002",
+      "category": "RELATED",
+      "name": "차트 데이터 연동",
+      "phase": "LATER",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/interface3/column-selecting"
+      ],
+      "acceptance": "별도 chart 어댑터 후보; RealChart 코드를 포함하지 않음"
+    },
+    {
+      "id": "RELATED-003",
+      "category": "RELATED",
+      "name": "리포트 출력 연동",
+      "phase": "LATER",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/interface4/realgrid-realreport"
+      ],
+      "acceptance": "별도 report 모듈 후보"
+    },
+    {
+      "id": "RELATED-004",
+      "category": "RELATED",
+      "name": "지도 데이터 연동",
+      "phase": "LATER",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/interface5/realgrid-realmap"
+      ],
+      "acceptance": "별도 map 어댑터 후보"
+    },
+    {
+      "id": "RELATED-005",
+      "category": "RELATED",
+      "name": "색상 선택 편집 연동",
+      "phase": "LATER",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tip/color-picker"
+      ],
+      "acceptance": "독립 color-picker 후보"
+    },
+    {
+      "id": "RELATED-006",
+      "category": "RELATED",
+      "name": "파일·이미지 드롭",
+      "phase": "LATER",
+      "status": "planned",
+      "evidence": "index-listed",
+      "sources": [
+        "https://docs.realgrid.com/guides/tip/drag-and-drop"
+      ],
+      "acceptance": "호스트의 파일 처리와 그리드 데이터 변경 분리"
+    },
+    {
+      "id": "EXT-014",
+      "name": "붙여넣기 자동 행 확장",
+      "phase": "M0",
+      "acceptance": "일반 무필터 모드에서 빈 표·마지막 행 이후 붙여넣기를 한 번에 적용·Undo/Redo",
+      "category": "EXT",
+      "status": "implemented",
+      "evidence": "proposal",
+      "sources": []
+    },
+    {
+      "id": "EXT-015",
+      "name": "행·파일 단위 변경 이력",
+      "phase": "M1",
+      "acceptance": "행 추가·삭제·XLSX 데이터 교체를 단일 트랜잭션으로 되돌리기·다시 실행",
+      "category": "EXT",
+      "status": "implemented",
+      "evidence": "proposal",
+      "sources": []
+    },
+    {
+      "id": "EXT-016",
+      "name": "수동 사각형 셀 병합",
+      "phase": "M2",
+      "acceptance": "일반 모드에서 가로·세로 병합·해제; 숨겨진 데이터 보존과 붙여넣기 차단",
+      "category": "EXT",
+      "status": "implemented",
+      "evidence": "proposal",
+      "sources": []
+    },
+    {
+      "id": "EXT-017",
+      "category": "EXT",
+      "name": "무한 스크롤·표시 방식 선택",
+      "phase": "M1",
+      "status": "implemented",
+      "evidence": "proposal",
+      "sources": [],
+      "acceptance": "로컬/서버 무한 스크롤·하단/더보기·중복요청/행키 보호·재시도/종료·가상화·표시방식 전환; 서버 저장 별도"
+    }
+  ]
+}

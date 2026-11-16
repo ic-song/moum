@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'">
+  <title>MOUM Grid · 서버 데이터 편집</title>
+  <link rel="stylesheet" href="../../packages/grid/dist/moum-grid.css"><link rel="stylesheet" href="../grid/demo.css">
+</head>
+<body><main>
+  <header><p class="eyebrow">MOUM · SERVER EDIT</p><h1>서버 데이터 편집</h1><p>셀 편집·엑셀 붙여넣기·행 추가·삭제를 한 묶음으로 저장합니다. Ctrl+Z / Ctrl+Y로 저장 전 변경을 되돌릴 수 있습니다.</p><nav aria-label="예제"><a href="../grid/index.html">기본 그리드</a> · <a href="../server/index.html">서버 조회</a></nav></header>
+  <section aria-label="편집 그리드">
+    <div class="demo-controls"><button id="fail-save" type="button">다음 저장 실패</button> <button id="drop-save" type="button">저장 후 응답 끊기</button> <button id="conflict-save" type="button">다른 사용자 수정 충돌</button><p id="fault-status" role="status">통신 오류와 충돌을 이 예제에서 재현할 수 있습니다.</p></div>
+    <div id="edit-grid"></div>
+  </section>
+  <section class="help" aria-labelledby="help-title"><h2 id="help-title">변경과 저장</h2>
+    <p>행 번호의 +는 추가, *는 수정한 미저장 행입니다. 삭제한 행 수는 연결 상태에 표시됩니다. 저장·취소 전에는 페이지, 검색, 필터, 무한 스크롤 구간을 바꾸지 않습니다. 코드와 행 버전은 서버가 관리합니다.</p>
+    <p>저장 실패 시 입력은 유지됩니다. 다른 사용자가 같은 행을 바꾸면 덮어쓰지 않습니다. ‘변경 취소’로 최신 데이터를 다시 읽은 뒤 수정하세요. 응답이 끊기면 ‘저장 결과 다시 확인’이 같은 요청 ID로 결과를 확인합니다.</p>
+    <p>node scripts/serve.mjs로 실행합니다. 예제는 output/server-data/store.json에 행과 저장 결과를 기록하므로 서버를 재시작해도 유지됩니다. 현재 페이지·선택 영역 Excel에는 미저장 값도 포함됩니다. 전체·검색 결과 Excel은 저장 후 사용하세요.</p>
+  </section>
+  <footer>이 서버는 로컬 개발용 단일 프로세스 예제입니다. 실제 서비스는 인증·권한 검사와 DB 트랜잭션을 dataSource 콜백에 연결하세요. 브라우저를 강제로 닫으면 미저장 입력은 복구되지 않습니다.</footer>
+</main><script src="../../packages/grid/vendor/sheetjs/xlsx.full.min.js"></script><script src="../../packages/grid/dist/moum-grid.js"></script><script src="demo.js"></script></body>
+</html>

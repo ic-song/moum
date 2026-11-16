@@ -1,0 +1,35 @@
+{
+  "name": "moum-workspace",
+  "version": "0.7.0",
+  "private": true,
+  "type": "module",
+  "description": "Framework independent JavaScript tools for offline business applications.",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test packages/*/test/*.test.mjs",
+    "test:suite-browser": "node scripts/browser-suite-check.mjs",
+    "catalog": "node scripts/catalog.mjs",
+    "check": "npm test && npm run build && npm run catalog -- --check",
+    "dev": "node scripts/serve.mjs",
+    "test:browser": "node scripts/browser-check.mjs && node scripts/browser-advanced-check.mjs && node scripts/browser-followup-check.mjs && node scripts/browser-paging-check.mjs && node scripts/browser-server-check.mjs && node scripts/browser-edit-check.mjs",
+    "test:recovery": "node scripts/browser-recovery-check.mjs",
+    "test:resilience": "node scripts/browser-resilience-check.mjs",
+    "test:usage": "node scripts/prepare-usage-check.mjs && node scripts/browser-usage-check.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@vue/compiler-sfc": "3.5.45",
+    "axe-core": "4.14.0",
+    "esbuild": "0.25.12",
+    "playwright": "1.66.0-alpha-1794252756000",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "vue": "3.5.45"
+  }
+}

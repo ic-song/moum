@@ -1,0 +1,32 @@
+.moum-uploader { --moum-upload-ink: oklch(27% .02 165); --moum-upload-line: oklch(86% .01 165); --moum-upload-action: oklch(43% .09 165); --moum-upload-paper: white; --moum-upload-error: #a02626; font: 14px/1.6 "Segoe UI", "Malgun Gothic", sans-serif; font-variant-numeric: tabular-nums; color: var(--moum-upload-ink); background: var(--moum-upload-paper); border: 1px solid var(--moum-upload-line); padding: 16px; min-width: 0; }
+.moum-uploader * { box-sizing: border-box; }
+.moum-uploader button, .moum-uploader input, .moum-uploader select { font: inherit; color: inherit; border: 1px solid var(--moum-upload-line); background: var(--moum-upload-paper); min-height: 44px; padding: 8px 12px; border-radius: 4px; max-width: 100%; }
+.moum-uploader button { cursor: pointer; }
+.moum-uploader button:disabled { opacity: .5; cursor: default; }
+.moum-uploader :focus-visible { outline: 2px solid var(--moum-upload-action); outline-offset: 2px; }
+.moum-uploader-drop { border: 1px dashed var(--moum-upload-action); background: #f3f8f5; padding: 24px; }
+.moum-uploader-drop label { display: grid; gap: 12px; font-weight: 600; }
+.moum-uploader-drop p { margin: 8px 0 0; font-size: 13px; }
+.moum-uploader-drop.is-dragging { background: #deeee5; }
+.moum-uploader-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-block: 12px; }
+.moum-uploader-toolbar label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+.moum-uploader-toolbar input[type="number"] { width: 90px; }
+.moum-uploader-status, .moum-uploader-empty, .moum-uploader-summary { overflow-wrap: anywhere; margin: 12px 0; }
+.moum-uploader [role="alert"], .moum-uploader-error { color: var(--moum-upload-error); }
+.moum-uploader-queue { padding: 0; margin: 0; list-style: none; }
+.moum-uploader-queue li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 0; border-bottom: 1px solid var(--moum-upload-line); }
+.moum-uploader .moum-uploader-file-name { min-width: 0; max-width: 100%; overflow-wrap: anywhere; text-align: left; font-weight: 600; }
+.moum-uploader .is-active .moum-uploader-file-name { border-color: var(--moum-upload-action); background: #edf5f0; }
+.moum-uploader-error { width: 100%; margin: 0; overflow-wrap: anywhere; }
+.moum-uploader-mapping { display: flex; flex-wrap: wrap; gap: 12px; border: 1px solid var(--moum-upload-line); margin: 12px 0; padding: 12px; min-width: 0; }
+.moum-uploader-mapping label { display: grid; gap: 4px; min-width: 0; flex: 1 1 160px; }
+.moum-uploader-table-scroll { max-height: 460px; overflow: auto; border: 1px solid var(--moum-upload-line); }
+.moum-uploader table { width: 100%; border-collapse: collapse; text-align: left; }
+.moum-uploader th, .moum-uploader td { padding: 8px 12px; border-bottom: 1px solid var(--moum-upload-line); white-space: pre-wrap; min-width: 100px; max-width: 380px; overflow-wrap: anywhere; }
+.moum-uploader thead { position: sticky; top: 0; background: #f1f5f3; }
+.moum-uploader tr.is-invalid { background: #fff0ed; }
+.moum-uploader caption { text-align: left; padding: 8px; overflow-wrap: anywhere; }
+.moum-uploader details { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--moum-upload-line); overflow-wrap: anywhere; }
+.moum-uploader summary { cursor: pointer; min-height: 44px; }
+.moum-uploader-image { display: block; max-width: 100%; max-height: 320px; object-fit: contain; margin-block: 12px; }
+@media (max-width: 640px) { .moum-uploader { padding: 12px; } .moum-uploader-drop { padding: 16px; } .moum-uploader-drop input { width: 100%; } }

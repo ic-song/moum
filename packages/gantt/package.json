@@ -1,0 +1,35 @@
+{
+  "name": "@moum/gantt",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Standalone editable Gantt timeline with dependencies, hierarchy and undo/redo.",
+  "license": "MIT",
+  "main": "dist/moum-gantt.cjs",
+  "module": "dist/moum-gantt.mjs",
+  "browser": "dist/moum-gantt.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/moum-gantt.mjs",
+      "require": "./dist/moum-gantt.cjs"
+    },
+    "./style.css": "./dist/moum-gantt.css"
+  },
+  "files": [
+    "dist",
+    "index.d.ts",
+    "README.md",
+    "LICENSE",
+    "SHA256SUMS.txt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ic-song/moum.git",
+    "directory": "packages/gantt"
+  },
+  "homepage": "https://github.com/ic-song/moum/tree/main/packages/gantt",
+  "bugs": {
+    "url": "https://github.com/ic-song/moum/issues"
+  }
+}

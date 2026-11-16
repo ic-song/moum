@@ -1,0 +1,11 @@
+@import url('../grid/demo.css');
+nav { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 28px; border-bottom: 1px solid var(--page-line); padding-bottom: 16px; }
+nav a { padding-block: 8px; }
+nav a[aria-current="page"] { font-weight: 700; text-underline-offset: 6px; }
+.demo-tools { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-block: 16px; }
+.demo-tools button, .demo-tools select { min-height: 44px; padding: 8px 14px; font: inherit; background: white; color: var(--page-ink); border: 1px solid var(--page-line); border-radius: 4px; cursor: pointer; max-width: 100%; }
+.demo-tools label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.demo-help { margin: 20px 0; color: var(--page-muted); max-width: 95ch; }
+.demo-output { display: block; background: white; border: 1px solid var(--page-line); padding: 12px; overflow: auto; max-height: 240px; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.demo-notice { border-left: 3px solid var(--page-action); padding: 8px 16px; }
+main > section { min-width: 0; }

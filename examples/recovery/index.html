@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; base-uri 'none'">
+  <title>MOUM Grid · 미저장 작업 복구</title>
+  <link rel="stylesheet" href="../../packages/grid/dist/moum-grid.css"><link rel="stylesheet" href="../grid/demo.css">
+</head>
+<body><main>
+  <header class="intro"><p class="eyebrow">MOUM GRID · RECOVERY</p><h1>다시 열어도 이어서 입력</h1>
+    <p>셀을 편집하고 ‘브라우저 임시 저장 완료’를 확인한 뒤 새로고침하세요. 입력창에서 확정하지 않은 값도 복구합니다.</p>
+    <nav aria-label="복구 예제"><a href="?mode=local">로컬 데이터 복구</a> · <a href="?mode=server">서버 저장 요청 복구</a> · <a href="../grid/index.html">기본 그리드</a></nav>
+  </header>
+  <section aria-labelledby="grid-title"><div class="sheet-heading"><h2 id="grid-title">로컬 데이터</h2><button id="mark-saved" type="button">로컬 기준점 확정</button></div>
+    <p class="mode-help" id="mode-help"></p>
+    <label id="fault-label" hidden><input id="drop-reply" type="checkbox"> 다음 서버 저장은 반영한 뒤 응답 끊기</label>
+    <div id="recovery-grid"></div>
+  </section>
+  <section class="help" aria-labelledby="help-title"><h2 id="help-title">복구 범위</h2>
+    <p>데이터 변경과 입력창 값을 같은 브라우저·같은 주소의 IndexedDB에 임시 저장합니다. 다음 접속에서는 복구본을 명시적으로 선택합니다. 다른 탭은 각각 별도 복구본을 만들며 서로 덮어쓰지 않습니다. Undo 이력과 화면 설정은 복원하지 않습니다.</p>
+    <p>서버 저장은 요청 ID를 브라우저에 기록한 뒤 전송합니다. 응답이 끊기거나 저장 중 종료되면 같은 요청으로 결과를 다시 확인합니다. 복구 버튼이 서버 저장을 자동 실행하지는 않습니다.</p>
+    <p>이 예제는 demo 계정/품목이라는 고정 복구 키를 사용합니다. 실제 앱에서는 로그인 사용자·업무 데이터별 키를 지정하세요. 브라우저 데이터 삭제, 저장소 차단·용량 초과, 저장 완료 전 종료와 전원 장애에서는 복구를 보장하지 않습니다. 임시 저장 실패 시 상태 영역에서 확인하고 복구본을 내려받을 수 있습니다.</p>
+  </section>
+  <footer>node scripts/serve.mjs로 HTTP 서버를 실행하세요. 로컬 기준점 확정은 호스트 저장 성공 뒤 markSaved()를 호출하는 동작의 예시이며 서버 저장이 아닙니다. 서버 모드는 로컬 예제 JSON 저장소를 사용합니다.</footer>
+</main><script src="../../packages/grid/vendor/sheetjs/xlsx.full.min.js"></script><script src="../../packages/grid/dist/moum-grid.js"></script><script src="demo.js"></script></body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "name": "@moum/uploader",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Independent file queue with Excel/CSV/JSON parsing, preview, mapping, validation and cancellable upload.",
+  "license": "MIT",
+  "main": "dist/moum-uploader.cjs",
+  "module": "dist/moum-uploader.mjs",
+  "browser": "dist/moum-uploader.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/moum-uploader.mjs",
+      "require": "./dist/moum-uploader.cjs"
+    },
+    "./style.css": "./dist/moum-uploader.css",
+    "./vendor/sheetjs": "./vendor/sheetjs/xlsx.full.min.js"
+  },
+  "files": [
+    "dist",
+    "vendor",
+    "index.d.ts",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "SHA256SUMS.txt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ic-song/moum.git",
+    "directory": "packages/uploader"
+  },
+  "homepage": "https://github.com/ic-song/moum/tree/main/packages/uploader",
+  "bugs": {
+    "url": "https://github.com/ic-song/moum/issues"
+  }
+}

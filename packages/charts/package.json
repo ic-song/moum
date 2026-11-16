@@ -1,0 +1,35 @@
+{
+  "name": "@moum/charts",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Offline SVG business charts with accessible data tables and no runtime dependencies.",
+  "license": "MIT",
+  "main": "dist/moum-charts.cjs",
+  "module": "dist/moum-charts.mjs",
+  "browser": "dist/moum-charts.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/moum-charts.mjs",
+      "require": "./dist/moum-charts.cjs"
+    },
+    "./style.css": "./dist/moum-charts.css"
+  },
+  "files": [
+    "dist",
+    "index.d.ts",
+    "README.md",
+    "LICENSE",
+    "SHA256SUMS.txt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ic-song/moum.git",
+    "directory": "packages/charts"
+  },
+  "homepage": "https://github.com/ic-song/moum/tree/main/packages/charts",
+  "bugs": {
+    "url": "https://github.com/ic-song/moum/issues"
+  }
+}

@@ -1,0 +1,22 @@
+name: 기능 제안
+description: 필요한 업무 동작과 예를 설명해주세요.
+title: '[Feature] '
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 해결할 문제와 사용자
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 원하는 동작과 완료 기준
+      description: '입력/결과 예, 로컬·서버 환경, 폐쇄망 제약을 적어주세요.'
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 현재 대안과 참고 자료
+      description: '사용 권한이 없는 제품 소스/리소스는 첨부하지 마세요.'

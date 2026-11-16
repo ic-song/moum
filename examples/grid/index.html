@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+  <title>MOUM · 엑셀처럼 편집하는 그리드</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../../packages/grid/dist/moum-grid.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body>
+  <main>
+    <header class="intro">
+      <p class="eyebrow">MOUM / GRID 0.5</p>
+      <div class="heading"><h1>익숙한 셀, 자유로운 편집.</h1><span class="local">로컬 실행 · 외부 요청 없음</span></div>
+      <p>범위를 선택하고, 엑셀처럼 복사하고, 한 번에 지워보세요. 아래 내용은 기능 확인을 위한 예제 데이터입니다.</p>
+    </header>
+    <section aria-labelledby="sheet-title">
+      <div class="sheet-heading"><h2 id="sheet-title">물품 등록·편집</h2><label>예제 모드 <select id="example-mode"><option value="plain">일반 편집</option><option value="group">분류·부서 그룹과 소계</option><option value="tree">트리 그리드</option></select></label><button id="reset" type="button">예제 초기화</button></div>
+      <p class="mode-help">Excel 셀을 복사해 Ctrl+V로 붙여넣으세요. 일반 모드에서는 부족한 행이 자동 추가됩니다. Shift+헤더 클릭은 다중 정렬, 헤더 오른쪽 경계는 너비 조절입니다.</p>
+      <div id="grid"></div>
+    </section>
+    <section class="help" aria-labelledby="help-title">
+      <h2 id="help-title">키보드가 익숙하다면, 바로 시작하세요.</h2>
+      <dl>
+        <div><dt>드래그 / Shift + 방향키</dt><dd>여러 셀 선택</dd></div>
+        <div><dt>Ctrl + C / Ctrl + V</dt><dd>엑셀과 선택 영역 복사·붙여넣기</dd></div>
+        <div><dt>Delete</dt><dd>선택한 셀을 한 번에 지우기</dd></div>
+        <div><dt>Ctrl + Z / Ctrl + Y</dt><dd>지우기·붙여넣기 되돌리기 / 다시 실행</dd></div>
+        <div><dt>F2 / 더블클릭</dt><dd>셀 편집 · Enter 확정 · Esc 취소</dd></div>
+        <div><dt>Tab / Shift + Tab</dt><dd>다음 셀 / 이전 셀 · 끝에서는 표 밖으로 이동</dd></div>
+      </dl>
+      <p>품목코드·상위코드는 읽기 전용입니다. 수량·단가에는 쉼표가 포함된 숫자도 입력할 수 있습니다. 열 범위를 넘거나 유효하지 않은 값이 있으면 전체 작업을 취소합니다. 그룹·트리·검색·필터 상태에서는 붙여넣기로 행을 자동 추가하지 않습니다.</p>
+      <p>일반 모드에서 여러 셀을 선택하고 병합할 수 있습니다. 병합 중 가려진 원본 값은 보존되며 붙여넣기 전에는 병합을 해제해야 합니다. XLSX 가져오기는 첫 행의 컬럼명으로 매핑하고 기존 데이터를 교체하며 Ctrl+Z로 원복할 수 있습니다.</p>
+      <p>macOS에서는 Ctrl 대신 ⌘를 사용합니다. 셀 안에서 문자를 편집하는 동안에는 기본 텍스트 복사·붙여넣기와 실행 취소가 동작합니다. 변경은 메모리에만 유지되며 새로고침하면 초기화됩니다.</p>
+    </section>
+    <footer><a href="../server-edit/index.html">서버 편집·저장 예제</a> · <a href="../server/index.html">서버 데이터 예제 (HTTP 실행 필요)</a> · MOUM는 독립 구현하는 JavaScript 도구 모음입니다. RealGrid의 구현 코드와 리소스를 포함하지 않습니다. XLSX 기능은 동봉한 SheetJS Community Edition(Apache-2.0)을 사용합니다. <a href="../advanced/index.html">가상 스크롤·수식·API 일부 이행 예제</a>도 확인하세요. 전체 RealGrid 호환은 제공하지 않습니다.</footer>
+  </main>
+  <script src="../../packages/grid/vendor/sheetjs/xlsx.full.min.js"></script>
+  <script src="../../packages/grid/dist/moum-grid.js"></script>
+  <script src="demo.js"></script>
+</body>
+</html>

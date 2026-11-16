@@ -1,0 +1,7 @@
+const monthly = { labels: ['7월', '8월', '9월', '10월', '11월', '12월'], datasets: [{ label: '계획 (건)', data: [42, 56, 48, 72, 64, 86] }, { label: '실적 (건)', data: [38, 61, 45, 69, 70, 82] }] };
+function chartData(type) { if (['pie', 'donut'].includes(type)) return { labels: ['개발', '운영', '기획', '지원'], datasets: [{ label: '업무 비중', data: [45, 25, 18, 12] }] }; if (type === 'scatter') return { labels: ['A', 'B', 'C', 'D', 'E'], datasets: [{ label: '소요 시간·완료 건수', data: [{ x: 2, y: 10 }, { x: 3, y: 15 }, { x: 4, y: 12 }, { x: 5, y: 25 }, { x: 6, y: 28 }] }] }; return monthly; }
+window.chart = new MoumCharts('#chart', { title: '월별 업무 처리 현황 (예제)', data: monthly, onSelect: point => { document.querySelector('#result').textContent = JSON.stringify(point, null, 2); } });
+document.querySelector('#chart-type').addEventListener('change', event => chart.setOptions({ type: event.target.value, data: chartData(event.target.value) }));
+document.querySelector('#empty').addEventListener('click', () => chart.setData({ labels: [], datasets: [] }));
+document.querySelector('#reset').addEventListener('click', () => chart.setOptions({ type: document.querySelector('#chart-type').value, data: chartData(document.querySelector('#chart-type').value) }));
+document.querySelector('#export').addEventListener('click', () => { const url = URL.createObjectURL(new Blob([chart.toSVG()], { type: 'image/svg+xml' })); const a = document.createElement('a'); a.href = url; a.download = 'moum-chart.svg'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
