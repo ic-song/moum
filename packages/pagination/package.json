@@ -1,6 +1,6 @@
 {
   "name": "@moum/pagination",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "페이지 이동 및 서버 조회",
   "license": "MIT",

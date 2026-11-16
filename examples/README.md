@@ -20,9 +20,11 @@ HTML 예제의 상대 경로는 저장소 디렉터리 구조를 기준으로 �
 ## 추가 컴포넌트
 
 - [DatePicker](datepicker/index.html): 단일 날짜·조회 기간·제외일
-- [Pagination](pagination/index.html): 서버 조회·페이지 크기·오류 재시도
-- [InfiniteScroll](infinite-scroll/index.html): 내부 목록·커서·자동/수동 로딩
+- [Pagination](pagination/index.html): 서버 조회·페이지 크기/직접 이동·URL/뒤로가기·오류 재시도
+- [InfiniteScroll](infinite-scroll/index.html): 내부 목록·커서·자동/수동·고정 높이 가상화·위치/캐시 복원
 
 동일 공통 UI 토큰을 각 독립 CSS에 포함합니다. [연결·테마](../docs/components.md)
 
 - [미니 간트4종](gantt-mini/index.html): Bars/Compact/Summary/Milestones, 표 안의 한 줄, 공통 기간 비교
+
+캘린더는 회차 분리 수정·자원 필터·로컬 지연/오류 조회 예제를 포함합니다. 느린 조회 버튼으로 취소 UI를 확인하세요. 페이지 URL과 목록 세션 캐시는 HTTP 예제에서 켜집니다. 실서비스 서버 데이터는 연결하지 않았습니다.

@@ -1,5 +1,6 @@
 .moum-calendar { --moum-calendar-ink: oklch(27% .02 165); --moum-calendar-line: oklch(86% .01 165); --moum-calendar-action: oklch(43% .09 165); --moum-calendar-paper: white; --moum-calendar-hour: 48px; color: var(--moum-calendar-ink); background: var(--moum-calendar-paper); font: 14px/1.6 "Segoe UI", "Malgun Gothic", sans-serif; border: 1px solid var(--moum-calendar-line); min-width: 0; font-variant-numeric: tabular-nums; }
 .moum-calendar * { box-sizing: border-box; }
+.moum-calendar [hidden] { display:none; }
 .moum-calendar-toolbar { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; align-items: center; }
 .moum-calendar button, .moum-calendar input, .moum-calendar select, .moum-calendar textarea { font: inherit; color: inherit; background: var(--moum-calendar-paper); border: 1px solid var(--moum-calendar-line); border-radius: 4px; padding: 8px 12px; min-height: 44px; max-width: 100%; }
 .moum-calendar button { cursor: pointer; }

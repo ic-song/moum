@@ -12,14 +12,16 @@
 | `@moum/charts` | 0.3.0 | SVG 차트 10종·복합/이중 축·PNG | [차트](examples/charts/index.html) | [문서](packages/charts/README.md) |
 | `@moum/gantt` | 0.3.0 | 계층·업무일 일정 조정·미니4종 | [간트](examples/gantt/index.html) | [문서](packages/gantt/README.md) |
 | `@moum/uploader` | 0.3.0 | 파일·Worker Excel/CSV/JSON·검증·전송 | [업로더](examples/uploader/index.html) | [문서](packages/uploader/README.md) |
-| `@moum/calendar` | 0.2.0 | 월/주/일/목록·일정 편집·반복 | [캘린더](examples/calendar/index.html) | [문서](packages/calendar/README.md) |
+| `@moum/calendar` | 0.3.0 | 월/주/일/목록·회차 수정·자원·기간 조회 | [캘린더](examples/calendar/index.html) | [문서](packages/calendar/README.md) |
 | `@moum/datepicker` | 0.2.0 | 인라인/팝업·단일 날짜·기간·프리셋 | [날짜 선택](examples/datepicker/index.html) | [문서](packages/datepicker/README.md) |
-| `@moum/pagination` | 0.1.0 | 페이지 이동·크기·서버 조회·재시도 | [페이지](examples/pagination/index.html) | [문서](packages/pagination/README.md) |
-| `@moum/infinite-scroll` | 0.1.0 | 내부 스크롤 목록·커서·자동/수동 로딩 | [무한 스크롤](examples/infinite-scroll/index.html) | [문서](packages/infinite-scroll/README.md) |
+| `@moum/pagination` | 0.2.0 | 페이지 직접 이동·URL/뒤로가기·서버 조회 | [페이지](examples/pagination/index.html) | [문서](packages/pagination/README.md) |
+| `@moum/infinite-scroll` | 0.2.0 | 가상 목록·커서·위치 복원·세션 캐시 | [무한 스크롤](examples/infinite-scroll/index.html) | [문서](packages/infinite-scroll/README.md) |
 
 [미니 간트 4종 예제](examples/gantt-mini/index.html) · [8개 컴포넌트 현황·고도화 범위·공통 UI/UX](docs/components.md)를 확인하세요.
 
 DatePicker 팝업·복합/이중 축 차트·업무일 간트·Worker 파싱의 [고도화 검증 기록](docs/business-components-verification.md)을 제공합니다.
+
+캘린더 회차 수정·기간 조회, 페이지 URL 복원, 가상 목록·위치/캐시는 [목록 탐색 고도화 검증](docs/navigation-components-verification.md)을 확인하세요.
 
 각 패키지는 browser JS·ESM·CommonJS·CSS·라이선스를 포함하며 grid 외 일곱 패키지는 TypeScript 선언도 제공합니다. 서로 런타임 의존성이 없고 npm 등록 전이므로 `npm pack ./packages/<이름>` 또는 파일 복사로 사용합니다. 각 패키지는 API 문서에 명시한 범위로 제공하며 서버 저장·인증은 호스트가 연결합니다.
 

@@ -1,5 +1,7 @@
 # 업무 컴포넌트 고도화 검증
 
+이후 Calendar/Pagination/InfiniteScroll 고도화는 [목록 탐색 검증](navigation-components-verification.md)에 기록합니다.
+
 2026-11-16 KST. DatePicker 0.2.0, Charts/Gantt/Uploader 0.3.0. [현재 지원 범위](components.md), [이전 컴포넌트 검증](components-verification.md).
 
 | 검사 | 결과 |

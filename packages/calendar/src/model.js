@@ -30,7 +30,19 @@ export function normalizeEvents(events) {
       recurrence = { frequency: r.frequency, interval, until: r.until };
     }
     const exceptions = event.exceptions || []; if (!Array.isArray(exceptions)) throw new TypeError('exceptions는 날짜 배열입니다.'); exceptions.forEach(calendarDate);
-    return { id, title: String(event.title ?? ''), start: event.start, end: event.end, allDay, description: String(event.description ?? ''), recurrence, exceptions: [...new Set(exceptions)] };
+    if(event.resourceId!=null&&(!['string','number'].includes(typeof event.resourceId)||!String(event.resourceId)||typeof event.resourceId==='number'&&!Number.isFinite(event.resourceId)))throw new TypeError('resourceId는 비어 있지 않은 문자열 또는 유한한 숫자입니다.');
+    const result={ id, title: String(event.title ?? ''), start: event.start, end: event.end, allDay, description: String(event.description ?? ''), recurrence, exceptions: [...new Set(exceptions)],...(event.resourceId!=null?{resourceId:String(event.resourceId)}:{}) };
+    if(event.overrides!=null&&(typeof event.overrides!=='object'||Array.isArray(event.overrides)))throw new TypeError('overrides는 원래 회차 날짜를 키로 하는 객체입니다.');
+    const entries=Object.entries(event.overrides||{});if(entries.length>1000)throw new RangeError('분리 수정은 일정당 최대1,000회입니다.');
+    if(entries.length){if(!recurrence)throw new Error('분리 수정에는 반복 일정이 필요합니다.');const overrides={};
+      for(const [date,patch]of entries){const stamp=calendarDate(date),base=calendarDate(event.start.slice(0,10)),step=(recurrence.frequency==='weekly'?7:1)*recurrence.interval*calendarDay;
+        if(stamp<base||date>recurrence.until||(stamp-base)%step)throw new Error('해당 날짜에 시작하는 반복 회차가 없습니다.');
+        if(!patch||typeof patch!=='object'||Array.isArray(patch)||Object.keys(patch).some(k=>!['title','start','end','allDay','description','resourceId'].includes(k)))throw new TypeError('회차 수정 필드를 확인하세요.');
+        const format=n=>new Date(n).toISOString().slice(0,allDay?10:16),offset=stamp-base;
+        const normalized=normalizeEvents([{...result,start:format(start+offset),end:format(end+offset),...patch,recurrence:null,exceptions:[]}])[0];
+        overrides[date]={...Object.fromEntries(['title','start','end','allDay','description'].map(k=>[k,normalized[k]])),resourceId:normalized.resourceId??null};
+      }result.overrides=overrides;
+    }return result;
   });
 }
 export function calendarRange(date, view = 'month', weekStartsOn = 0) {
@@ -46,6 +58,7 @@ export function expandCalendarEvents(events, range) {
   const from = calendarDate(range.start), to = calendarDate(range.end); if (to <= from || to - from > 370 * calendarDay) throw new RangeError('조회 기간은 최대 370일입니다.');
   const result = [];
   for (const event of events) {
+    const {overrides:omittedOverrides,...occurrenceEvent}=event;
     const start = calendarStamp(event.start, event.allDay), end = calendarStamp(event.end, event.allDay);
     const step = event.recurrence ? (event.recurrence.frequency === 'weekly' ? 7 : 1) * event.recurrence.interval * calendarDay : 0;
     const until = event.recurrence ? calendarDate(event.recurrence.until) + calendarDay - 1 : start;
@@ -53,13 +66,15 @@ export function expandCalendarEvents(events, range) {
     for (let i = firstIndex; ; i++) {
       const current = start + i * step, finish = end + i * step; if (current > until || current >= to) break;
       const date = new Date(current).toISOString().slice(0, 10);
-      if (finish > from && !event.exceptions.includes(date)) {
+      if (finish > from && !event.exceptions.includes(date) && !Object.hasOwn(event.overrides||{},date)) {
         const format = value => new Date(value).toISOString().slice(0, event.allDay ? 10 : 16);
-        result.push({ ...structuredClone(event), occurrenceId: `${event.id}@${date}`, start: format(current), end: format(finish), seriesId: event.id });
+        result.push({ ...structuredClone(occurrenceEvent), occurrenceId: `${event.id}@${date}`, originalDate:date, start: format(current), end: format(finish), seriesId: event.id });
         if (result.length > 20000) throw new RangeError('조회 기간의 반복 일정이 너무 많습니다. 기간을 줄이세요.');
       }
       if (!step) break;
     }
+    for(const [date,patch]of Object.entries(event.overrides||{})){if(event.exceptions.includes(date))continue;const occurrence={...structuredClone(occurrenceEvent),...structuredClone(patch),occurrenceId:`${event.id}@${date}`,originalDate:date,seriesId:event.id,isOverride:true};if(calendarStamp(occurrence.start,occurrence.allDay)<to&&calendarStamp(occurrence.end,occurrence.allDay)>from)result.push(occurrence);}
+    if(result.length>20000)throw new RangeError('조회 기간의 반복 일정이 너무 많습니다. 기간을 줄이세요.');
   }
   return result.sort((a, b) => a.start.localeCompare(b.start) || a.title.localeCompare(b.title));
 }
@@ -85,10 +100,12 @@ export class CalendarModel {
   setOccurrenceExcluded(id,date,excluded=true) {
     calendarDate(date);id=String(id);const event=this.events.find(e=>e.id===id);
     if(!event?.recurrence)throw new Error('반복 일정이 필요합니다.');
-    const occurrences=expandCalendarEvents([{...event,exceptions:[]}],{start:date,end:addCalendarDays(date,1)});
+    const occurrences=expandCalendarEvents([{...event,exceptions:[],overrides:{}}],{start:date,end:addCalendarDays(date,1)});
     if(!occurrences.some(e=>e.start.slice(0,10)===date))throw new Error('해당 날짜에 시작하는 반복 회차가 없습니다.');
     const exceptions=event.exceptions.filter(d=>d!==date);if(excluded)exceptions.push(date);this.updateEvent(id,{exceptions});
   }
+  updateOccurrence(id,date,patch){id=String(id);const event=this.events.find(e=>e.id===id);if(!event?.recurrence)throw new Error('반복 일정이 필요합니다.');if(!patch||typeof patch!=='object'||Array.isArray(patch))throw new TypeError('회차 수정 객체가 필요합니다.');calendarDate(date);this.updateEvent(id,{overrides:{...event.overrides,[date]:{...event.overrides?.[date],...patch}},exceptions:event.exceptions.filter(d=>d!==date)});}
+  restoreOccurrence(id,date){id=String(id);const event=this.events.find(e=>e.id===id);if(!event?.recurrence)throw new Error('반복 일정이 필요합니다.');normalizeEvents([{...event,overrides:{[date]:{}}}]);const overrides={...event.overrides};delete overrides[date];this.updateEvent(id,{overrides,exceptions:event.exceptions.filter(d=>d!==date)});}
   getOccurrences(range) { return expandCalendarEvents(this.events, range); }
   undo() { if (!this.past.length) return false; this.future.push(this.getEvents()); this.events = this.past.pop(); return true; }
   redo() { if (!this.future.length) return false; this.past.push(this.getEvents()); this.events = this.future.pop(); return true; }
