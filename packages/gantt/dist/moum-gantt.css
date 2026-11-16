@@ -28,3 +28,53 @@
 .moum-gantt-editor label { display: grid; gap: 4px; min-width: 0; }
 .moum-gantt-editor strong { flex-basis: 100%; overflow-wrap: anywhere; }
 @media (max-width: 640px) { .moum-gantt-editor label { flex: 1 1 130px; } .moum-gantt-editor input { width: 100%; } }
+.moum-gantt-mini { padding:8px; }
+.moum-gantt-mini-header { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:4px 12px; margin-bottom:8px; }
+.moum-gantt-mini-header span { font-size:12px; }
+.moum-gantt-mini-row { display:grid; grid-template-columns:minmax(64px,120px) minmax(0,1fr); gap:8px; align-items:center; min-height:32px; }
+.moum-gantt-mini--no-labels .moum-gantt-mini-row { grid-template-columns:minmax(0,1fr); }
+.moum-gantt-mini-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.moum-gantt-mini .moum-gantt-mini-track { display:block; position:relative; width:100%; min-width:0; min-height:28px; height:28px; padding:0; overflow:hidden; border:1px solid var(--moum-gantt-line); background:var(--moum-gantt-paper); }
+.moum-gantt-mini-track[aria-pressed="true"] { outline:2px solid var(--moum-gantt-action); outline-offset:1px; }
+.moum-gantt-mini-bar { position:absolute; top:3px; bottom:3px; min-width:2px; background:var(--moum-selection); border-inline-start:2px solid var(--moum-gantt-action); overflow:hidden; text-align:center; }
+.moum-gantt-mini-progress { display:block; position:absolute; inset:0 auto 0 0; background:var(--moum-gantt-action); opacity:.25; }
+.moum-gantt-mini-progress-text { position:relative; font-size:12px; }
+.moum-gantt-mini-bar.is-milestone { display:flex; align-items:center; justify-content:center; width:14px; background:transparent; border:0; color:var(--moum-gantt-action); font-size:14px; line-height:1; }
+.moum-gantt-mini .moum-gantt-status { min-height:0; margin:0; padding:8px 0 0; }
+.moum-gantt-mini-outside { font-size:12px; }
+.moum-gantt-mini--compact .moum-gantt-mini-row { min-height:28px; }
+.moum-gantt-mini--compact .moum-gantt-mini-track { min-height:24px; height:24px; }
+
+/* Shared source, embedded in every distribution: each package remains standalone.
+   Set --moum-ui-* on an ancestor (or the component) to theme all eight components. */
+:where(.moum-grid,.moum-charts,.moum-gantt,.moum-uploader,.moum-calendar,.moum-datepicker,.moum-pagination,.moum-infinite-scroll) {
+  --moum-theme-ink: var(--moum-ui-ink, oklch(27% .02 165));
+  --moum-theme-paper: var(--moum-ui-paper, white);
+  --moum-theme-line: var(--moum-ui-line, oklch(85% .012 165));
+  --moum-theme-action: var(--moum-ui-action, oklch(43% .09 165));
+  --moum-theme-tint: var(--moum-ui-tint, oklch(94% .035 165));
+  --moum-theme-danger: var(--moum-ui-danger, oklch(42% .16 25));
+  --moum-theme-space: var(--moum-ui-space, 8px);
+  --moum-theme-radius: var(--moum-ui-radius, 4px);
+  --moum-theme-control: var(--moum-ui-control, 44px);
+  --moum-theme-font: var(--moum-ui-font, 14px/1.6 "Segoe UI", "Malgun Gothic", sans-serif);
+}
+:is(.moum-grid,.moum-charts,.moum-gantt,.moum-uploader,.moum-calendar,.moum-datepicker,.moum-pagination,.moum-infinite-scroll) {
+  --moum-ink: var(--moum-theme-ink); --moum-surface: var(--moum-theme-paper); --moum-line: var(--moum-theme-line); --moum-action: var(--moum-theme-action); --moum-selection: var(--moum-theme-tint); --moum-danger: var(--moum-theme-danger); --moum-control: var(--moum-theme-control);
+  --moum-chart-ink: var(--moum-theme-ink); --moum-chart-line: var(--moum-theme-line); --moum-chart-action: var(--moum-theme-action); --moum-chart-surface: var(--moum-theme-paper);
+  --moum-gantt-ink: var(--moum-theme-ink); --moum-gantt-line: var(--moum-theme-line); --moum-gantt-action: var(--moum-theme-action); --moum-gantt-paper: var(--moum-theme-paper);
+  --moum-upload-ink: var(--moum-theme-ink); --moum-upload-line: var(--moum-theme-line); --moum-upload-action: var(--moum-theme-action); --moum-upload-paper: var(--moum-theme-paper); --moum-upload-error: var(--moum-theme-danger);
+  --moum-calendar-ink: var(--moum-theme-ink); --moum-calendar-line: var(--moum-theme-line); --moum-calendar-action: var(--moum-theme-action); --moum-calendar-paper: var(--moum-theme-paper);
+  box-sizing: border-box; min-width: 0; color: var(--moum-theme-ink); background: var(--moum-theme-paper); border: 1px solid var(--moum-theme-line); border-radius: var(--moum-theme-radius); font: var(--moum-theme-font); font-variant-numeric: tabular-nums;
+}
+:where(.moum-grid,.moum-charts,.moum-gantt,.moum-uploader,.moum-calendar,.moum-datepicker,.moum-pagination,.moum-infinite-scroll) :is(button,input,select,textarea) { font: inherit; color: inherit; border-radius: var(--moum-theme-radius); }
+:is(.moum-grid,.moum-charts,.moum-gantt,.moum-uploader,.moum-calendar,.moum-datepicker,.moum-pagination,.moum-infinite-scroll) :focus-visible { outline: 2px solid var(--moum-theme-action); outline-offset: 2px; }
+:where(.moum-grid,.moum-charts,.moum-gantt,.moum-uploader,.moum-calendar,.moum-datepicker,.moum-pagination,.moum-infinite-scroll) button:disabled { cursor: default; opacity: .5; }
+:where(.moum-datepicker,.moum-pagination,.moum-infinite-scroll) { padding: calc(2 * var(--moum-theme-space)); }
+:where(.moum-datepicker,.moum-pagination,.moum-infinite-scroll) * { box-sizing: border-box; }
+:where(.moum-datepicker,.moum-pagination,.moum-infinite-scroll) :is(button,input,select) { min-height: var(--moum-theme-control); padding: var(--moum-theme-space) calc(1.5 * var(--moum-theme-space)); border: 1px solid var(--moum-theme-line); background: var(--moum-theme-paper); max-width: 100%; }
+:where(.moum-datepicker,.moum-pagination,.moum-infinite-scroll) button { cursor: pointer; }
+:where(.moum-datepicker,.moum-pagination,.moum-infinite-scroll) h3 { margin: 0 0 calc(1.5 * var(--moum-theme-space)); font-size: 17px; }
+:is(.moum-datepicker-status,.moum-pagination-status,.moum-infinite-scroll-status,.moum-charts-status,.moum-gantt-status,.moum-calendar-status) { margin-block: var(--moum-theme-space); overflow-wrap: anywhere; }
+:is(.moum-datepicker,.moum-pagination,.moum-infinite-scroll)[data-state="error"] [role="status"] { color: var(--moum-theme-danger); }
+:where(.moum-datepicker,.moum-pagination,.moum-infinite-scroll) button:not(:disabled):not([aria-disabled="true"]):hover { border-color: var(--moum-theme-action); }

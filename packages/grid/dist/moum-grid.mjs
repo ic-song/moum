@@ -1,4 +1,4 @@
-/*! MOUM Grid v0.7.0 | MIT License | See LICENSE */
+/*! MOUM Grid v0.7.1 | MIT License | See LICENSE */
 // A bounded expression parser. No JavaScript evaluation or property access.
 class FormulaFault extends Error { constructor(code) { super(code); this.code = code; } }
 const fault = code => { throw new FormulaFault(code); };
@@ -1355,6 +1355,14 @@ export class Grid {
   }
 
   resetSelection() { this.anchor = { row: 0, col: 0 }; this.current = { ...this.anchor }; }
+  getSelectionStats() {
+    const range=this.getSelection();let count=0,numericCount=0,sum=0,min=Infinity,max=-Infinity;
+    for(let row=range.top;row<=range.bottom&&row<this.view.length;row++)for(let col=range.left;col<=range.right&&col<this.columns.length;col++){
+      const value=this.view[row].row[this.columns[col].field];if(value!=null&&value!=='')count++;
+      if(typeof value==='number'&&Number.isFinite(value)){numericCount++;sum+=value;min=Math.min(min,value);max=Math.max(max,value);}
+    }
+    return {count,numericCount,sum,average:numericCount?sum/numericCount:null,min:numericCount?min:null,max:numericCount?max:null};
+  }
   getSelection() {
     const range = { top: Math.min(this.anchor.row, this.current.row), bottom: Math.max(this.anchor.row, this.current.row), left: Math.min(this.anchor.col, this.current.col), right: Math.max(this.anchor.col, this.current.col) };
     let expanded;
@@ -1420,6 +1428,7 @@ export class Grid {
       cell.setAttribute('aria-selected', String(selected)); cell.tabIndex = active ? 0 : -1;
     }
     this.coordinate.textContent = this.view.length ? `${(this.view[this.current.row]?.position ?? this.current.row) + 1}행 ${this.current.col + 1}열 · ${(range.bottom - range.top + 1) * (range.right - range.left + 1)}셀 선택` : '선택 없음';
+    if(this.options.selectionSummary&&this.view.length){const stats=this.getSelectionStats();this.coordinate.textContent+=` · 숫자 ${stats.numericCount}개 · 합계 ${stats.sum.toLocaleString()} · 평균 ${stats.average==null?'—':stats.average.toLocaleString()}`;}
   }
 
   render() {

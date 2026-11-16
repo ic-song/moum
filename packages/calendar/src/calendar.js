@@ -17,6 +17,7 @@ export class Calendar {
   addEvent(event) { this.active(); this.model.addEvent(event); this.changed('add', String(event.id)); }
   updateEvent(id, patch) { this.active(); this.model.updateEvent(id, patch); this.changed('update', String(id)); }
   removeEvent(id) { this.active(); this.model.removeEvent(id); this.changed('remove', String(id)); }
+  setOccurrenceExcluded(id,date,excluded=true) { this.active();this.model.setOccurrenceExcluded(id,date,excluded);this.changed(excluded?'exclude-occurrence':'restore-occurrence',String(id)); }
   setView(view) { this.active(); calendarRange(this.options.date, view, this.options.weekStartsOn); this.options.view = view; this.render(); this.options.onViewChange?.({ view, date: this.options.date }); }
   setDate(date) { this.active(); calendarDate(date); this.options.date = date; this.render(); this.options.onViewChange?.({ view: this.options.view, date }); }
   undo() { this.active(); if (this.model.undo()) this.changed('undo'); }
@@ -44,7 +45,7 @@ export class Calendar {
   eventButton(event) {
     const prefix = event.allDay ? '종일' : event.start.slice(11, 16);
     const button = calEl('button', `${prefix} ${event.title}${event.recurrence ? ' ↻' : ''}`, 'moum-calendar-event'); button.type = 'button'; button.dataset.eventId = event.id; button.title = `${event.title}\n${event.start} ~ ${event.end}\n${event.description}`;
-    button.addEventListener('click', () => { this.options.onSelect?.(structuredClone(event)); this.openEditor(event.id); });
+    button.addEventListener('click', () => { this.options.onSelect?.(structuredClone(event)); this.openEditor(event.id, event.start.slice(0,10)); });
     if (this.options.editable && !event.recurrence) { button.draggable = true; button.addEventListener('dragstart', e => { this.draggedId = event.id; e.dataTransfer.setData('text/plain', event.title); e.dataTransfer.effectAllowed = 'move'; }); button.addEventListener('dragend', () => { this.draggedId = null; }); }
     return button;
   }
@@ -106,6 +107,7 @@ export class Calendar {
     if (this.options.editable) {
       const save = calEl('button', '일정 저장'); save.type = 'submit'; buttons.append(save);
       if (id != null) { const remove = calEl('button', event.recurrence ? '반복 일정 전체 삭제' : '일정 삭제'); remove.type = 'button'; remove.addEventListener('click', () => this.attempt(() => this.removeEvent(id))); buttons.append(remove); }
+      if(id!=null&&event.recurrence){const exclude=calEl('button',`${date} 회차만 제외`);exclude.type='button';exclude.addEventListener('click',()=>this.attempt(()=>this.setOccurrenceExcluded(id,date)));buttons.append(exclude);}
     }
     const close = calEl('button', '닫기'); close.type = 'button'; close.addEventListener('click', () => { form.remove(); this.editor = null; this.root.querySelector('button')?.focus(); }); buttons.append(close); form.append(buttons);
     form.addEventListener('submit', e => { e.preventDefault(); this.attempt(() => { const patch = { title: fields.title.value, start: fields.start.value, end: fields.end.value, allDay: allDay.checked, description: fields.description.value, recurrence: repeat.value === 'none' ? null : { frequency: repeat.value, interval: Number(fields.interval.value), until: fields.until.value } }; if (id == null) this.addEvent({ ...patch, id: `event-${Date.now()}-${++calendarSequence}` }); else this.updateEvent(id, patch); }); });

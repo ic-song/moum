@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {dateValue,DatePickerModel} from '../src/datepicker.js';
+test('strict Gregorian dates and leap years without timezone shifts',()=>{assert.equal(dateValue('2024-02-29')-dateValue('2024-02-28'),86400000);for(const date of ['2023-02-29','2026-04-31','2026-1-01','0000-01-01','not-date'])assert.throws(()=>dateValue(date));});
+test('single selection constraints reject atomically and copies are isolated',()=>{const m=new DatePickerModel({min:'2026-11-01',max:'2026-11-30',disabledWeekdays:[0,6],value:'2026-11-16'});for(const date of ['2026-10-30','2026-11-14','2026-12-01'])assert.throws(()=>m.setValue(date));assert.equal(m.getValue(),'2026-11-16');m.setValue(null);assert.equal(m.getValue(),null);});
+test('range selection sorts second click and starts fresh after complete',()=>{const m=new DatePickerModel({mode:'range'});m.select('2026-11-20');m.select('2026-11-16');assert.deepEqual(m.getValue(),{start:'2026-11-16',end:'2026-11-20'});const copy=m.getValue();copy.start='2000-01-01';assert.equal(m.getValue().start,'2026-11-16');m.select('2026-11-25');assert.deepEqual(m.getValue(),{start:'2026-11-25',end:null});});
+test('range interior exclusions cannot be bypassed through API or reverse selection',()=>{const m=new DatePickerModel({mode:'range',isDateDisabled:d=>d==='2026-11-18'});m.select('2026-11-16');assert.throws(()=>m.select('2026-11-20'));assert.deepEqual(m.getValue(),{start:'2026-11-16',end:null});assert.throws(()=>m.setValue({start:'2020-01-01',end:'2040-01-01'}));});

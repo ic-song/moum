@@ -2,23 +2,28 @@
 
 [![Check](https://github.com/ic-song/moum/actions/workflows/check.yml/badge.svg)](https://github.com/ic-song/moum/actions/workflows/check.yml) [![Browser](https://github.com/ic-song/moum/actions/workflows/browser.yml/badge.svg)](https://github.com/ic-song/moum/actions/workflows/browser.yml) [MIT License](LICENSE)
 
-**개발에 필요한 것들의 모음, MOUM.** 폐쇄망에서도 가져다 쓰는 업무용 JavaScript 도구함입니다. 그리드·차트·간트·업로더·캘린더를 독립 패키지로 제공합니다.
+**개발에 필요한 것들의 모음, MOUM.** 폐쇄망에서도 가져다 쓰는 업무용 JavaScript 도구함입니다. 그리드·차트·간트·업로더·캘린더·날짜 선택·페이지네이션·무한 스크롤을 독립 패키지로 제공합니다.
 
 한글 이름은 **모음**, 영문 브랜드는 **MOUM**입니다. 기존 Moa JS의 그리드 0.7.0과 독립 라이브러리 작업을 통합한 새 저장소입니다. [이름 전환 안내](docs/moum-migration.md)와 [검증 기록](docs/moum-verification.md)을 참고하세요.
 
 | 패키지 | 버전 | 용도 | 예제 | API |
 | --- | --- | --- | --- | --- |
-| `@moum/grid` | 0.7.0 | 표 조회·편집·서버 연결 | [그리드](examples/grid/index.html) | [문서](packages/grid/README.md) |
-| `@moum/charts` | 0.1.0 | SVG 차트 7종·데이터 표·SVG 출력 | [차트](examples/charts/index.html) | [문서](packages/charts/README.md) |
-| `@moum/gantt` | 0.1.0 | 계층·선행 관계·일정/진행률 편집 | [간트](examples/gantt/index.html) | [문서](packages/gantt/README.md) |
-| `@moum/uploader` | 0.1.0 | 파일·Excel/CSV/JSON 파싱·검증·전송 | [업로더](examples/uploader/index.html) | [문서](packages/uploader/README.md) |
-| `@moum/calendar` | 0.1.0 | 월/주/일/목록·일정 편집·반복 | [캘린더](examples/calendar/index.html) | [문서](packages/calendar/README.md) |
+| `@moum/grid` | 0.7.1 | 표 조회·편집·서버 연결 | [그리드](examples/grid/index.html) | [문서](packages/grid/README.md) |
+| `@moum/charts` | 0.2.0 | SVG 차트 9종·데이터 표·SVG 출력 | [차트](examples/charts/index.html) | [문서](packages/charts/README.md) |
+| `@moum/gantt` | 0.2.0 | 계층·선행 일정 조정·미니4종·기간/진행률 | [간트](examples/gantt/index.html) | [문서](packages/gantt/README.md) |
+| `@moum/uploader` | 0.2.0 | 파일·Excel/CSV/JSON 파싱·검증·전송 | [업로더](examples/uploader/index.html) | [문서](packages/uploader/README.md) |
+| `@moum/calendar` | 0.2.0 | 월/주/일/목록·일정 편집·반복 | [캘린더](examples/calendar/index.html) | [문서](packages/calendar/README.md) |
+| `@moum/datepicker` | 0.1.0 | 단일 날짜·기간·제외일·폼 입력 | [날짜 선택](examples/datepicker/index.html) | [문서](packages/datepicker/README.md) |
+| `@moum/pagination` | 0.1.0 | 페이지 이동·크기·서버 조회·재시도 | [페이지](examples/pagination/index.html) | [문서](packages/pagination/README.md) |
+| `@moum/infinite-scroll` | 0.1.0 | 내부 스크롤 목록·커서·자동/수동 로딩 | [무한 스크롤](examples/infinite-scroll/index.html) | [문서](packages/infinite-scroll/README.md) |
 
-각 패키지는 browser JS·ESM·CommonJS·CSS·라이선스를 포함하며 새 네 패키지는 TypeScript 선언도 제공합니다. 서로 런타임 의존성이 없고 npm 등록 전이므로 `npm pack ./packages/<이름>` 또는 파일 복사로 사용합니다. 새 모듈은 각 API 문서 범위의 첫 버전이며 서버 저장·인증은 호스트가 연결합니다.
+[미니 간트 4종 예제](examples/gantt-mini/index.html) · [8개 컴포넌트 현황·고도화 범위·공통 UI/UX](docs/components.md)를 확인하세요.
+
+각 패키지는 browser JS·ESM·CommonJS·CSS·라이선스를 포함하며 grid 외 일곱 패키지는 TypeScript 선언도 제공합니다. 서로 런타임 의존성이 없고 npm 등록 전이므로 `npm pack ./packages/<이름>` 또는 파일 복사로 사용합니다. 각 패키지는 API 문서에 명시한 범위로 제공하며 서버 저장·인증은 호스트가 연결합니다.
 
 코어는 외부 런타임 의존성·CDN·웹폰트·온라인 인증·텔레메트리 없이 실행합니다. XLSX 파일 기능에는 로컬 동봉한 SheetJS Community Edition을 선택적으로 사용합니다. 프레임워크와 분리된 JS·CSS 파일을 제공하며 MOUM 자체 코드는 상업적 사용과 수정·재배포가 가능한 MIT 라이선스입니다. 동봉 라이브러리는 [별도 Apache-2.0 라이선스](packages/grid/THIRD_PARTY_NOTICES.md)를 유지합니다.
 
-그리드는 현재 **0.7.0**으로 미저장 작업 복구와 로컬/서버 페이징·무한 스크롤, 서버 편집·추가·삭제·저장과 Excel 범위 다운로드를 제공합니다. A1 수식·그룹/트리·공개 API 일부 이행 계층도 포함합니다. RealGrid 공식 기능을 참고해 자체 구현하며 원본 코드·리소스를 포함하지 않습니다. RealGrid 전체 기능·API와의 호환성을 보장하지 않습니다. npm에는 아직 등록하지 않았습니다. 새 패키지 간 연결은 [모듈 연결 안내](docs/suite-integration.md)를 참고하세요.
+그리드는 현재 **0.7.1**으로 미저장 작업 복구와 로컬/서버 페이징·무한 스크롤, 서버 편집·추가·삭제·저장과 Excel 범위 다운로드를 제공합니다. A1 수식·그룹/트리·공개 API 일부 이행 계층도 포함합니다. RealGrid 공식 기능을 참고해 자체 구현하며 원본 코드·리소스를 포함하지 않습니다. RealGrid 전체 기능·API와의 호환성을 보장하지 않습니다. npm에는 아직 등록하지 않았습니다. 새 패키지 간 연결은 [모듈 연결 안내](docs/suite-integration.md)를 참고하세요.
 
 ## 다른 프로젝트에서 시작하기
 

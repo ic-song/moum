@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {chartStacks,normalizeChart} from '../src/model.js';
+test('stacked positive and negative series have independent baselines and skip gaps',()=>{const data=normalizeChart({labels:['A','B'],datasets:[{data:[4,-3]},{data:[6,-7]},{data:[-2,null]}]},'stackedBar');const s=chartStacks(data.datasets,2);assert.deepEqual(s.extent,[-10,10]);assert.deepEqual(s.segments[1],[{start:4,end:10},{start:-3,end:-10}]);assert.deepEqual(s.segments[2],[{start:0,end:-2},null]);});

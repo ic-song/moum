@@ -12,7 +12,7 @@ jobs:
         with:
           node-version: 22
       - run: npm run check
-      - run: mkdir -p output/npm && npm pack ./packages/grid ./packages/charts ./packages/gantt ./packages/uploader ./packages/calendar --pack-destination output/npm
+      - run: mkdir -p output/npm && npm pack --workspaces --pack-destination output/npm
       - uses: actions/upload-artifact@v4
         with:
           name: javascript-library-packages

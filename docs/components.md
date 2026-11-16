@@ -1,0 +1,43 @@
+# MOUM 컴포넌트와 공통 UI
+
+각 패키지는 독립 JS/CSS·ESM·CommonJS·라이선스·SHA256SUMS를 제공합니다. grid 외 일곱 패키지는 TypeScript 선언을 포함합니다. **npm 미게시**, 저장소에서 `npm pack ./packages/<이름>` 후 tgz 설치 또는 dist 파일 복사로 사용합니다. 다른 컴포넌트를 설치할 필요가 없습니다. 각 컴포넌트는 비어 있는 요소에 생성하며 화면 제거 시 destroy()로 정리합니다.
+
+| 패키지 | 이번 버전 | 확인한 기존 기능 | 이번 고도화 | 범위 밖 |
+| --- | --- | --- | --- | --- |
+| grid | 0.7.1 | 서버 페이징·무한 목록·편집·복구 | getSelectionStats(), 선택 요약 표시 | 전체 서버 데이터 통계 계산 |
+| charts | 0.2.0 | 7종 SVG·범례·데이터 표·SVG 출력 | stackedBar/stackedHorizontalBar, 양수·음수 독립 누적 | 줌·팬·복합/이중 축·PNG/PDF |
+| gantt | 0.2.0 | 계층·FS 연결·편집·undo | 명시적 선행 일정 조정/undo, 미니4종·동일 기간 비교 | 업무일·자원·임계 경로·SS/FF/SF |
+| uploader | 0.2.0 | Excel/CSV·매핑·편집·오류 CSV·재시도 | uploadConcurrency, cancelAll | 서버 중복 수신 방지·대용량 백그라운드 파싱 |
+| calendar | 0.2.0 | 4개 보기·반복·겹침·편집 | 특정 반복 회차 제외·복원과 undo | 특정 회차 시간/내용 분리 편집·외부 캘린더 동기화 |
+| datepicker | 0.1.0 | 신규 | 단일/기간·제외일·키보드·폼 입력 | 시간 선택·팝업·음력 |
+| pagination | 0.1.0 | 신규 | 번호/크기·서버 조회·오류/재시도·요청 경합 처리 | API 인증·필터·라우터 |
+| infinite-scroll | 0.1.0 | 신규 | 내부 목록·자동/수동·커서·취소·한도 | 가상화·스크롤 위치 영구 복원 |
+
+이번 고도화는 위 계약의 범위입니다. 모든 라이브러리의 가능한 기능이 완료됐다는 의미는 아닙니다. 기존 미지원 범위는 각 README와 그리드 feature-catalog에 계속 명시합니다.
+
+## 하나의 UI 기준, 독립 배포
+
+`styles/components.css`가 공통 원본이며 빌드 시 **각 패키지 CSS에 포함**됩니다. 별도 theme 패키지·네트워크 의존성·전역 body 스타일이 없습니다. 글꼴·본문 크기(14px/1.6)·숫자 정렬·테두리·반경(4px)·녹색 포커스를 통일합니다. 신규 일반 컨트롤은 최소44px이며 기존 그리드의 표 셀/리사이즈·캘린더 시간 블록 등 정보 밀도가 필요한 요소는 전용 크기를 유지합니다. 범례 선택, 현재 페이지, 날짜 선택은 각 기능의 의미에 맞게 표시하며 선택하지 않은 범례의 취소선도 유지합니다.
+
+호스트 또는 컴포넌트에 공통 토큰을 설정합니다. 모든 CSS를 불러와도 중복 기본값이 호스트 테마를 덮지 않습니다.
+
+```css
+.business-panel {
+  --moum-ui-action: #075978;
+  --moum-ui-ink: #20343d;
+  --moum-ui-paper: white;
+  --moum-ui-line: #cbd5d9;
+  --moum-ui-tint: #e8f2f6;
+  --moum-ui-radius: 6px;
+  --moum-ui-control: 44px;
+  --moum-ui-font: 14px/1.6 "Malgun Gothic", sans-serif;
+}
+```
+
+부품별 기존 CSS 변수도 남아 있지만 공통 토큰과 동시에 지정하면 공통 테마가 기준입니다. 그리드 행 높이·간트 행 높이·캘린더 시간 높이 등 레이아웃 변수는 기존 방식으로 조정하세요. 다크 테마는 자동 제공하지 않으며 호스트에서 전체 토큰과 차트 계열 색상 대비를 검증해야 합니다.
+
+## 호스트와의 연결
+
+DatePicker onChange로 조회 조건을 바꾼 뒤 Pagination.reload() 또는 InfiniteScroll.reset()을 호출합니다. Pagination.onChange의 data로 그리드 setData를 연결하거나 일반 목록을 그립니다. InfiniteScroll은 자체 목록 UI가 있으므로 그리드의 가상화와 중첩하지 않는 구성을 권장합니다. Calendar의 종일 종료일은 제외, DatePicker 기간과 Gantt 종료일은 포함이므로 연결 시 하루를 조정하세요.
+
+React는 effect에서 생성하고 cleanup에서 destroy(), Vue는 mounted 생성·beforeUnmount 정리합니다. 서버 렌더링 시 브라우저 안에서만 생성하세요. 로더에 전달된 AbortSignal을 fetch에 넘기고 HTTP 상태를 검사하세요. 취소는 서버 처리 취소를 보장하지 않습니다.

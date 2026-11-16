@@ -19,6 +19,7 @@ export declare class CalendarModel {
   addEvent(event: CalendarEvent): void;
   updateEvent(id: string | number, patch: Partial<CalendarEvent>): void;
   removeEvent(id: string | number): void;
+  setOccurrenceExcluded(id: string | number, date: string, excluded?: boolean): void;
   getOccurrences(range: CalendarRange): CalendarOccurrence[];
   undo(): boolean;
   redo(): boolean;
@@ -31,6 +32,7 @@ export declare class Calendar {
   addEvent(event: CalendarEvent): void;
   updateEvent(id: string | number, patch: Partial<CalendarEvent>): void;
   removeEvent(id: string | number): void;
+  setOccurrenceExcluded(id: string | number, date: string, excluded?: boolean): void;
   setView(view: CalendarView): void;
   setDate(date: string): void;
   undo(): void;

@@ -1,4 +1,4 @@
-/*! MOUM gantt v0.1.0 | MIT License | See LICENSE */
+/*! MOUM gantt v0.2.0 | MIT License | See LICENSE */
 'use strict';
 const ganttDay = 86400000;
 function ganttDate(value) {
@@ -8,6 +8,12 @@ function ganttDate(value) {
   return ms;
 }
 function shiftGanttDate(value, days) { return new Date(ganttDate(value) + days * ganttDay).toISOString().slice(0, 10); }
+function ganttSummary(tasks) {
+  const data=normalizeTasks(tasks);if(!data.length)return null;
+  const parents=new Set(data.map(t=>t.parentId).filter(id=>id!==null)),leaves=data.filter(t=>!parents.has(t.id)),work=leaves.filter(t=>t.type!=='milestone'),weighted=work.length?work:leaves;
+  let weight=0,completed=0;for(const task of weighted){const days=work.length?(ganttDate(task.end)-ganttDate(task.start))/ganttDay+1:1;weight+=days;completed+=days*task.progress;}
+  return {start:data.reduce((d,t)=>t.start<d?t.start:d,data[0].start),end:data.reduce((d,t)=>t.end>d?t.end:d,data[0].end),progress:Math.round(completed/weight*100)/100,taskCount:work.length,milestoneCount:leaves.filter(t=>t.type==='milestone').length};
+}
 function normalizeTasks(tasks) {
   if (!Array.isArray(tasks) || tasks.length > 3000) throw new RangeError('작업은 최대 3,000개까지 사용할 수 있습니다.');
   const ids = new Set();
@@ -46,6 +52,15 @@ class GanttModel {
   setTasks(tasks) { this.tasks = normalizeTasks(tasks); this.past = []; this.future = []; }
   updateTask(id, patch) { if (!this.tasks.some(t => t.id === String(id))) throw new Error('작업을 찾을 수 없습니다.'); if (patch.id != null && String(patch.id) !== String(id)) throw new Error('작업 id는 변경할 수 없습니다.'); return this.commit(this.tasks.map(t => t.id === String(id) ? { ...t, ...patch } : t)); }
   addTask(task) { return this.commit([...this.tasks, task]); }
+  scheduleDependencies() {
+    const tasks=this.getTasks(), byId=new Map(tasks.map(t=>[t.id,t])), done=new Set();
+    const visit=id=>{if(done.has(id))return;const task=byId.get(id);for(const dep of task.dependencies)visit(dep);
+      const required=Math.max(ganttDate(task.start),...task.dependencies.map(dep=>ganttDate(byId.get(dep).end)+ganttDay));
+      if(required>ganttDate(task.start)){const duration=ganttDate(task.end)-ganttDate(task.start);task.start=new Date(required).toISOString().slice(0,10);task.end=new Date(required+duration).toISOString().slice(0,10);}done.add(id);};
+    for(const task of tasks)visit(task.id);
+    if(tasks.some((t,i)=>t.start!==this.tasks[i].start||t.end!==this.tasks[i].end))return this.commit(tasks);
+    return this.getTasks();
+  }
   removeTask(id) { id = String(id); if (!this.tasks.some(t => t.id === id)) throw new Error('작업을 찾을 수 없습니다.'); if (this.tasks.some(t => t.parentId === id)) throw new Error('하위 작업을 먼저 삭제하세요.'); return this.commit(this.tasks.filter(t => t.id !== id).map(t => ({ ...t, dependencies: t.dependencies.filter(d => d !== id) }))); }
   undo() { if (!this.past.length) return false; this.future.push(this.getTasks()); this.tasks = this.past.pop(); return true; }
   redo() { if (!this.future.length) return false; this.past.push(this.getTasks()); this.tasks = this.future.pop(); return true; }
@@ -56,13 +71,27 @@ class GanttModel {
 function ganttEl(tag, text, cls) { const el = document.createElement(tag); if (text != null) el.textContent = text; if (cls) el.className = cls; return el; }
 function ganttSvg(tag, attrs) { const el = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v); return el; }
 const ganttScales = { day: 36, week: 12, month: 4 };
+function miniGanttRange(range) {
+  if(range==null)return null;
+  const start=ganttDate(range.start),end=ganttDate(range.end);
+  if(end<start||end-start>3650*ganttDay)throw new RangeError('미니 간트 범위는 종료일 포함, 최대10년입니다.');
+  return {start:range.start,end:range.end};
+}
+function miniGanttOptions(options={}) {
+  if(options!=null&&(typeof options!=='object'||Array.isArray(options)))throw new TypeError('mini 옵션은 객체입니다.');
+  const type=options?.type??'bars';if(!['bars','compact','summary','milestones'].includes(type))throw new TypeError('미니 타입은 bars/compact/summary/milestones입니다.');
+  const result={header:type!=='compact',labels:type!=='compact',status:type!=='compact',...options,type};
+  for(const key of ['header','labels','status'])if(typeof result[key]!=='boolean')throw new TypeError(`mini.${key}는 boolean입니다.`);
+  return result;
+}
 let ganttSequence = 0;
 class Gantt {
   constructor(target, options = {}) {
     this.target = typeof target === 'string' ? document.querySelector(target) : target;
     if (!this.target || this.target.childNodes.length) throw new Error('비어 있는 간트 컨테이너가 필요합니다.');
     if (options.scale && !ganttScales[options.scale]) throw new Error('scale은 day/week/month입니다.');
-    this.options = { scale: 'day', editable: true, ...options }; this.model = new GanttModel(options.tasks || []); this.collapsed = new Set(); this.selected = null; this.sequence = ++ganttSequence;
+    if(options.view!=null&&!['full','mini'].includes(options.view))throw new TypeError('view는 full 또는 mini입니다.');
+    this.options = { scale: 'day', editable: true, view:'full', ...options, range:miniGanttRange(options.range), mini:miniGanttOptions(options.mini) };this.miniOverrides={...options.mini}; this.model = new GanttModel(options.tasks || []); this.collapsed = new Set(); this.selected = null; this.sequence = ++ganttSequence;
     this.root = ganttEl('section', null, 'moum-gantt'); this.root.setAttribute('aria-label', options.title || '작업 일정'); this.target.append(this.root); this.render();
   }
   active() { if (this.destroyed) throw new Error('이미 제거된 간트입니다.'); }
@@ -71,8 +100,14 @@ class Gantt {
   setTasks(tasks) { this.active(); this.model.setTasks(tasks); this.selected = null; this.collapsed.clear(); this.render(); }
   updateTask(id, patch) { this.active(); this.model.updateTask(id, patch); this.changed('update', String(id)); }
   addTask(task) { this.active(); this.model.addTask(task); this.changed('add', String(task.id)); }
+  scheduleDependencies() { this.active(); this.model.scheduleDependencies(); this.changed('schedule'); }
   removeTask(id) { this.active(); this.model.removeTask(id); if (this.selected === String(id)) this.selected = null; this.changed('remove', String(id)); }
   setScale(scale) { this.active(); if (!ganttScales[scale]) throw new Error('scale은 day/week/month입니다.'); this.options.scale = scale; this.render(); }
+  setView(view) { this.active();if(!['full','mini'].includes(view))throw new TypeError('view는 full 또는 mini입니다.');this.options.view=view;this.render(); }
+  setMiniType(type) { this.active();const overrides={...this.miniOverrides,type},next=miniGanttOptions(overrides);this.miniOverrides=overrides;this.options.mini=next;this.render(); }
+  getSummary() { return ganttSummary(this.model.tasks); }
+  setRange(range) { this.active();const next=miniGanttRange(range);this.options.range=next;this.render(); }
+  getRange() { if(this.options.range)return {...this.options.range};const tasks=this.model.tasks;if(!tasks.length)return null;return {start:tasks.reduce((d,t)=>t.start<d?t.start:d,tasks[0].start),end:tasks.reduce((d,t)=>t.end>d?t.end:d,tasks[0].end)}; }
   undo() { this.active(); if (this.model.undo()) this.changed('undo'); }
   redo() { this.active(); if (this.model.redo()) this.changed('redo'); }
   changed(type, id) { this.render(); this.options.onChange?.({ type, id, tasks: this.getTasks(), warnings: this.getWarnings() }); }
@@ -81,13 +116,18 @@ class Gantt {
     const rows = [], tasks = this.model.tasks;
     const walk = (parent, depth) => { for (const task of tasks.filter(t => t.parentId === parent)) { rows.push({ ...task, depth }); if (!this.collapsed.has(task.id)) walk(task.id, depth + 1); } }; walk(null, 0); return rows;
   }
-  selectTask(id) { this.selected = id; this.render(); this.options.onSelect?.(this.getTasks().find(t => t.id === id)); }
+  selectTask(id) { this.active();id=String(id);const task=this.getTasks().find(t=>t.id===id);if(!task)throw new Error('작업을 찾을 수 없습니다.');this.selected = id; this.render(); this.options.onSelect?.(task); }
   render() {
     const oldScroll = this.scroll ? { left: this.scroll.scrollLeft, top: this.scroll.scrollTop } : null;
     this.cancelDrag?.(); this.root.replaceChildren();
+    this.root.classList.toggle('moum-gantt-mini',this.options.view==='mini');
+    this.root.classList.toggle('moum-gantt-mini--no-labels',this.options.view==='mini'&&!this.options.mini.labels);
+    this.root.classList.toggle('moum-gantt-mini--compact',this.options.view==='mini'&&this.options.mini.type==='compact');
+    if(this.options.view==='mini'){this.scroll=null;this.renderMini();return;}
     const toolbar = ganttEl('div', null, 'moum-gantt-toolbar');
     const scaleLabel = ganttEl('label', '시간 단위 '), scale = ganttEl('select'); scale.setAttribute('aria-label', '시간 단위'); for (const [value, label] of Object.entries({ day: '일', week: '주', month: '월' })) { const o = ganttEl('option', label); o.value = value; scale.append(o); } scale.value = this.options.scale; scale.addEventListener('change', () => this.setScale(scale.value)); scaleLabel.append(scale); toolbar.append(scaleLabel);
     if (this.options.editable) for (const [label, action, disabled] of [['되돌리기', () => this.undo(), !this.model.past.length], ['다시 실행', () => this.redo(), !this.model.future.length]]) { const b = ganttEl('button', label); b.type = 'button'; b.disabled = disabled; b.addEventListener('click', action); toolbar.append(b); }
+    if(this.options.editable){const b=ganttEl('button','선행 일정 맞추기');b.type='button';b.addEventListener('click',()=>this.attempt(()=>this.scheduleDependencies()));toolbar.append(b);}
     this.root.append(toolbar);
     this.status = ganttEl('p', this.getWarnings().map(w => w.message).join(' ') || '작업을 선택해 날짜와 진행률을 확인하세요.', 'moum-gantt-status'); this.status.setAttribute('aria-live', 'polite');
     if (!this.model.tasks.length) { this.root.append(ganttEl('p', '표시할 작업이 없습니다. tasks 데이터로 작업을 추가하세요.', 'moum-gantt-empty'), this.status); return; }
@@ -130,6 +170,34 @@ class Gantt {
     if (oldScroll) { scroll.scrollLeft = oldScroll.left; scroll.scrollTop = oldScroll.top; }
     const selected = this.model.tasks.find(t => t.id === this.selected); if (selected) this.renderEditor(selected);
   }
+  renderMini() {
+    const options=this.options.mini,range=this.getRange();this.root.dataset.miniType=options.type;
+    if(options.header){const header=ganttEl('div',null,'moum-gantt-mini-header');header.append(ganttEl('strong',this.options.title||'작업 일정'));if(range)header.append(ganttEl('span',`${range.start} ~ ${range.end}`));this.root.append(header);}
+    this.status=ganttEl('p',this.getWarnings().length?`선행 일정 충돌 ${this.getWarnings().length}건`:'작업을 선택하면 일정과 진행률을 확인할 수 있습니다.','moum-gantt-status');this.status.setAttribute('role','status');
+    if(!this.model.tasks.length){this.root.append(ganttEl('p','표시할 작업이 없습니다.','moum-gantt-empty'));if(options.status)this.root.append(this.status);return;}
+    const first=ganttDate(range.start),last=ganttDate(range.end)+ganttDay,total=last-first,list=ganttEl('div',null,'moum-gantt-mini-list');
+    if(options.type==='summary'){
+      const summary=this.getSummary(),row=ganttEl('div',null,'moum-gantt-mini-row');if(options.labels)row.append(ganttEl('span','전체 진행','moum-gantt-mini-name'));
+      const track=ganttEl('div',null,'moum-gantt-mini-track');track.setAttribute('role','progressbar');track.setAttribute('aria-label',`전체 ${summary.taskCount}개 말단 작업, 마일스톤 ${summary.milestoneCount}개 진행률`);track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');track.setAttribute('aria-valuenow',String(summary.progress));track.title=`${summary.start} ~ ${summary.end} · ${summary.progress}%`;
+      const start=ganttDate(summary.start),end=ganttDate(summary.end)+ganttDay,a=Math.max(start,first),b=Math.min(end,last);
+      if(b>a){const bar=ganttEl('span',null,'moum-gantt-mini-bar');bar.style.left=`${(a-first)/total*100}%`;bar.style.width=`${(b-a)/total*100}%`;const fill=ganttEl('span',null,'moum-gantt-mini-progress');fill.style.width=`${Math.max(0,Math.min(1,(start+(end-start)*summary.progress/100-a)/(b-a)))*100}%`;bar.append(fill,ganttEl('span',`${summary.progress}%`,'moum-gantt-mini-progress-text'));track.append(bar);}else track.append(ganttEl('span','범위 밖','moum-gantt-mini-outside'));
+      row.append(track);list.append(row);this.root.append(list);if(options.status){this.status.textContent=`작업 ${summary.taskCount}개 · 마일스톤 ${summary.milestoneCount}개 · 기간 가중 진행률 ${summary.progress}%`;this.root.append(this.status);}return;
+    }
+    const tasks=options.type==='milestones'?this.model.tasks.filter(t=>t.type==='milestone'):this.model.tasks;
+    if(!tasks.length)list.append(ganttEl('p','표시할 마일스톤이 없습니다.','moum-gantt-empty'));
+    for(const task of tasks){
+      const row=ganttEl('div',null,'moum-gantt-mini-row');if(options.labels){const name=ganttEl('span',task.name,'moum-gantt-mini-name');name.title=task.name;row.append(name);}
+      const start=ganttDate(task.start),end=ganttDate(task.end)+ganttDay,visible=end>first&&start<last,track=ganttEl('button',null,'moum-gantt-mini-track');track.type='button';track.dataset.miniTask=task.id;track.disabled=!visible;track.setAttribute('aria-pressed',String(this.selected===task.id));track.setAttribute('aria-label',`${task.name}, ${task.start} ~ ${task.end}, 진행률 ${task.progress}%${visible?'':', 표시 범위 밖'}`);track.title=track.getAttribute('aria-label');
+      if(visible){const bar=ganttEl('span',null,'moum-gantt-mini-bar');bar.setAttribute('aria-hidden','true');
+        if(task.type==='milestone'){bar.classList.add('is-milestone');bar.textContent='◆';bar.style.left=`calc(${((start+ganttDay/2-first)/total)*100}% - 7px)`;}
+        else {const a=Math.max(start,first),b=Math.min(end,last);bar.style.left=`${(a-first)/total*100}%`;bar.style.width=`${(b-a)/total*100}%`;const progress=ganttEl('span',null,'moum-gantt-mini-progress'),completed=start+(end-start)*task.progress/100;progress.style.width=`${Math.max(0,Math.min(1,(completed-a)/(b-a)))*100}%`;bar.append(progress,ganttEl('span',`${task.progress}%`,'moum-gantt-mini-progress-text'));}
+        track.append(bar);
+      }else track.append(ganttEl('span','범위 밖','moum-gantt-mini-outside'));
+      track.addEventListener('click',()=>this.attempt(()=>{this.selectTask(task.id);[...this.root.querySelectorAll('[data-mini-task]')].find(e=>e.dataset.miniTask===task.id)?.focus();const selected=this.getTasks().find(t=>t.id===task.id);this.status.textContent=`${selected.name} · ${selected.start} ~ ${selected.end} · ${selected.progress}%`; }));
+      row.append(track);list.append(row);
+    }
+    this.root.append(list);if(options.status)this.root.append(this.status);
+  }
   startDrag(event, task, dayWidth, resize) {
     if (event.button !== 0) return;
     const startX = event.clientX, bar = event.currentTarget.closest('.moum-gantt-bar'), initial = parseFloat(bar.style.left), width = parseFloat(bar.style.width); let delta = 0;
@@ -148,4 +216,4 @@ class Gantt {
   destroy() { if (this.destroyed) return; this.cancelDrag?.(); this.destroyed = true; this.root.remove(); }
 }
 
-module.exports = { ganttDay, ganttDate, shiftGanttDate, normalizeTasks, GanttModel, Gantt };
+module.exports = { ganttDay, ganttDate, shiftGanttDate, ganttSummary, normalizeTasks, GanttModel, Gantt };

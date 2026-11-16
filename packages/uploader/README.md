@@ -1,4 +1,4 @@
-# @moum/uploader 0.1.0
+# @moum/uploader 0.2.0
 
 파일 선택/드롭 → 로컬 파싱 → 시트/헤더 선택 → 열 매핑 → 행 검증 → 미리보기 → 명시적 서버 전송. MOUM Grid 없이 독립 실행하며 결과를 선택적으로 그리드에 넘깁니다.
 
@@ -62,3 +62,7 @@ uploadTimeout(기본 120000ms)은 사용자 전송 함수가 종료하지 않아
 콜백: onChange(files), onUploaded({id,file,result}), onError({id,error}). parseUploadFile/parseDelimited/tableFromSheet/validateUploadTable는 UI 없이도 사용합니다. index.d.ts에 전체 타입이 있습니다. 비어 있는 요소에 생성하고 destroy에서 전송 중단/Blob URL 해제를 수행합니다.
 
 [오프라인 예제](../../examples/uploader/index.html): 정상/오류 Excel·CSV·시트 선택·열 매핑·JSON/오류 CSV 다운로드·그리드 연결. 서버 전송은 연결하지 않았습니다. CSS는 `.moum-uploader`와 `--moum-upload-*` 변수로 제한됩니다.
+
+## 0.2.0 동시 전송과 전체 취소
+
+`uploadConcurrency:1`이 기본이며 1~6을 지정할 수 있습니다. uploadAll은 호출 당시 검증된 큐를 worker로 나눠 전송하고 중복 uploadAll 호출은 같은 배치 완료를 기다립니다. `cancelAll()`과 전체 전송 취소 버튼은 진행 중 전송을 취소하고 배치의 아직 시작하지 않은 파일은 남겨둡니다. clear/destroy 후 미시작 전송은 실행하지 않습니다. 개별 upload()를 호스트가 별도로 실행하면 배치 제한과 별개이므로 동시성 통제 시 uploadAll을 사용하세요. 취소가 서버의 수신·처리 취소를 보장하지는 않습니다.

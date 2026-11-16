@@ -18,7 +18,10 @@
     "test:browser": "node scripts/browser-check.mjs && node scripts/browser-advanced-check.mjs && node scripts/browser-followup-check.mjs && node scripts/browser-paging-check.mjs && node scripts/browser-server-check.mjs && node scripts/browser-edit-check.mjs",
     "test:recovery": "node scripts/browser-recovery-check.mjs",
     "test:resilience": "node scripts/browser-resilience-check.mjs",
-    "test:usage": "node scripts/prepare-usage-check.mjs && node scripts/browser-usage-check.mjs"
+    "test:usage": "node scripts/prepare-usage-check.mjs && node scripts/browser-usage-check.mjs",
+    "test:components-browser": "node scripts/browser-components-check.mjs",
+    "test:packages": "node scripts/prepare-suite-packages.mjs",
+    "test:mini-gantt": "node scripts/browser-mini-gantt-check.mjs"
   },
   "engines": {
     "node": ">=22"

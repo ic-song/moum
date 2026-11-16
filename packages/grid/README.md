@@ -1,4 +1,4 @@
-# @moum/grid 0.7.0
+# @moum/grid 0.7.1
 
 폐쇄망용 데이터 그리드입니다. 코어는 외부 런타임 의존성이 없으며, XLSX 파일 기능만 동봉한 SheetJS Community Edition 0.20.3을 선택적으로 사용합니다. npm에는 아직 등록하지 않았습니다.
 
@@ -145,3 +145,7 @@ XLSX 기본 내보내기는 현재 표시 행만 포함합니다. 접힌 그룹�
 ## 0.7 미저장 복구
 
 `recovery:{key:'계정:업무:문서',schemaVersion:'1'}`을 켜면 입력/변경마다 IndexedDB에 보관합니다. `await recoveryReady`, `getRecoveryState()`, `flushDraft()`, `restoreDraft()`, `discardDraft()`, `downloadDraft()`를 제공합니다. 로컬 저장 완료는 `markSaved()`, 기준점 복원은 `discardChanges()`입니다. 서버 미확정 요청은 원래 ID로 재확인하며 복구 시 자동 전송하지 않습니다. 마지막 임시 저장 완료본만 복구하며 Undo/뷰 설정은 제외합니다. [키/스키마·용량/종료 보장·API](https://github.com/ic-song/moum/blob/main/docs/recovery.md)를 먼저 확인하세요.
+
+## 0.7.1 선택 범위 통계
+
+`getSelectionStats()`는 현재 로드·표시된 선택 범위의 `{count,numericCount,sum,average,min,max}`를 반환합니다. count는 비어 있지 않은 셀, 숫자는 유한한 number만 집계하며 문자열 숫자는 변환하지 않습니다. 숫자가 없으면 평균/최소/최대는 null입니다. `selectionSummary:true`를 지정하면 하단에 숫자 개수·합계·평균을 표시합니다(기본 꺼짐). 서버 전체 결과가 아닌 현재 표시 범위 통계이며 큰 범위 반복 계산 비용은 호스트에서 고려하세요.

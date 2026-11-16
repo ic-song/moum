@@ -1,0 +1,13 @@
+.moum-datepicker { max-width: 480px; }
+.moum-datepicker-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+.moum-datepicker-grid { width:100%; table-layout:fixed; border-collapse:collapse; margin-block:12px; }
+.moum-datepicker-grid th { font-weight:600; padding-block:8px; }
+.moum-datepicker-grid td { padding:1px; text-align:center; }
+.moum-datepicker-grid button { width:100%; min-width:0; padding:8px 0; border-color:transparent; }
+.moum-datepicker-grid button[data-outside="true"] { text-decoration:underline dotted; }
+.moum-datepicker-grid button[aria-disabled="true"] { opacity:.45; cursor:default; }
+.moum-datepicker-grid button[data-in-range="true"] { background:var(--moum-theme-tint); }
+.moum-datepicker-grid button[aria-pressed="true"] { background:var(--moum-theme-action); color:white; }
+.moum-datepicker-fields { display:flex; flex-wrap:wrap; gap:8px; align-items:end; }
+.moum-datepicker-fields label { display:flex; flex-direction:column; max-width:100%; gap:4px; }
+@media(max-width:480px) { .moum-datepicker { padding:8px; } }

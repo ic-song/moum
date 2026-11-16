@@ -1,0 +1,35 @@
+{
+  "name": "@moum/pagination",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "페이지 이동 및 서버 조회",
+  "license": "MIT",
+  "main": "dist/moum-pagination.cjs",
+  "module": "dist/moum-pagination.mjs",
+  "browser": "dist/moum-pagination.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/moum-pagination.mjs",
+      "require": "./dist/moum-pagination.cjs"
+    },
+    "./style.css": "./dist/moum-pagination.css"
+  },
+  "files": [
+    "dist",
+    "index.d.ts",
+    "README.md",
+    "LICENSE",
+    "SHA256SUMS.txt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ic-song/moum.git",
+    "directory": "packages/pagination"
+  },
+  "homepage": "https://github.com/ic-song/moum/tree/main/packages/pagination",
+  "bugs": {
+    "url": "https://github.com/ic-song/moum/issues"
+  }
+}

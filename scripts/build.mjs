@@ -20,7 +20,7 @@ const compat = (await readText(path.join(grid, 'src/realgrid-compat.js'))).repla
 await writeFile(path.join(grid, 'dist/moum-realgrid.mjs'), banner + "import { Grid, GridModel } from './moum-grid.mjs';\n" + compat);
 await writeFile(path.join(grid, 'dist/moum-realgrid.cjs'), banner + "const { Grid, GridModel } = require('./moum-grid.cjs');\n" + compat.replace(/^export /gm, '') + '\nmodule.exports = { LocalDataProvider, GridView, UnsupportedFeatureError, compatibility };\n');
 await writeFile(path.join(grid, 'dist/moum-realgrid.js'), banner + '(function () {\n\'use strict\';\n' + plain + '\n' + compat.replace(/^export /gm, '') + '\nglobalThis.MoumRealGrid = { LocalDataProvider, GridView, UnsupportedFeatureError, compatibility };\n})();\n');
-await writeFile(path.join(grid, 'dist/moum-grid.css'), await readText(path.join(grid, 'src/grid.css')));
+await writeFile(path.join(grid, 'dist/moum-grid.css'), await readText(path.join(grid, 'src/grid.css')) + '\n' + await readText(path.join(root, 'styles/components.css')));
 await writeFile(path.join(grid, 'LICENSE'), await readText(path.join(root, 'LICENSE')));
 const notices = path.join(grid, 'THIRD_PARTY_NOTICES.md');
 await writeFile(notices, await readText(notices));

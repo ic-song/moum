@@ -82,6 +82,13 @@ export class CalendarModel {
   addEvent(event) { this.commit([...this.events, event]); }
   updateEvent(id, patch) { id = String(id); if (!this.events.some(e => e.id === id)) throw new Error('일정을 찾을 수 없습니다.'); if (patch.id != null && String(patch.id) !== id) throw new Error('일정 id는 변경할 수 없습니다.'); this.commit(this.events.map(e => e.id === id ? { ...e, ...patch } : e)); }
   removeEvent(id) { id = String(id); if (!this.events.some(e => e.id === id)) throw new Error('일정을 찾을 수 없습니다.'); this.commit(this.events.filter(e => e.id !== id)); }
+  setOccurrenceExcluded(id,date,excluded=true) {
+    calendarDate(date);id=String(id);const event=this.events.find(e=>e.id===id);
+    if(!event?.recurrence)throw new Error('반복 일정이 필요합니다.');
+    const occurrences=expandCalendarEvents([{...event,exceptions:[]}],{start:date,end:addCalendarDays(date,1)});
+    if(!occurrences.some(e=>e.start.slice(0,10)===date))throw new Error('해당 날짜에 시작하는 반복 회차가 없습니다.');
+    const exceptions=event.exceptions.filter(d=>d!==date);if(excluded)exceptions.push(date);this.updateEvent(id,{exceptions});
+  }
   getOccurrences(range) { return expandCalendarEvents(this.events, range); }
   undo() { if (!this.past.length) return false; this.future.push(this.getEvents()); this.events = this.past.pop(); return true; }
   redo() { if (!this.future.length) return false; this.past.push(this.getEvents()); this.events = this.future.pop(); return true; }

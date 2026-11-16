@@ -9,7 +9,10 @@ const modules = {
   charts: { entry: 'Charts', global: 'MoumCharts', parts: ['model', 'charts'] },
   gantt: { entry: 'Gantt', global: 'MoumGantt', parts: ['model', 'gantt'] },
   uploader: { entry: 'Uploader', global: 'MoumUploader', parts: ['parser', 'transport', 'uploader'] },
-  calendar: { entry: 'Calendar', global: 'MoumCalendar', parts: ['model', 'calendar'] }
+  calendar: { entry: 'Calendar', global: 'MoumCalendar', parts: ['model', 'calendar'] },
+  datepicker: { entry: 'DatePicker', global: 'MoumDatePicker', parts: ['datepicker'] },
+  pagination: { entry: 'Pagination', global: 'MoumPagination', parts: ['pagination'] },
+  'infinite-scroll': { entry: 'InfiniteScroll', global: 'MoumInfiniteScroll', parts: ['infinite-scroll'] }
 };
 for (const [name, config] of Object.entries(modules)) {
   const dir = path.join(root, 'packages', name), metadata = JSON.parse(await readFile(path.join(dir, 'package.json'), 'utf8'));
@@ -23,7 +26,7 @@ for (const [name, config] of Object.entries(modules)) {
   await save(`dist/moum-${name}.mjs`, banner + source + `\nexport default ${config.entry};\n`);
   await save(`dist/moum-${name}.cjs`, banner + `'use strict';\n${plain}\nmodule.exports = { ${names.join(', ')} };\n`);
   await save(`dist/moum-${name}.js`, banner + `(function () {\n'use strict';\n${plain}\nglobalThis.${config.global} = ${config.entry};\nObject.assign(globalThis.${config.global}, { ${names.filter(n => n !== config.entry).join(', ')} });\n})();\n`);
-  await save(`dist/moum-${name}.css`, (await readFile(path.join(dir, 'src', `${name}.css`), 'utf8')).replace(/\r\n?/g, '\n'));
+  await save(`dist/moum-${name}.css`, (await readFile(path.join(dir, 'src', `${name}.css`), 'utf8')).replace(/\r\n?/g, '\n') + '\n' + (await readFile(path.join(root, 'styles/components.css'), 'utf8')).replace(/\r\n?/g, '\n'));
   await save('LICENSE', (await readFile(path.join(root, 'LICENSE'), 'utf8')).replace(/\r\n?/g, '\n'));
   if (name === 'uploader') {
     await mkdir(path.join(dir, 'vendor/sheetjs'), { recursive: true });

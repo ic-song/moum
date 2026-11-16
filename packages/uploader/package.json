@@ -1,6 +1,6 @@
 {
   "name": "@moum/uploader",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Independent file queue with Excel/CSV/JSON parsing, preview, mapping, validation and cancellable upload.",
   "license": "MIT",

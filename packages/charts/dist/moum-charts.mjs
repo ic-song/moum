@@ -1,5 +1,15 @@
-/*! MOUM charts v0.1.0 | MIT License | See LICENSE */
-export const chartTypes = Object.freeze(['bar', 'horizontalBar', 'line', 'area', 'pie', 'donut', 'scatter']);
+/*! MOUM charts v0.2.0 | MIT License | See LICENSE */
+export const chartTypes = Object.freeze(['bar', 'horizontalBar', 'stackedBar', 'stackedHorizontalBar', 'line', 'area', 'pie', 'donut', 'scatter']);
+
+export function chartStacks(datasets, count) {
+  const positive = Array(count).fill(0), negative = Array(count).fill(0);
+  const segments = datasets.map(series => series.data.map((value, i) => {
+    if (value == null) return null;
+    const totals = value >= 0 ? positive : negative, start = totals[i]; totals[i] += value;
+    return { start, end: totals[i] };
+  }));
+  return { segments, extent: chartExtent([...positive, ...negative]) };
+}
 
 export function normalizeChart(data, type = 'bar') {
   if (!chartTypes.includes(type)) throw new TypeError(`지원하지 않는 차트: ${type}`);
@@ -99,9 +109,10 @@ export class Charts {
   drawCartesian(svg) {
     const m = this.metrics, w = m.width - m.left - m.right, h = m.height - m.top - m.bottom;
     const visible = this.data.datasets.map((s, i) => ({ ...s, index: i })).filter(s => !this.hidden.has(s.index));
-    const scatter = this.options.type === 'scatter', horizontal = this.options.type === 'horizontalBar';
+    const scatter = this.options.type === 'scatter', horizontal = ['horizontalBar','stackedHorizontalBar'].includes(this.options.type), stacked = this.options.type.startsWith('stacked');
+    const stacks = stacked ? chartStacks(visible, this.data.labels.length) : null;
     const values = visible.flatMap(s => s.data.filter(v => v != null).map(v => scatter ? v.y : v));
-    const [min, max] = chartExtent(values), y = value => m.top + h - (value - min) / (max - min) * h;
+    const [min, max] = stacks ? stacks.extent : chartExtent(values), y = value => m.top + h - (value - min) / (max - min) * h;
     const [xmin, xmax] = scatter ? chartExtent(visible.flatMap(s => s.data.filter(Boolean).map(v => v.x)), false) : [0, 1];
     const n = this.data.labels.length, step = (horizontal ? h : w) / Math.max(1, n);
     for (let tick = 0; tick <= 4; tick++) {
@@ -122,10 +133,11 @@ export class Charts {
       series.data.forEach((value, index) => {
         if (value == null) { if (segment.length) segments.push(segment); segment = []; return; }
         const px = scatter ? m.left + (value.x - xmin) / (xmax - xmin) * w : m.left + step * (index + .5), py = y(scatter ? value.y : value);
-        if (['bar', 'horizontalBar'].includes(this.options.type)) {
-          const thickness = step * .8 / Math.max(1, visible.length), offset = step * .1 + si * thickness;
-          const a = m.left + (value - min) / (max - min) * w, zero = m.left + (0 - min) / (max - min) * w;
-          this.mark(svg, 'rect', horizontal ? { x: Math.min(a, zero), y: m.top + index * step + offset, width: Math.max(1, Math.abs(a - zero)), height: thickness, fill: color } : { x: m.left + index * step + offset, y: Math.min(py, y(0)), width: thickness, height: Math.max(1, Math.abs(y(0) - py)), fill: color }, series.index, index);
+        if (['bar', 'horizontalBar','stackedBar','stackedHorizontalBar'].includes(this.options.type)) {
+          const thickness = step * .8 / (stacked ? 1 : Math.max(1, visible.length)), offset = step * .1 + (stacked ? 0 : si * thickness);
+          const start = stacked ? stacks.segments[si][index].start : 0, end = stacked ? stacks.segments[si][index].end : value;
+          const a = m.left + (end - min) / (max - min) * w, zero = m.left + (start - min) / (max - min) * w;
+          this.mark(svg, 'rect', horizontal ? { x: Math.min(a, zero), y: m.top + index * step + offset, width: Math.max(1, Math.abs(a - zero)), height: thickness, fill: color } : { x: m.left + index * step + offset, y: Math.min(y(end), y(start)), width: thickness, height: Math.max(1, Math.abs(y(start) - y(end))), fill: color }, series.index, index);
         } else segment.push({ x: px, y: py, index });
       });
       if (segment.length) segments.push(segment);

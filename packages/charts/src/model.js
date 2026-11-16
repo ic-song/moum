@@ -1,4 +1,14 @@
-export const chartTypes = Object.freeze(['bar', 'horizontalBar', 'line', 'area', 'pie', 'donut', 'scatter']);
+export const chartTypes = Object.freeze(['bar', 'horizontalBar', 'stackedBar', 'stackedHorizontalBar', 'line', 'area', 'pie', 'donut', 'scatter']);
+
+export function chartStacks(datasets, count) {
+  const positive = Array(count).fill(0), negative = Array(count).fill(0);
+  const segments = datasets.map(series => series.data.map((value, i) => {
+    if (value == null) return null;
+    const totals = value >= 0 ? positive : negative, start = totals[i]; totals[i] += value;
+    return { start, end: totals[i] };
+  }));
+  return { segments, extent: chartExtent([...positive, ...negative]) };
+}
 
 export function normalizeChart(data, type = 'bar') {
   if (!chartTypes.includes(type)) throw new TypeError(`지원하지 않는 차트: ${type}`);

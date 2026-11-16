@@ -16,3 +16,13 @@
 JS/CSS 복사 위치·로컬 npm 패키지 설치·JSP 경로 설정은 [빠른 시작](../docs/getting-started.md), React/Vue에서의 사용 코드는 [프레임워크 연결](../docs/frameworks.md)에 있습니다. `ProductGrid` 예제는 로컬 데이터용 컴포넌트입니다. 서버 연결에는 별도의 `dataSource` 계약을 사용하세요.
 
 HTML 예제의 상대 경로는 저장소 디렉터리 구조를 기준으로 합니다. 다른 프로젝트로 옮길 때는 `packages/grid/dist`의 파일도 복사하고 경로를 바꾸세요. 코어에는 Node나 npm이 필요하지 않습니다. React/Vue의 빌드 환경은 사용하는 프로젝트에서 준비합니다.
+
+## 추가 컴포넌트
+
+- [DatePicker](datepicker/index.html): 단일 날짜·조회 기간·제외일
+- [Pagination](pagination/index.html): 서버 조회·페이지 크기·오류 재시도
+- [InfiniteScroll](infinite-scroll/index.html): 내부 목록·커서·자동/수동 로딩
+
+동일 공통 UI 토큰을 각 독립 CSS에 포함합니다. [연결·테마](../docs/components.md)
+
+- [미니 간트4종](gantt-mini/index.html): Bars/Compact/Summary/Milestones, 표 안의 한 줄, 공통 기간 비교

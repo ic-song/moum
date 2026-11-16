@@ -1,5 +1,13 @@
 # 변경 기록
 
+## 2026-11-16 — 독립 컴포넌트 확장 및 공통 UI
+
+- DatePicker·Pagination·InfiniteScroll 0.1.0: 독립 API/타입/배포 파일/한국어 예제
+- Grid 0.7.1 선택 통계, Charts 0.2.0 누적 막대, Gantt 0.2.0 선행 일정 조정·미니4종(Bars/Compact/Summary/Milestones)
+- Uploader 0.2.0 동시 전송/전체 취소, Calendar 0.2.0 회차 제외/복원
+- 8종 공통 테마·포커스·타이포그래피·표면/컨트롤 일관화
+- npm 미게시 유지. 지원·미지원 계약은 docs/components.md
+
 버전은 패키지의 동작 변경을 기준으로 관리합니다. 배포 가능 파일은 Git에 포함하고, npm 게시 여부는 별도로 표시합니다.
 
 ## MOUM 새 저장소 — 2026-11-16

@@ -1,0 +1,10 @@
+import {mkdir} from 'node:fs/promises';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import path from 'node:path';
+const npm=process.env.npm_execpath;
+if(!npm)throw new Error('Run through npm run test:packages.');
+const destination=path.resolve('output/packages');await mkdir(destination,{recursive:true});
+const {stdout}=await promisify(execFile)(process.execPath,[npm,'pack','--workspaces','--pack-destination',destination,'--json']);
+for(const item of JSON.parse(stdout))console.log(`Packed ${item.id}`);
+await import('./package-suite-check.mjs');

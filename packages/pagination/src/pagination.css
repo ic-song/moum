@@ -1,0 +1,7 @@
+.moum-pagination { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+.moum-pagination-summary { margin:0; }
+.moum-pagination-controls { display:flex; flex-wrap:wrap; gap:4px; }
+.moum-pagination-controls button { min-width:44px; }
+.moum-pagination-controls button[aria-current="page"] { background:var(--moum-theme-action); color:white; border-color:var(--moum-theme-action); }
+.moum-pagination-status { flex-basis:100%; }
+.moum-pagination label { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }

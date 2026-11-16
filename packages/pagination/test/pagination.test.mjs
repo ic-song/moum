@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {paginationState} from '../src/pagination.js';
+test('empty and final partial pages have truthful bounds',()=>{assert.deepEqual(paginationState(),{total:0,pageSize:20,page:1,pageCount:1,offset:0,from:0,to:0});assert.deepEqual(paginationState({total:237,pageSize:20,page:99}),{total:237,pageSize:20,page:12,pageCount:12,offset:220,from:221,to:237});});
+test('reject unsafe counts, nonintegral values and unbounded request sizes',()=>{for(const options of [{total:-1},{total:Infinity},{total:Number.MAX_SAFE_INTEGER+1},{page:0},{page:1.5},{pageSize:0},{pageSize:10001}])assert.throws(()=>paginationState(options));});

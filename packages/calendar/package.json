@@ -1,6 +1,6 @@
 {
   "name": "@moum/calendar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Offline month/week/day/agenda calendar with editing and bounded daily/weekly recurrence.",
   "license": "MIT",

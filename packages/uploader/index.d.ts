@@ -10,7 +10,7 @@ export interface UploadMetadata { sheetName: string | null; headerRow: number; m
 export interface UploadRequest { file: File; data: Record<string, unknown>[] | null; signal: AbortSignal; onProgress: (percent: number) => void; metadata: UploadMetadata }
 export type UploadTransport = (request: UploadRequest) => Promise<unknown>;
 export interface XHRTransportOptions { method?: string; fieldName?: string; timeout?: number; withCredentials?: boolean; headers?: Record<string, string> }
-export interface UploaderOptions extends UploadLimits { title?: string; editable?: boolean; maxFiles?: number; pageSize?: number; uploadTimeout?: number; accept?: string; schema?: UploadSchemaField[]; encoding?: 'utf-8' | 'euc-kr' | 'utf-16le'; delimiter?: ',' | '\t' | ';' | '|'; excelLibrary?: unknown; url?: string; transportOptions?: XHRTransportOptions; onUpload?: UploadTransport; onChange?: (files: UploadFileInfo[]) => void; onError?: (detail: { id: string; error: Error }) => void; onUploaded?: (detail: { id: string; file: File; result: unknown }) => void }
+export interface UploaderOptions extends UploadLimits { title?: string; editable?: boolean; maxFiles?: number; pageSize?: number; uploadTimeout?: number; uploadConcurrency?: number; accept?: string; schema?: UploadSchemaField[]; encoding?: 'utf-8' | 'euc-kr' | 'utf-16le'; delimiter?: ',' | '\t' | ';' | '|'; excelLibrary?: unknown; url?: string; transportOptions?: XHRTransportOptions; onUpload?: UploadTransport; onChange?: (files: UploadFileInfo[]) => void; onError?: (detail: { id: string; error: Error }) => void; onUploaded?: (detail: { id: string; file: File; result: unknown }) => void }
 export declare const uploadLimits: Required<UploadLimits>;
 export declare function normalizeUploadLimits(options?: UploadLimits): Required<UploadLimits>;
 export declare function parseDelimited(text: string, options?: UploadLimits & { delimiter?: string }): { rows: string[][]; rowNumbers: number[]; delimiter: string };
@@ -40,6 +40,7 @@ export declare class Uploader {
   editCell(id: string, sourceRow: number, columnKey: string, value: string | number | boolean | null): void;
   upload(id: string): Promise<unknown>;
   uploadAll(): Promise<void>;
+  cancelAll(): void;
   retry(id: string): Promise<unknown>;
   cancel(id: string): void;
   removeFile(id: string): void;

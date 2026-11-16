@@ -1,4 +1,4 @@
-# @moum/charts 0.1.0
+# @moum/charts 0.2.0
 
 외부 런타임 의존성 없는 MIT SVG 차트. Chart.js 호환 API가 아닌 독립 라이브러리입니다.
 
@@ -28,4 +28,8 @@ const chart = new MoumCharts('#chart', {
 
 범례로 계열/조각을 켜고 끄며 원본은 보존합니다. 항목은 Enter/Space로 선택할 수 있고 데이터 표는 전체 값을 제공합니다. CSS는 `.moum-charts`와 `--moum-chart-ink/line/action/surface` 변수로 제한됩니다.
 
-최대 항목 2,000·계열 50개, 숫자 절댓값 10^15 이하입니다. 상한은 성능 보증이 아니며 대규모 데이터는 호스트에서 집계하세요. 누적/복합·줌/팬·이중/로그 축·PNG/PDF 출력은 포함하지 않습니다. 현대 브라우저의 SVG·ResizeObserver·structuredClone·CSS OKLCH를 사용합니다. [오프라인 예제](../../examples/charts/index.html).
+최대 항목 2,000·계열 50개, 숫자 절댓값 10^15 이하입니다. 상한은 성능 보증이 아니며 대규모 데이터는 호스트에서 집계하세요. 복합·줌/팬·이중/로그 축·PNG/PDF 출력은 포함하지 않습니다. 현대 브라우저의 SVG·ResizeObserver·structuredClone·CSS OKLCH를 사용합니다. [오프라인 예제](../../examples/charts/index.html).
+
+## 0.2.0 누적 막대
+
+`stackedBar`, `stackedHorizontalBar`를 type에 지정합니다. 항목별 양수와 음수는 0에서 각각 누적하며 null은 건너뜁니다. 범례로 숨긴 계열은 누적값·축 범위에서 제외하고 원본 표는 보존합니다. 기본 7종을 포함해 총9종입니다.

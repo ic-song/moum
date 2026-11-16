@@ -19,6 +19,7 @@ const sampleRows = [
 
 const grid = new MoumGrid('#grid', {
   label: '물품 등록·편집',
+  selectionSummary: true,
   columns: [
     { field: 'code', header: '품목코드', editable: false, width: 180 },
     { field: 'name', header: '품목명', width: 180 },

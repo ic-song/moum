@@ -1,4 +1,4 @@
-/*! MOUM uploader v0.1.0 | MIT License | See LICENSE */
+/*! MOUM uploader v0.2.0 | MIT License | See LICENSE */
 export const uploadLimits = { maxFileSize: 20 * 1024 * 1024, maxRows: 10000, maxColumns: 200, maxExpandedBytes: 100 * 1024 * 1024, maxCellLength: 100000 };
 export function normalizeUploadLimits(options = {}) {
   const result = { ...uploadLimits }; for (const key of Object.keys(result)) if (options[key] != null) { if (!Number.isSafeInteger(options[key]) || options[key] < 1) throw new RangeError(`${key}는 양의 정수입니다.`); result[key] = options[key]; } return result;
@@ -192,7 +192,9 @@ export class Uploader {
   constructor(target, options = {}) {
     this.target = typeof target === 'string' ? document.querySelector(target) : target;
     if (!this.target || this.target.childNodes.length) throw new Error('비어 있는 업로더 컨테이너가 필요합니다.');
-    const limits = normalizeUploadLimits(options); this.options = { ...limits, maxFiles: 10, pageSize: 25, uploadTimeout: 120000, accept: '', ...options }; this.schema = normalizeUploadSchema(options.schema || []);
+    const limits = normalizeUploadLimits(options); this.options = { ...limits, maxFiles: 10, pageSize: 25, uploadTimeout: 120000, uploadConcurrency: 1, accept: '', ...options }; this.schema = normalizeUploadSchema(options.schema || []);
+    if(!Number.isInteger(this.options.uploadConcurrency)||this.options.uploadConcurrency<1||this.options.uploadConcurrency>6)throw new RangeError('uploadConcurrency는 1~6 정수입니다.');
+    this.batchVersion=0;
     if (!Number.isFinite(this.options.uploadTimeout) || this.options.uploadTimeout <= 0) throw new RangeError('uploadTimeout은 양수입니다.');
     if (!Number.isInteger(this.options.maxFiles) || this.options.maxFiles < 1 || !Number.isInteger(this.options.pageSize) || this.options.pageSize < 1 || this.options.pageSize > 200) throw new RangeError('maxFiles는 양수, pageSize는 1~200 정수입니다.');
     this.transport = options.onUpload || (options.url ? createXHRTransport(options.url, options.transportOptions) : null); this.items = []; this.activeId = null; this.message = '';
@@ -255,7 +257,7 @@ export class Uploader {
   notify() { if (this.destroyed) return; this.render(); this.options.onChange?.(this.getFiles()); }
   cancel(id) { this.active(); const item = this.find(id); item.version++; item.controller?.abort(); item.controller = null; item.status = 'cancelled'; item.error = '취소했습니다. 서버 전송 중이었다면 서버의 수신 여부는 별도로 확인하세요.'; this.notify(); }
   removeFile(id) { this.active(); const item = this.find(id); item.version++; item.controller?.abort(); if (item.objectURL) URL.revokeObjectURL(item.objectURL); this.items = this.items.filter(i => i !== item); if (this.activeId === id) this.activeId = this.items[0]?.id || null; this.notify(); }
-  clear() { this.active(); for (const item of this.items) { item.version++; item.controller?.abort(); if (item.objectURL) URL.revokeObjectURL(item.objectURL); } this.items = []; this.activeId = null; this.notify(); }
+  clear() { this.active(); this.batchVersion++; for (const item of this.items) { item.version++; item.controller?.abort(); if (item.objectURL) URL.revokeObjectURL(item.objectURL); } this.items = []; this.activeId = null; this.notify(); }
   async retry(id) { this.active(); const item = this.find(id); if (item.status === 'uploading' || item.status === 'reading') return; if (!this.accepts(item.file)) throw new Error('허용하지 않는 파일 형식입니다.'); if (item.parsed) return this.upload(id); return this.readItem(item); }
   async upload(id) {
     this.active(); const item = this.find(id); if (!this.transport) throw new Error('onUpload 또는 url을 연결하세요.'); if (['reading', 'uploading', 'uploaded'].includes(item.status)) throw new Error('현재 상태에서는 전송할 수 없습니다.'); if (!item.parsed || (item.result && !item.result.valid)) throw new Error('파싱과 검증을 먼저 완료하세요.');
@@ -272,7 +274,13 @@ export class Uploader {
       item.status = error.name === 'AbortError' ? 'cancelled' : 'error'; item.errorStage = 'upload'; item.error = error.message; this.options.onError?.({ id, error });
     } finally { if (!this.destroyed && item.version === version && this.items.includes(item)) { item.controller = null; this.notify(); } }
   }
-  async uploadAll() { this.active(); for (const item of [...this.items]) { if (this.destroyed) break; if (this.items.includes(item) && item.parsed && (!item.result || item.result.valid) && ['ready', 'error', 'cancelled'].includes(item.status)) await this.upload(item.id); } }
+  cancelAll() { this.active(); this.batchVersion++; for(const item of this.items)if(item.status==='uploading')this.cancel(item.id); }
+  async uploadAll() {
+    this.active();if(this.batchPromise){await this.batchPromise;return;}
+    const version=++this.batchVersion,queue=[...this.items];let index=0;
+    const worker=async()=>{while(index<queue.length&&!this.destroyed&&version===this.batchVersion){const item=queue[index++];if(this.items.includes(item)&&item.parsed&&(!item.result||item.result.valid)&&['ready','error','cancelled'].includes(item.status))await this.upload(item.id);}};
+    this.batchPromise=Promise.all(Array.from({length:this.options.uploadConcurrency},worker));try{await this.batchPromise;}finally{this.batchPromise=null;}
+  }
   async attempt(action) { try { await action(); } catch (error) { this.message = error.message; if (!this.destroyed) this.render(); } }
   render() {
     this.root.replaceChildren();
@@ -281,6 +289,7 @@ export class Uploader {
     const tools = uploadEl('div', null, 'moum-uploader-toolbar');
     const button = (text, action, disabled = false) => { const b = uploadEl('button', text); b.type = 'button'; b.disabled = disabled; b.addEventListener('click', () => this.attempt(action)); return b; };
     tools.append(button('모두 전송', () => this.uploadAll(), !this.transport || !this.items.some(i => i.parsed && (!i.result || i.result.valid) && ['ready', 'error', 'cancelled'].includes(i.status))), button('목록 비우기', () => this.clear(), !this.items.length));
+    tools.append(button('전체 전송 취소',()=>this.cancelAll(),!this.items.some(i=>i.status==='uploading')));
     if (this.schema.length) tools.append(button('입력 양식 CSV', () => downloadUploadFile(uploadCSV([this.schema.map(f => f.label)]), 'moum-template.csv', 'text/csv;charset=utf-8')));
     this.root.append(tools);
     const message = uploadEl('p', this.message || (this.transport ? '검토 후 전송할 파일을 선택하세요.' : '로컬 검토 모드 · 서버 전송은 연결되지 않았습니다.'), 'moum-uploader-status'); message.setAttribute('aria-live', 'polite'); if (this.message) message.setAttribute('role', 'alert'); this.root.append(message);

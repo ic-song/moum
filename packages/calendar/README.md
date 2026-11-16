@@ -1,4 +1,4 @@
-# @moum/calendar 0.1.0
+# @moum/calendar 0.2.0
 
 월·주·일·목록, 종일/시간 일정, 반복과 편집을 제공하는 MIT 독립 캘린더. 런타임 의존성 없음.
 
@@ -34,3 +34,7 @@ getEvents는 원본 시리즈 복사본, getOccurrences는 조회 기간 발생 
 `onChange({type,id,events})`, `onSelect(occurrence)`, `onViewChange({view,date})`, `onError(error)`. 저장/실패/충돌 처리는 호스트가 연결합니다. editable:false는 UI만 읽기 전용입니다. 입력 편집기는 드래그의 키보드 대안이며 주/일 보기에서 시간이 겹치면 열을 나눕니다.
 
 최대 원본 10,000개·일정 기간 366일·반복 10년·조회 370일/발생 20,000개. 성능 보증 한도가 아니므로 밀집 데이터는 호스트가 기간별로 조회하세요. 자원 예약·ICS·시간대 변환·자동 서버 연동은 포함하지 않습니다. CSS: `.moum-calendar`, `--moum-calendar-ink/line/action/paper`. [오프라인 예제](../../examples/calendar/index.html).
+
+## 0.2.0 반복 회차 제외·복원
+
+`setOccurrenceExcluded(id, '2026-11-23', true)`는 해당 날짜에 시작하는 반복 회차만 제외합니다. false로 복원합니다. 실제 반복 시작일인지 검증하며 원본 반복 시리즈의 시간·제목·다른 회차는 유지합니다. 변경은 undo/redo 대상입니다. 반복 일정 클릭 시 편집기에 해당 회차만 제외 버튼이 나타나며 전체 수정·전체 삭제와 구별됩니다. 복원은 API 또는 undo로 수행합니다.

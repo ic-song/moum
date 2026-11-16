@@ -1,6 +1,6 @@
 {
   "name": "@moum/charts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Offline SVG business charts with accessible data tables and no runtime dependencies.",
   "license": "MIT",
