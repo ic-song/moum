@@ -1,5 +1,7 @@
 # 독립 컴포넌트 확장·고도화 검증
 
+후속 DatePicker/Charts/Gantt/Uploader 고도화는 [최신 검증 기록](business-components-verification.md)을 확인하세요. 아래는 앞선 확장 시점의 기록입니다.
+
 2026-11-16 KST. 신규3종과 기존5종의 이번 고도화 범위는 [컴포넌트 현황](components.md)을 기준으로 합니다. 초기 MOUM 전환 시점의 [검증 기록](moum-verification.md)은 그대로 보존합니다.
 
 | 검사 | 결과 |

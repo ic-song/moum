@@ -1,4 +1,4 @@
-export const chartTypes = Object.freeze(['bar', 'horizontalBar', 'stackedBar', 'stackedHorizontalBar', 'line', 'area', 'pie', 'donut', 'scatter']);
+export const chartTypes = Object.freeze(['bar', 'horizontalBar', 'stackedBar', 'stackedHorizontalBar', 'line', 'area', 'pie', 'donut', 'scatter', 'mixed']);
 
 export function chartStacks(datasets, count) {
   const positive = Array(count).fill(0), negative = Array(count).fill(0);
@@ -30,7 +30,8 @@ export function normalizeChart(data, type = 'bar') {
       return value;
     });
     if (series.color != null && !/^(#[\da-f]{3,8}|[a-z]+|(?:rgb|hsl|oklch)a?\([\d\s.,%/+\-]+\))$/i.test(series.color)) throw new TypeError('유효한 단색 CSS 색상을 지정하세요.');
-    return { label: String(series.label ?? `계열 ${s + 1}`), data: values, ...(series.color ? { color: series.color } : {}) };
+    if(type==='mixed'&&(!['bar','line'].includes(series.type??'bar')||!['left','right'].includes(series.axis??'left')))throw new TypeError('복합 차트 계열은 type: bar/line, axis: left/right입니다.');
+    return { label: String(series.label ?? `계열 ${s + 1}`), data: values, ...(series.color ? { color: series.color } : {}), ...(type==='mixed'?{type:series.type??'bar',axis:series.axis??'left'}:{}) };
   });
   if ((type === 'pie' || type === 'donut') && datasets.length > 1) throw new RangeError('원형 차트는 하나의 계열을 사용합니다.');
   return { labels, datasets };

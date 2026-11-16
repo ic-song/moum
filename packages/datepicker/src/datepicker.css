@@ -11,3 +11,10 @@
 .moum-datepicker-fields { display:flex; flex-wrap:wrap; gap:8px; align-items:end; }
 .moum-datepicker-fields label { display:flex; flex-direction:column; max-width:100%; gap:4px; }
 @media(max-width:480px) { .moum-datepicker { padding:8px; } }
+.moum-datepicker-popup { position: fixed; z-index: var(--moum-datepicker-z-index, 1000); overflow: auto; margin: 0; box-sizing: border-box; overscroll-behavior: contain; }
+.moum-datepicker-popup[hidden] { display: none; }
+.moum-datepicker-input-error { display:block; color:var(--moum-ui-danger, #a52d32); font:inherit; }
+.moum-datepicker-input-error[hidden] { display:none; }
+.moum-datepicker-input { box-sizing:border-box; max-width:100%; min-width:0; min-height:var(--moum-ui-control,44px); padding:8px 12px; border:1px solid var(--moum-ui-line,#d6dfda); border-radius:var(--moum-ui-radius,4px); color:var(--moum-ui-ink,#233d35); background:var(--moum-ui-paper,white); font:var(--moum-ui-font,14px/1.6 "Segoe UI","Malgun Gothic",sans-serif); }
+.moum-datepicker-input:focus-visible { outline:2px solid var(--moum-ui-action,#17664f); outline-offset:2px; }
+.moum-datepicker-input[aria-invalid="true"] { border-color:var(--moum-ui-danger,#a52d32); }

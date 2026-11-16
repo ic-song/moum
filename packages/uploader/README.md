@@ -1,4 +1,4 @@
-# @moum/uploader 0.2.0
+# @moum/uploader 0.3.0
 
 파일 선택/드롭 → 로컬 파싱 → 시트/헤더 선택 → 열 매핑 → 행 검증 → 미리보기 → 명시적 서버 전송. MOUM Grid 없이 독립 실행하며 결과를 선택적으로 그리드에 넘깁니다.
 
@@ -30,7 +30,7 @@ ESM: `import Uploader,{createXHRTransport} from '@moum/uploader'`, CSS: `@moum/u
 - schema: `{field,label?,type?,required?,min?,max?,trim?,validate?}`. type은 string/number/integer/boolean/date. 숫자는 엄격한 십진수/올바른 천 단위 구분, 날짜는 YYYY-MM-DD입니다. `validate(value,sourceRow)`는 false/오류 문자열을 반환하거나 예외를 던질 수 있습니다.
 - schema 없이는 column1… 키와 원본 스칼라 타입을 유지합니다. 같은 원본 열의 중복 매핑은 거절합니다. getData(id)는 변환된 전체 데이터, `{validOnly:true}`는 정상 행입니다. **전체 검증을 통과해야 업로드할 수 있습니다.**
 
-기본 한도: 파일 20MB·10개, 데이터 10,000행·200열, 셀 100,000자, XLSX 선언 압축 해제 크기 100MB·100시트. `maxFileSize/maxFiles/maxRows/maxColumns/maxCellLength/maxExpandedBytes/pageSize`로 조절합니다. 원본 마지막 행이 maxRows+1을 넘으면 거절합니다. 파싱은 메인 스레드이므로 큰 파일은 UI 응답을 지연시킬 수 있습니다.
+기본 한도: 파일 20MB·10개, 데이터 10,000행·200열, 셀 100,000자, XLSX 선언 압축 해제 크기 100MB·100시트. `maxFileSize/maxFiles/maxRows/maxColumns/maxCellLength/maxExpandedBytes/pageSize`로 조절합니다. 원본 마지막 행이 maxRows+1을 넘으면 거절합니다. 기본 파싱은 메인 스레드이므로 큰 파일은 UI 응답을 지연시킬 수 있습니다. 아래 workerURL 옵션으로 백그라운드 파싱을 켭니다.
 
 Excel 전체 시트의 사용 범위 합계는 2,000,000셀까지 읽습니다. 여러 큰 시트나 매우 넓은 희소 시트는 나누어 올리세요.
 
@@ -66,3 +66,20 @@ uploadTimeout(기본 120000ms)은 사용자 전송 함수가 종료하지 않아
 ## 0.2.0 동시 전송과 전체 취소
 
 `uploadConcurrency:1`이 기본이며 1~6을 지정할 수 있습니다. uploadAll은 호출 당시 검증된 큐를 worker로 나눠 전송하고 중복 uploadAll 호출은 같은 배치 완료를 기다립니다. `cancelAll()`과 전체 전송 취소 버튼은 진행 중 전송을 취소하고 배치의 아직 시작하지 않은 파일은 남겨둡니다. clear/destroy 후 미시작 전송은 실행하지 않습니다. 개별 upload()를 호스트가 별도로 실행하면 배치 제한과 별개이므로 동시성 통제 시 uploadAll을 사용하세요. 취소가 서버의 수신·처리 취소를 보장하지는 않습니다.
+
+## 0.3.0 백그라운드 파싱
+
+`workerURL`을 지정하면 전용 Worker에서 CSV/TSV/JSON/Excel을 파싱합니다. 지정하지 않으면 기존 파서입니다. Worker에 schema/콜백을 복제하지 않으며 매핑·사용자 검증·프리뷰는 메인 스레드에서 처리합니다. 기존 크기/행/열/압축 확장/셀 길이 제한은 그대로 적용됩니다. 상한 확대는 메모리/복사 비용을 고려해 호스트가 결정하세요.
+
+```js
+const uploader = new Uploader('#files', {
+ workerURL:'/assets/moum-uploader/dist/moum-uploader-worker.js', parseTimeout:120000,
+ onParseProgress:({id,stage})=>console.log(id,stage), schema
+});
+```
+
+배포 시 dist/moum-uploader-worker.js를 같은 출처의 정적 URL로 제공하세요. Excel은 Worker 기준 ../vendor/sheetjs/xlsx.full.min.js와 LICENSE를 함께 복사합니다. 예시 구조는 assets/moum-uploader/{dist,vendor/sheetjs}입니다. npm 패키지 하위 경로 `@moum/uploader/worker.js`를 번들러의 asset URL 처리로 복사할 수도 있습니다. 서버 Content-Type은 JavaScript, CSP worker-src/script-src에서 해당 로컬 경로를 허용해야 합니다. CORS·인증이 필요한 원격 Worker는 지원하지 않습니다. Worker 오류를 메인 스레드 재파싱으로 숨기지 않습니다. 사용자 excelLibrary와 workerURL은 동시에 지정하지 않습니다.
+
+단계는 starting → reading → parsing → complete이며 동기 파서의 세부 백분율을 뜻하지 않습니다. getFiles().parseStage와 onParseProgress로 확인합니다. 전송률 progress는 별도입니다. cancel/remove/clear/destroy 또는 parseTimeout(기본120000ms)이면 Worker를 종료하며 늦은 결과는 반영하지 않습니다. UI 없는 `parseUploadFileInWorker(file,options,signal?,onStage?)`도 제공합니다. 전체 파일 선택은 순차 파싱합니다.
+
+HTTP 예제는 Worker, file://로 직접 연 예제는 기본 파서를 명시적으로 사용합니다. Worker 정적 파일도 폐쇄망에 포함하면 외부 요청 없이 동작합니다. 청크/재개 전송은 서버 계약이 필요하므로 이번 범위에 포함하지 않습니다.

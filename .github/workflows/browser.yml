@@ -28,6 +28,7 @@ jobs:
           npm run test:usage
           npm run test:suite-browser
           npm run test:components-browser
+          npm run test:business-browser
           npm run test:mini-gantt
           npm run test:packages
       - uses: actions/upload-artifact@v4

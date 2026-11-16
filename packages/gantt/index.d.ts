@@ -2,16 +2,20 @@ export interface GanttTask { id: string | number; name?: string; start: string; 
 export interface GanttWarning { taskId: string; predecessorId: string; message: string }
 export interface GanttChange { type: string; id?: string; tasks: GanttTask[]; warnings: GanttWarning[] }
 export interface GanttRange { start: string; end: string }
+export interface GanttWorkCalendar {weekendDays?:number[];holidays?:string[]}
+export declare function normalizeWorkCalendar(calendar?:GanttWorkCalendar|null): {weekendDays:number[];holidays:string[]} | null;
+export declare function isGanttWorkday(date:string,calendar?:GanttWorkCalendar|null):boolean;
+export declare function ganttWorkingDays(start:string,end:string,calendar?:GanttWorkCalendar|null):number;
 export type MiniGanttType = 'bars' | 'compact' | 'summary' | 'milestones';
 export interface GanttSummary extends GanttRange {progress:number;taskCount:number;milestoneCount:number}
-export interface GanttOptions { title?: string; tasks?: GanttTask[]; scale?: 'day' | 'week' | 'month'; view?: 'full' | 'mini'; range?: GanttRange | null; mini?: {type?:MiniGanttType;header?:boolean;labels?:boolean;status?:boolean}; editable?: boolean; onChange?: (change: GanttChange) => void; onSelect?: (task: GanttTask) => void; onError?: (error: Error) => void }
+export interface GanttOptions { workCalendar?: GanttWorkCalendar; title?: string; tasks?: GanttTask[]; scale?: 'day' | 'week' | 'month'; view?: 'full' | 'mini'; range?: GanttRange | null; mini?: {type?:MiniGanttType;header?:boolean;labels?:boolean;status?:boolean}; editable?: boolean; onChange?: (change: GanttChange) => void; onSelect?: (task: GanttTask) => void; onError?: (error: Error) => void }
 export declare const ganttDay: number;
 export declare function ganttDate(value: string): number;
 export declare function shiftGanttDate(value: string, days: number): string;
 export declare function normalizeTasks(tasks: GanttTask[]): GanttTask[];
 export declare function ganttSummary(tasks: GanttTask[]): GanttSummary | null;
 export declare class GanttModel {
-  constructor(tasks?: GanttTask[]);
+  constructor(tasks?: GanttTask[], options?: {workCalendar?:GanttWorkCalendar});
   getTasks(): GanttTask[];
   setTasks(tasks: GanttTask[]): void;
   updateTask(id: string | number, patch: Partial<GanttTask>): GanttTask[];

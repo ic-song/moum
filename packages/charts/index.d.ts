@@ -1,7 +1,7 @@
-export type ChartType = 'bar' | 'horizontalBar' | 'stackedBar' | 'stackedHorizontalBar' | 'line' | 'area' | 'pie' | 'donut' | 'scatter';
-export interface ChartData { labels: string[]; datasets: { label?: string; color?: string; data: (number | null | { x: number; y: number })[] }[] }
+export type ChartType = 'bar' | 'horizontalBar' | 'stackedBar' | 'stackedHorizontalBar' | 'line' | 'area' | 'pie' | 'donut' | 'scatter' | 'mixed';
+export interface ChartData { labels: string[]; datasets: { label?: string; color?: string; type?: 'bar'|'line'; axis?: 'left'|'right'; data: (number | null | { x: number; y: number })[] }[] }
 export interface ChartSelection { seriesIndex: number; pointIndex: number; label?: string; value: number | null | { x: number; y: number } }
-export interface ChartOptions { type?: ChartType; title?: string; locale?: string; data?: ChartData; onSelect?: (point: ChartSelection) => void }
+export interface ChartOptions { type?: ChartType; title?: string; locale?: string; data?: ChartData; axes?: {left?: {title?: string;unit?:string};right?: {title?:string;unit?:string}}; onSelect?: (point: ChartSelection) => void }
 export declare const chartTypes: readonly ChartType[];
 export declare function normalizeChart(data: ChartData, type?: ChartType): ChartData;
 export declare function chartExtent(values: number[], includeZero?: boolean): [number, number];
@@ -14,6 +14,7 @@ export declare class Charts {
   setOptions(options: ChartOptions): void;
   selectPoint(seriesIndex: number, pointIndex: number): void;
   toSVG(): string;
+  toPNG(options?: {scale?: number}): Promise<Blob>;
   destroy(): void;
 }
 export default Charts;

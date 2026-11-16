@@ -1,4 +1,4 @@
-# @moum/gantt 0.2.0
+# @moum/gantt 0.3.0
 
 작업 계층·선후관계·일정 편집을 제공하는 MIT 독립 간트 라이브러리. 외부 런타임 의존성이 없습니다.
 
@@ -32,7 +32,7 @@ dependencies는 선행 id 배열, parentId는 표시 계층입니다. 누락/순
 
 `onChange({type,id,tasks,warnings})`, `onSelect(task)`, `onError(error)`. 서버 저장은 호스트가 연결합니다. onChange는 저장 성공이 아니므로 실패/충돌/재조회 정책을 별도 구현하세요.
 
-최대 작업 3,000·전체 기간 10년. 행 가상화·자원 배정·업무일 달력·임계 경로·상시 자동 일정 계산·SS/FF/SF 연결은 포함하지 않습니다. CSS: `.moum-gantt`, `--moum-gantt-ink/line/action/paper`. [오프라인 예제](../../examples/gantt/index.html).
+최대 작업 3,000·전체 기간 10년. 행 가상화·자원 배정·임계 경로·상시 자동 일정 계산·SS/FF/SF 연결은 포함하지 않습니다. CSS: `.moum-gantt`, `--moum-gantt-ink/line/action/paper`. [오프라인 예제](../../examples/gantt/index.html).
 
 ## 0.2.0 선행 일정 맞추기
 
@@ -66,3 +66,11 @@ mini.setView('full');        // 전체 간트로 전환
 range의 종료일은 포함입니다. 지정한 범위를 벗어난 기간은 잘라 표시하며 완전히 벗어난 작업은 비활성 ‘범위 밖’ 행으로 남습니다. 범위 변경은 데이터·이력을 바꾸지 않습니다. 최대10년, getRange()는 복사본 또는 데이터가 없으면 null입니다. full 화면에서는 range를 적용하지 않으며 미니 보기로 돌아오면 지정 범위를 다시 사용합니다. 미니는 전체 보기의 계층 접힘 상태에 영향받지 않고 원본 순서대로 표시합니다.
 
 getSummary()/ganttSummary(tasks)는 {start,end,progress,taskCount,milestoneCount} 또는 null을 반환합니다. 부모를 제외한 말단 일반 작업의 **종료일 포함 기간**으로 진행률을 가중 평균합니다. 일반 작업이 없으면 말단 마일스톤의 단순 평균을 사용합니다. 전체 기간에는 명시한 부모 기간도 포함합니다. 작업량/비용 가중치나 일정상의 실제 완료일을 의미하지 않습니다. compact는 한두 작업, bars는 작은 작업 목록에 적합하며 행 가상화는 제공하지 않습니다. [실행 예제](../../examples/gantt-mini/index.html).
+
+## 0.3.0 업무일 달력
+
+`new Gantt(target,{tasks,workCalendar:{weekendDays:[0,6],holidays:['2026-11-18']}})`로 켭니다. workCalendar를 생략하면 기존 달력일 방식입니다. 빈 객체는 토·일 휴무, weekendDays:[]는 매일 업무일입니다. 요일은 일요일0~토요일6, 최소 하루는 업무일이어야 합니다. 휴일은 프로젝트가 지정한 YYYY-MM-DD 목록(최대10,000개)이며 국가 공휴일을 자동 조회하지 않습니다.
+
+입력·직접 편집·드래그는 날짜를 그대로 보존합니다. **선행 일정 맞추기/scheduleDependencies()를 명시적으로 실행할 때만** 각 작업을 현재 시작일 이상이면서 선행 작업 종료 다음 날 이후인 업무일로 이동합니다. 기존 기간에 포함된 업무일 수(종료일 포함)를 유지하고 마지막 업무일에 종료합니다. 업무일이 하나도 없는 작업은1일, 마일스톤은 같은 날입니다. 부모 기간도 독립 작업으로 처리하며 자식 기간으로 자동 집계하지 않습니다. 전체 조정은 단일 undo이고 범위/관계 오류 시 전부 보존합니다. 최대 표시 기간10년 제한은 그대로입니다.
+
+전체·미니4종에서 주말/휴일을 음영으로 표시합니다. 기본 날짜 눈금/미니 가중 진행률은 실제 달력 기간을 유지하므로 업무량 진행률이 아닙니다. `--moum-gantt-offday`로 음영 색을 설정하세요. 함수 `ganttWorkingDays(start,end,calendar)`, `isGanttWorkday(date,calendar)`와 `new GanttModel(tasks,{workCalendar})`도 독립 사용합니다. 자원별 달력·연결 지연·임계 경로는 지원하지 않습니다.

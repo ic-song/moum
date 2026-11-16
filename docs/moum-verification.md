@@ -1,6 +1,6 @@
 # MOUM 전환·통합 검증
 
-이 문서는 초기 전환 시점 기록입니다. 이후 신규 컴포넌트·공통 UI·기존5종 고도화의 최신 결과는 [컴포넌트 검증](components-verification.md)을 참고하세요.
+이 문서는 초기 전환 시점 기록입니다. 이후 신규 컴포넌트·공통 UI 검증은 [컴포넌트 검증](components-verification.md), DatePicker/Charts/Gantt/Uploader 최신 고도화는 [업무 컴포넌트 검증](business-components-verification.md)을 참고하세요.
 
 2026-11-16 KST. 기존 Moa JS 통합 커밋 18580f8(그리드 0.7.0 복구/OSS 정비와 독립 도구 4종)을 새 Git 저장소로 가져왔습니다. 소스·예제·타입·문서·워크플로우·설치 이름을 MOUM으로 전환했습니다. 그리드 0.7.0과 새 도구 각 0.1.0의 기능 범위를 유지합니다.
 

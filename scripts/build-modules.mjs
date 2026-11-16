@@ -8,7 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const modules = {
   charts: { entry: 'Charts', global: 'MoumCharts', parts: ['model', 'charts'] },
   gantt: { entry: 'Gantt', global: 'MoumGantt', parts: ['model', 'gantt'] },
-  uploader: { entry: 'Uploader', global: 'MoumUploader', parts: ['parser', 'transport', 'uploader'] },
+  uploader: { entry: 'Uploader', global: 'MoumUploader', parts: ['parser', 'transport', 'worker-client', 'uploader'] },
   calendar: { entry: 'Calendar', global: 'MoumCalendar', parts: ['model', 'calendar'] },
   datepicker: { entry: 'DatePicker', global: 'MoumDatePicker', parts: ['datepicker'] },
   pagination: { entry: 'Pagination', global: 'MoumPagination', parts: ['pagination'] },
@@ -29,6 +29,9 @@ for (const [name, config] of Object.entries(modules)) {
   await save(`dist/moum-${name}.css`, (await readFile(path.join(dir, 'src', `${name}.css`), 'utf8')).replace(/\r\n?/g, '\n') + '\n' + (await readFile(path.join(root, 'styles/components.css'), 'utf8')).replace(/\r\n?/g, '\n'));
   await save('LICENSE', (await readFile(path.join(root, 'LICENSE'), 'utf8')).replace(/\r\n?/g, '\n'));
   if (name === 'uploader') {
+    const parser=(await readFile(path.join(dir,'src/parser.js'),'utf8')).replace(/\r\n?/g,'\n').replace(/^export /gm,'');
+    const worker=parser+'\n'+(await readFile(path.join(dir,'src/worker.js'),'utf8')).replace(/\r\n?/g,'\n');new Script(worker);
+    await save('dist/moum-uploader-worker.js',banner+worker);
     await mkdir(path.join(dir, 'vendor/sheetjs'), { recursive: true });
     for (const file of ['xlsx.full.min.js', 'LICENSE']) { const relative = `vendor/sheetjs/${file}`; await copyFile(path.join(root, 'packages/grid', relative), path.join(dir, relative)); files.push(relative); }
     files.push('THIRD_PARTY_NOTICES.md');

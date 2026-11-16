@@ -77,7 +77,9 @@ export async function parseUploadFile(file, options = {}) {
   if (file.size > limits.maxFileSize) throw new RangeError(`파일 크기 제한: ${Math.round(limits.maxFileSize / 1024 / 1024)}MB`);
   const extension = String(file.name || '').split('.').pop().toLowerCase();
   if (!['csv', 'tsv', 'xlsx', 'xls', 'json'].includes(extension)) return { kind: 'file', sheets: [] };
+  options.onParseStage?.('reading');
   const bytes = await file.arrayBuffer();
+  options.onParseStage?.('parsing');
   if (['xlsx', 'xls'].includes(extension)) {
     const library = options.excelLibrary || globalThis.XLSX; if (!library?.read || !library?.utils) throw new Error('Excel 파서가 없습니다. 동봉 SheetJS를 먼저 로드하거나 excelLibrary로 전달하세요.');
     checkWorkbookArchive(bytes, limits.maxExpandedBytes);

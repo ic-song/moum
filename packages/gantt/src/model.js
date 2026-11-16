@@ -6,6 +6,20 @@ export function ganttDate(value) {
   return ms;
 }
 export function shiftGanttDate(value, days) { return new Date(ganttDate(value) + days * ganttDay).toISOString().slice(0, 10); }
+export function normalizeWorkCalendar(calendar) {
+  if(calendar==null)return null;
+  if(typeof calendar!=='object'||Array.isArray(calendar)||!Array.isArray(calendar.weekendDays??[])||!Array.isArray(calendar.holidays??[]))throw new TypeError('workCalendar의 weekendDays와 holidays는 배열입니다.');
+  const weekendDays=[...new Set(calendar.weekendDays??[0,6])],holidays=[...new Set(calendar.holidays??[])];
+  if(weekendDays.length>6||weekendDays.some(n=>!Number.isInteger(n)||n<0||n>6)||holidays.length>10000)throw new RangeError('주말은 0~6이며 최소 하루는 업무일이어야 합니다. 휴일은 최대10,000개입니다.');
+  holidays.forEach(ganttDate);return {weekendDays,holidays};
+}
+function workStamp(stamp,calendar) { return !calendar||(!calendar.weekendDays.includes(new Date(stamp).getUTCDay())&&!calendar.holidays.includes(new Date(stamp).toISOString().slice(0,10))); }
+export function isGanttWorkday(date, calendar) { return workStamp(ganttDate(date),normalizeWorkCalendar(calendar)); }
+export function ganttWorkingDays(start,end,calendar) {
+  calendar=normalizeWorkCalendar(calendar);const a=ganttDate(start),b=ganttDate(end);if(b<a||b-a>3650*ganttDay)throw new RangeError('업무일 계산 범위는 최대10년입니다.');
+  let count=0;for(let n=a;n<=b;n+=ganttDay)if(workStamp(n,calendar))count++;return count;
+}
+function nextWorkStamp(stamp,calendar) { for(let i=0;i<=36600;i++,stamp+=ganttDay){if(stamp>ganttDate('9999-12-31'))break;if(workStamp(stamp,calendar))return stamp;}throw new RangeError('계산 가능한 업무일 범위를 초과했습니다.'); }
 export function ganttSummary(tasks) {
   const data=normalizeTasks(tasks);if(!data.length)return null;
   const parents=new Set(data.map(t=>t.parentId).filter(id=>id!==null)),leaves=data.filter(t=>!parents.has(t.id)),work=leaves.filter(t=>t.type!=='milestone'),weighted=work.length?work:leaves;
@@ -44,7 +58,7 @@ export function normalizeTasks(tasks) {
   return result;
 }
 export class GanttModel {
-  constructor(tasks = []) { this.tasks = normalizeTasks(tasks); this.past = []; this.future = []; }
+  constructor(tasks = [], options = {}) { this.workCalendar=normalizeWorkCalendar(options.workCalendar);this.tasks = normalizeTasks(tasks); this.past = []; this.future = []; }
   getTasks() { return structuredClone(this.tasks); }
   commit(tasks) { const next = normalizeTasks(tasks); this.past.push(this.getTasks()); if (this.past.length > 50) this.past.shift(); this.future = []; this.tasks = next; return this.getTasks(); }
   setTasks(tasks) { this.tasks = normalizeTasks(tasks); this.past = []; this.future = []; }
@@ -53,8 +67,12 @@ export class GanttModel {
   scheduleDependencies() {
     const tasks=this.getTasks(), byId=new Map(tasks.map(t=>[t.id,t])), done=new Set();
     const visit=id=>{if(done.has(id))return;const task=byId.get(id);for(const dep of task.dependencies)visit(dep);
-      const required=Math.max(ganttDate(task.start),...task.dependencies.map(dep=>ganttDate(byId.get(dep).end)+ganttDay));
-      if(required>ganttDate(task.start)){const duration=ganttDate(task.end)-ganttDate(task.start);task.start=new Date(required).toISOString().slice(0,10);task.end=new Date(required+duration).toISOString().slice(0,10);}done.add(id);};
+      let required=Math.max(ganttDate(task.start),...task.dependencies.map(dep=>ganttDate(byId.get(dep).end)+ganttDay));
+      if(this.workCalendar){
+        required=nextWorkStamp(required,this.workCalendar);const count=task.type==='milestone'?1:Math.max(1,ganttWorkingDays(task.start,task.end,this.workCalendar));let end=required;
+        for(let n=1;n<count;n++)end=nextWorkStamp(end+ganttDay,this.workCalendar);
+        task.start=new Date(required).toISOString().slice(0,10);task.end=new Date(end).toISOString().slice(0,10);
+      }else if(required>ganttDate(task.start)){const duration=ganttDate(task.end)-ganttDate(task.start);task.start=new Date(required).toISOString().slice(0,10);task.end=new Date(required+duration).toISOString().slice(0,10);}done.add(id);};
     for(const task of tasks)visit(task.id);
     if(tasks.some((t,i)=>t.start!==this.tasks[i].start||t.end!==this.tasks[i].end))return this.commit(tasks);
     return this.getTasks();

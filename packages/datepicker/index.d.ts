@@ -9,6 +9,9 @@ export declare class DatePickerModel {
  isDisabled(date: string): boolean;
 }
 export declare class DatePicker {
+ static attach(input: string | HTMLInputElement, options?: DatePickerOptions): DatePicker;
+ open(): void;
+ close(restoreFocus?: boolean): void;
  constructor(target: string | HTMLElement, options?: DatePickerOptions);
  getValue(): DatePickerValue;
  setValue(value: DatePickerValue): void;

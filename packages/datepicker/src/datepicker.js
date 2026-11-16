@@ -32,7 +32,35 @@ export class DatePickerModel {
   }
 }
 function dpEl(tag, text, cls) { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; }
+let dpSequence = 0;
+function dpInputValue(text,range) { text=text.trim();if(!text)return null;if(!range)return text;const parts=text.split(/\s*~\s*/);if(parts.length>2)throw new TypeError('기간은 시작일 ~ 종료일 형식입니다.');return {start:parts[0],end:parts[1]||null}; }
 export class DatePicker {
+  static attach(input, options = {}) {
+    input = typeof input === 'string' ? document.querySelector(input) : input;
+    if (!(input instanceof HTMLInputElement) || !['text','search'].includes(input.type)) throw new TypeError('팝업에는 text 또는 search 입력 필드가 필요합니다.');
+    const host = dpEl('div'); document.body.append(host);
+    let picker;
+    try { picker = new DatePicker(host, { ...options, value: options.value === undefined ? dpInputValue(input.value,options.mode==='range') : options.value }); }
+    catch (error) { host.remove(); throw error; }
+    picker.popupInput = input; picker.popupHost = host; picker.root.classList.add('moum-datepicker-popup'); picker.root.hidden = true;
+    picker.inputClassAdded=!input.classList.contains('moum-datepicker-input');input.classList.add('moum-datepicker-input');
+    picker.root.id = `moum-datepicker-popup-${++dpSequence}`; picker.root.setAttribute('role','dialog');
+    picker.savedAttributes = new Map(['role','aria-autocomplete','aria-haspopup','aria-expanded','aria-controls','aria-invalid','aria-describedby'].map(name=>[name,input.getAttribute(name)]));
+    picker.inputError=dpEl('span',null,'moum-datepicker-input-error');picker.inputError.id=picker.root.id+'-error';picker.inputError.hidden=true;picker.inputError.setAttribute('role','alert');input.insertAdjacentElement('afterend',picker.inputError);
+    input.setAttribute('aria-describedby',[input.getAttribute('aria-describedby'),picker.inputError.id].filter(Boolean).join(' '));
+    input.setAttribute('role','combobox');input.setAttribute('aria-autocomplete','none');
+    input.setAttribute('aria-haspopup','dialog'); input.setAttribute('aria-expanded','false'); input.setAttribute('aria-controls',picker.root.id);
+    const open = () => picker.open(), key = e => { if(e.key==='ArrowDown'){e.preventDefault();picker.open();} }, change = () => picker.attempt(()=>{
+      picker.setValue(dpInputValue(input.value,options.mode==='range')); picker.options.onChange?.(picker.getValue());
+    });
+    const outside = e => { if(!picker.root.contains(e.target)&&e.target!==input)picker.close(false); };
+    const escape = e => { if(e.key==='Escape'&&!picker.root.hidden){e.preventDefault();picker.close();} };
+    const position = () => picker.positionPopup();
+    for(const [node,event,fn,capture] of [[input,'click',open],[input,'keydown',key],[input,'change',change],[document,'pointerdown',outside,true],[document,'focusin',outside],[document,'keydown',escape],[window,'resize',position],[window,'scroll',position,true]]){
+      node.addEventListener(event,fn,capture); (picker.popupListeners??=[]).push(()=>node.removeEventListener(event,fn,capture));
+    }
+    picker.render(); return picker;
+  }
   constructor(target, options = {}) {
     this.target = typeof target === 'string' ? document.querySelector(target) : target;
     if (!this.target || this.target.childNodes.length) throw new Error('비어 있는 날짜 선택 컨테이너가 필요합니다.');
@@ -46,16 +74,27 @@ export class DatePicker {
     this.root = dpEl('section',null,'moum-datepicker'); this.root.setAttribute('aria-label',this.options.title); this.target.append(this.root); this.render();
   }
   active() { if (this.destroyed) throw new Error('제거된 날짜 선택입니다.'); }
+  syncInput() { if(!this.popupInput)return; const v=this.getValue();this.popupInput.value=typeof v==='string'?v:v?`${v.start}${v.end?' ~ '+v.end:''}`:'';this.popupInput.removeAttribute('aria-invalid');this.inputError.hidden=true;this.inputError.textContent=''; }
+  open() { this.active();if(!this.popupInput||this.options.disabled||this.popupInput.disabled)return;this.root.hidden=false;this.popupInput.setAttribute('aria-expanded','true');this.render();this.root.querySelector('[data-date][tabindex="0"]')?.focus(); }
+  close(restoreFocus = true) { this.active();if(!this.popupInput)return;const wasOpen=!this.root.hidden;this.root.hidden=true;this.root.replaceChildren();this.popupInput.setAttribute('aria-expanded','false');if(wasOpen&&restoreFocus)this.popupInput.focus(); }
+  positionPopup() {
+    if(!this.popupInput||this.root.hidden)return;
+    const rect=this.popupInput.getBoundingClientRect(),edge=8,viewport=window.visualViewport;
+    const width=viewport?.width||innerWidth,height=viewport?.height||innerHeight,left=viewport?.offsetLeft||0,top=viewport?.offsetTop||0;
+    this.root.style.width=`${Math.min(380,width-edge*2)}px`;this.root.style.maxHeight=`${height-edge*2}px`;
+    const box=this.root.getBoundingClientRect();this.root.style.left=`${Math.max(left+edge,Math.min(rect.left,left+width-box.width-edge))}px`;
+    this.root.style.top=`${Math.max(top+edge,Math.min(rect.bottom+edge,top+height-box.height-edge))}px`;
+  }
   getValue() { return this.model.getValue(); }
   setValue(value) { this.active(); this.model.setValue(value); const v=this.getValue(), date=typeof v==='string'?v:v?.start; if(date) {this.focusDate=date;this.month=date.slice(0,7)+'-01';} this.render(); }
-  setDisabled(disabled) { this.active(); this.options.disabled=!!disabled; this.render(); }
+  setDisabled(disabled) { this.active(); this.options.disabled=!!disabled; if(disabled)this.close(false);this.render(); }
   clear() { this.active(); this.model.setValue(null); this.render(); this.options.onChange?.(null); }
-  attempt(fn) { try { fn(); } catch(error) { this.root.dataset.state='error';this.status.textContent=error.message; this.options.onError?.(error); } }
+  attempt(fn) { try { fn(); } catch(error) { this.root.dataset.state='error';this.status.textContent=error.message;if(this.popupInput){this.popupInput.setAttribute('aria-invalid','true');this.inputError.textContent=error.message;this.inputError.hidden=false;} this.options.onError?.(error); } }
   moveMonth(delta) {
     const d = new Date(dateValue(this.month)); d.setUTCMonth(d.getUTCMonth()+delta); const year=d.getUTCFullYear(); if(year<1||year>9999)return;
     this.month=dpDate(d.getTime()); this.focusDate=this.month; this.render(); this.root.querySelector(`[data-nav="${delta}"]`)?.focus();
   }
-  choose(date) { this.active(); if(this.options.disabled)return; this.model.select(date); this.focusDate=date; this.month=date.slice(0,7)+'-01'; this.render(); this.root.querySelector(`[data-date="${date}"]`)?.focus(); this.options.onChange?.(this.getValue()); }
+  choose(date) { this.active(); if(this.options.disabled)return; this.model.select(date); this.focusDate=date; this.month=date.slice(0,7)+'-01'; this.render(); this.root.querySelector(`[data-date="${date}"]`)?.focus(); if(this.options.mode!=='range'||this.getValue()?.end)this.close();this.options.onChange?.(this.getValue()); }
   key(event,date) {
     const offsets={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7}; let stamp=dateValue(date);
     if(event.key in offsets) stamp += offsets[event.key]*dateDay;
@@ -66,6 +105,7 @@ export class DatePicker {
     this.focusDate=dpDate(stamp);this.month=this.focusDate.slice(0,7)+'-01';this.render();this.root.querySelector(`[data-date="${this.focusDate}"]`)?.focus();
   }
   render() {
+    if(this.popupInput&&this.root.hidden){this.root.replaceChildren();this.syncInput();return;}
     this.root.replaceChildren(); const o=this.options,v=this.getValue(),range=o.mode==='range';this.root.dataset.state=o.disabled?'disabled':v?'selected':'empty';
     const button=(text,fn)=>{const b=dpEl('button',text);b.type='button';b.disabled=o.disabled;b.addEventListener('click',()=>this.attempt(fn));return b;};
     this.root.append(dpEl('h3',o.title));const tools=dpEl('div',null,'moum-datepicker-toolbar');
@@ -83,6 +123,10 @@ export class DatePicker {
     for(const [i,label] of (range?['시작일','종료일']:['선택일']).entries()){const wrap=dpEl('label',label),input=dpEl('input');input.type='date';input.min=this.model.options.min;input.max=this.model.options.max;input.disabled=o.disabled;input.value=range?(i?v?.end:v?.start)||'':v||'';if(o.name)input.name=range?`${o.name}.${i?'end':'start'}`:o.name;wrap.append(input);fields.append(wrap);this.inputs.push(input);}
     fields.append(button('날짜 적용',()=>{if(range&&!this.inputs[0].value&&this.inputs[1].value)throw new Error('시작일을 입력하세요.');this.model.setValue(range?(this.inputs[0].value?{start:this.inputs[0].value,end:this.inputs[1].value||null}:null):this.inputs[0].value);const next=this.getValue();this.setValue(next);this.options.onChange?.(next);this.root.querySelector('input')?.focus();}),button('지우기',()=>{this.clear();this.root.querySelector('input')?.focus();}));this.root.append(fields);
     this.status=dpEl('p',range?(v?.end?`${v.start} ~ ${v.end}`:v?'종료일을 선택하세요.':'시작일을 선택하세요.'):(v||'날짜를 선택하세요.'),'moum-datepicker-status');this.status.setAttribute('role','status');this.root.append(this.status);
+    const quick=dpEl('div',null,'moum-datepicker-toolbar'),jump=dpEl('input');jump.type='month';jump.value=this.month.slice(0,7);jump.min=this.model.options.min.slice(0,7);jump.max=this.model.options.max.slice(0,7);jump.disabled=o.disabled;jump.setAttribute('aria-label','이동할 월');
+    jump.addEventListener('change',()=>this.attempt(()=>{if(!/^\d{4}-\d{2}$/.test(jump.value))throw new Error('이동할 월을 선택하세요.');const date=jump.value+'-01';dateValue(date);if(jump.value<jump.min||jump.value>jump.max)throw new RangeError('이동할 수 없는 월입니다.');this.month=date;this.focusDate=date;this.render();this.root.querySelector('[aria-label="이동할 월"]')?.focus();}));quick.append(jump,button('오늘',()=>this.choose(dpToday())));
+    if(range)quick.append(button('이번 달',()=>{const today=dpToday(),start=today.slice(0,7)+'-01',d=new Date(dateValue(start));d.setUTCMonth(d.getUTCMonth()+1);const end=dpDate(d.getTime()-dateDay);this.setValue({start,end});this.close();this.options.onChange?.(this.getValue());}));
+    if(this.popupInput)quick.append(button('닫기',()=>this.close()));this.root.append(quick);this.syncInput();this.positionPopup();
   }
-  destroy() { if(this.destroyed)return;this.destroyed=true;this.root.remove(); }
+  destroy() { if(this.destroyed)return;this.popupListeners?.forEach(remove=>remove());if(this.popupInput)for(const [name,value]of this.savedAttributes){if(value===null)this.popupInput.removeAttribute(name);else this.popupInput.setAttribute(name,value);}if(this.inputClassAdded)this.popupInput.classList.remove('moum-datepicker-input');this.inputError?.remove();this.destroyed=true;this.root.remove();this.popupHost?.remove(); }
 }

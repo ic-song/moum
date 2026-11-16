@@ -1,5 +1,6 @@
 import { normalizeUploadLimits, parseUploadFile, tableFromSheet, normalizeUploadSchema, autoUploadMapping, validateUploadTable, uploadCSV } from './parser.js';
 import { createXHRTransport, performUpload } from './transport.js';
+import { parseUploadFileInWorker } from './worker-client.js';
 
 function uploadEl(tag, text, cls) { const el = document.createElement(tag); if (text != null) el.textContent = text; if (cls) el.className = cls; return el; }
 const uploadStatus = { reading: '읽는 중', ready: '검토 완료', invalid: '검증 오류', uploading: '전송 중', uploaded: '전송 완료', error: '오류', cancelled: '취소됨' };
@@ -14,6 +15,8 @@ export class Uploader {
     const limits = normalizeUploadLimits(options); this.options = { ...limits, maxFiles: 10, pageSize: 25, uploadTimeout: 120000, uploadConcurrency: 1, accept: '', ...options }; this.schema = normalizeUploadSchema(options.schema || []);
     if(!Number.isInteger(this.options.uploadConcurrency)||this.options.uploadConcurrency<1||this.options.uploadConcurrency>6)throw new RangeError('uploadConcurrency는 1~6 정수입니다.');
     this.batchVersion=0;
+    if(options.parseTimeout!=null&&(!Number.isFinite(options.parseTimeout)||options.parseTimeout<=0))throw new RangeError('parseTimeout은 양수입니다.');
+    if(options.workerURL&&options.excelLibrary)throw new TypeError('Worker는 동봉 SheetJS를 사용합니다. excelLibrary와 함께 지정할 수 없습니다.');
     if (!Number.isFinite(this.options.uploadTimeout) || this.options.uploadTimeout <= 0) throw new RangeError('uploadTimeout은 양수입니다.');
     if (!Number.isInteger(this.options.maxFiles) || this.options.maxFiles < 1 || !Number.isInteger(this.options.pageSize) || this.options.pageSize < 1 || this.options.pageSize > 200) throw new RangeError('maxFiles는 양수, pageSize는 1~200 정수입니다.');
     this.transport = options.onUpload || (options.url ? createXHRTransport(options.url, options.transportOptions) : null); this.items = []; this.activeId = null; this.message = '';
@@ -36,14 +39,19 @@ export class Uploader {
     if (!this.destroyed) this.notify(); return added;
   }
   async readItem(item) {
-    const version = ++item.version; item.status = 'reading'; item.error = ''; item.errorStage = null; this.notify();
+    const version = ++item.version,controller=new AbortController();item.controller=controller; item.status = 'reading'; item.error = ''; item.errorStage = null;item.parseStage='starting'; this.notify();
     try {
-      const parsed = await parseUploadFile(item.file, this.options);
+      const onStage=stage=>{if(this.destroyed||item.version!==version||!this.items.includes(item))return;item.parseStage=stage;this.notify();this.options.onParseProgress?.({id:item.id,stage});};
+      if(!this.options.workerURL)onStage('starting');
+      const parsed = this.options.workerURL?await parseUploadFileInWorker(item.file,this.options,controller.signal,onStage):await parseUploadFile(item.file,{...this.options,onParseStage:onStage});
+      if(!this.options.workerURL)onStage('complete');
       if (this.destroyed || !this.items.includes(item) || item.version !== version) return;
+      item.parseStage='complete';item.controller=null;
       item.parsed = parsed; item.sheetIndex = 0; item.headerRow = parsed.sheets[0]?.rowNumbers[0] ?? 0; item.page = 0;
       if (/^image\/(png|jpeg|gif|webp)$/.test(item.file.type) && !item.objectURL) item.objectURL = URL.createObjectURL(item.file);
       this.prepare(item, true);
     } catch (error) { if (this.destroyed || !this.items.includes(item) || item.version !== version) return; item.status = 'error'; item.errorStage = 'parse'; item.error = error.message; this.options.onError?.({ id: item.id, error }); }
+    if(item.version===version)item.controller=null;
     if (!this.destroyed) this.notify();
   }
   prepare(item, resetMapping = false) {
@@ -67,7 +75,7 @@ export class Uploader {
     if (String(value ?? '').length > this.options.maxCellLength) throw new RangeError('셀 길이 제한을 초과했습니다.');
     sheet.rows[rowIndex][column.index] = value; sheet.cellErrors = sheet.cellErrors.filter(e => e.row !== sourceRow || e.column !== column.index); item.edited = true; this.prepare(item); this.notify();
   }
-  getFiles() { return this.items.map(i => ({ id: i.id, name: i.file.name, size: i.file.size, type: i.file.type, status: i.status, progress: i.progress, error: i.error, sheetName: i.parsed?.sheets[i.sheetIndex]?.name ?? null, rowCount: i.table?.rows.length ?? 0, errorCount: i.result?.errors.length ?? 0 })); }
+  getFiles() { return this.items.map(i => ({ id: i.id, name: i.file.name, size: i.file.size, type: i.file.type, status: i.status, progress: i.progress, parseStage:i.parseStage??null, error: i.error, sheetName: i.parsed?.sheets[i.sheetIndex]?.name ?? null, rowCount: i.table?.rows.length ?? 0, errorCount: i.result?.errors.length ?? 0 })); }
   getData(id, { validOnly = false } = {}) { const item = this.find(id); return structuredClone((validOnly ? item.result?.validData : item.result?.data) || []); }
   getErrors(id) { return structuredClone(this.find(id).result?.errors || []); }
   getMapping(id) { return { ...this.find(id).mapping }; }
@@ -117,6 +125,7 @@ export class Uploader {
       const li = uploadEl('li'); if (this.activeId === item.id) li.classList.add('is-active');
       const select = button(item.file.name, () => { this.activeId = item.id; this.render(); }); select.classList.add('moum-uploader-file-name'); select.setAttribute('aria-pressed', String(this.activeId === item.id));
       const info = uploadEl('span', `${(item.file.size / 1024).toFixed(1)}KB · ${uploadStatus[item.status]}`); info.setAttribute('role', 'status'); li.append(select, info);
+      if(item.status==='reading'){const progress=uploadEl('progress');progress.setAttribute('aria-label',`${item.file.name} 파싱 중`);li.append(progress,uploadEl('span',{starting:'파서 준비 중',reading:'파일 읽는 중',parsing:'표 데이터 분석 중'}[item.parseStage]||'파일 읽는 중'));}
       if (item.status === 'uploading') { const progress = uploadEl('progress'); progress.max = 100; progress.value = item.progress; progress.dataset.progressId = item.id; progress.setAttribute('aria-label', `${item.file.name} 전송률`); li.append(progress); }
       if (['reading', 'uploading'].includes(item.status)) li.append(button('취소', () => this.cancel(item.id)));
       else if (['error', 'cancelled'].includes(item.status)) li.append(button('재시도', () => this.retry(item.id), !!item.parsed && !this.transport));

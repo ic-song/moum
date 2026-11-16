@@ -21,7 +21,8 @@
     "test:usage": "node scripts/prepare-usage-check.mjs && node scripts/browser-usage-check.mjs",
     "test:components-browser": "node scripts/browser-components-check.mjs",
     "test:packages": "node scripts/prepare-suite-packages.mjs",
-    "test:mini-gantt": "node scripts/browser-mini-gantt-check.mjs"
+    "test:mini-gantt": "node scripts/browser-mini-gantt-check.mjs",
+    "test:business-browser": "node scripts/browser-business-check.mjs"
   },
   "engines": {
     "node": ">=22"

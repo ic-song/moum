@@ -1,6 +1,6 @@
 {
   "name": "@moum/uploader",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "Independent file queue with Excel/CSV/JSON parsing, preview, mapping, validation and cancellable upload.",
   "license": "MIT",
@@ -15,7 +15,8 @@
       "require": "./dist/moum-uploader.cjs"
     },
     "./style.css": "./dist/moum-uploader.css",
-    "./vendor/sheetjs": "./vendor/sheetjs/xlsx.full.min.js"
+    "./vendor/sheetjs": "./vendor/sheetjs/xlsx.full.min.js",
+    "./worker.js": "./dist/moum-uploader-worker.js"
   },
   "files": [
     "dist",

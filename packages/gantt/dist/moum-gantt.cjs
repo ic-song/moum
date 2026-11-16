@@ -1,4 +1,4 @@
-/*! MOUM gantt v0.2.0 | MIT License | See LICENSE */
+/*! MOUM gantt v0.3.0 | MIT License | See LICENSE */
 'use strict';
 const ganttDay = 86400000;
 function ganttDate(value) {
@@ -8,6 +8,20 @@ function ganttDate(value) {
   return ms;
 }
 function shiftGanttDate(value, days) { return new Date(ganttDate(value) + days * ganttDay).toISOString().slice(0, 10); }
+function normalizeWorkCalendar(calendar) {
+  if(calendar==null)return null;
+  if(typeof calendar!=='object'||Array.isArray(calendar)||!Array.isArray(calendar.weekendDays??[])||!Array.isArray(calendar.holidays??[]))throw new TypeError('workCalendar의 weekendDays와 holidays는 배열입니다.');
+  const weekendDays=[...new Set(calendar.weekendDays??[0,6])],holidays=[...new Set(calendar.holidays??[])];
+  if(weekendDays.length>6||weekendDays.some(n=>!Number.isInteger(n)||n<0||n>6)||holidays.length>10000)throw new RangeError('주말은 0~6이며 최소 하루는 업무일이어야 합니다. 휴일은 최대10,000개입니다.');
+  holidays.forEach(ganttDate);return {weekendDays,holidays};
+}
+function workStamp(stamp,calendar) { return !calendar||(!calendar.weekendDays.includes(new Date(stamp).getUTCDay())&&!calendar.holidays.includes(new Date(stamp).toISOString().slice(0,10))); }
+function isGanttWorkday(date, calendar) { return workStamp(ganttDate(date),normalizeWorkCalendar(calendar)); }
+function ganttWorkingDays(start,end,calendar) {
+  calendar=normalizeWorkCalendar(calendar);const a=ganttDate(start),b=ganttDate(end);if(b<a||b-a>3650*ganttDay)throw new RangeError('업무일 계산 범위는 최대10년입니다.');
+  let count=0;for(let n=a;n<=b;n+=ganttDay)if(workStamp(n,calendar))count++;return count;
+}
+function nextWorkStamp(stamp,calendar) { for(let i=0;i<=36600;i++,stamp+=ganttDay){if(stamp>ganttDate('9999-12-31'))break;if(workStamp(stamp,calendar))return stamp;}throw new RangeError('계산 가능한 업무일 범위를 초과했습니다.'); }
 function ganttSummary(tasks) {
   const data=normalizeTasks(tasks);if(!data.length)return null;
   const parents=new Set(data.map(t=>t.parentId).filter(id=>id!==null)),leaves=data.filter(t=>!parents.has(t.id)),work=leaves.filter(t=>t.type!=='milestone'),weighted=work.length?work:leaves;
@@ -46,7 +60,7 @@ function normalizeTasks(tasks) {
   return result;
 }
 class GanttModel {
-  constructor(tasks = []) { this.tasks = normalizeTasks(tasks); this.past = []; this.future = []; }
+  constructor(tasks = [], options = {}) { this.workCalendar=normalizeWorkCalendar(options.workCalendar);this.tasks = normalizeTasks(tasks); this.past = []; this.future = []; }
   getTasks() { return structuredClone(this.tasks); }
   commit(tasks) { const next = normalizeTasks(tasks); this.past.push(this.getTasks()); if (this.past.length > 50) this.past.shift(); this.future = []; this.tasks = next; return this.getTasks(); }
   setTasks(tasks) { this.tasks = normalizeTasks(tasks); this.past = []; this.future = []; }
@@ -55,8 +69,12 @@ class GanttModel {
   scheduleDependencies() {
     const tasks=this.getTasks(), byId=new Map(tasks.map(t=>[t.id,t])), done=new Set();
     const visit=id=>{if(done.has(id))return;const task=byId.get(id);for(const dep of task.dependencies)visit(dep);
-      const required=Math.max(ganttDate(task.start),...task.dependencies.map(dep=>ganttDate(byId.get(dep).end)+ganttDay));
-      if(required>ganttDate(task.start)){const duration=ganttDate(task.end)-ganttDate(task.start);task.start=new Date(required).toISOString().slice(0,10);task.end=new Date(required+duration).toISOString().slice(0,10);}done.add(id);};
+      let required=Math.max(ganttDate(task.start),...task.dependencies.map(dep=>ganttDate(byId.get(dep).end)+ganttDay));
+      if(this.workCalendar){
+        required=nextWorkStamp(required,this.workCalendar);const count=task.type==='milestone'?1:Math.max(1,ganttWorkingDays(task.start,task.end,this.workCalendar));let end=required;
+        for(let n=1;n<count;n++)end=nextWorkStamp(end+ganttDay,this.workCalendar);
+        task.start=new Date(required).toISOString().slice(0,10);task.end=new Date(end).toISOString().slice(0,10);
+      }else if(required>ganttDate(task.start)){const duration=ganttDate(task.end)-ganttDate(task.start);task.start=new Date(required).toISOString().slice(0,10);task.end=new Date(required+duration).toISOString().slice(0,10);}done.add(id);};
     for(const task of tasks)visit(task.id);
     if(tasks.some((t,i)=>t.start!==this.tasks[i].start||t.end!==this.tasks[i].end))return this.commit(tasks);
     return this.getTasks();
@@ -91,12 +109,21 @@ class Gantt {
     if (!this.target || this.target.childNodes.length) throw new Error('비어 있는 간트 컨테이너가 필요합니다.');
     if (options.scale && !ganttScales[options.scale]) throw new Error('scale은 day/week/month입니다.');
     if(options.view!=null&&!['full','mini'].includes(options.view))throw new TypeError('view는 full 또는 mini입니다.');
-    this.options = { scale: 'day', editable: true, view:'full', ...options, range:miniGanttRange(options.range), mini:miniGanttOptions(options.mini) };this.miniOverrides={...options.mini}; this.model = new GanttModel(options.tasks || []); this.collapsed = new Set(); this.selected = null; this.sequence = ++ganttSequence;
+    this.options = { scale: 'day', editable: true, view:'full', ...options, range:miniGanttRange(options.range), mini:miniGanttOptions(options.mini) };this.miniOverrides={...options.mini}; this.model = new GanttModel(options.tasks || [],options); this.collapsed = new Set(); this.selected = null; this.sequence = ++ganttSequence;
     this.root = ganttEl('section', null, 'moum-gantt'); this.root.setAttribute('aria-label', options.title || '작업 일정'); this.target.append(this.root); this.render();
   }
   active() { if (this.destroyed) throw new Error('이미 제거된 간트입니다.'); }
   getTasks() { return this.model.getTasks(); }
   getWarnings() { return this.model.getWarnings(); }
+  shadeWorkdays(track,first,last,unit) {
+    if(!this.model.workCalendar)return;
+    const key=`${first}/${last}/${unit}`;
+    if(this.shadeKey!==key){const calendar=this.model.workCalendar,holidays=new Set(calendar.holidays),stops=[];
+      for(let stamp=first;stamp<last;stamp+=ganttDay){const date=new Date(stamp);if(calendar.weekendDays.includes(date.getUTCDay())||holidays.has(date.toISOString().slice(0,10))){const a=(stamp-first)/ganttDay*unit,b=a+unit;stops.push(`transparent ${a}%, var(--moum-gantt-offday, #e9eeeb) ${a}%, var(--moum-gantt-offday, #e9eeeb) ${b}%, transparent ${b}%`);}}
+      this.shadeKey=key;this.shadeValue=stops.length?`linear-gradient(to right, ${stops.join(', ')})`:'';
+    }
+    if(this.shadeValue){track.style.backgroundImage=this.shadeValue;track.style.backgroundSize='100% 100%';}
+  }
   setTasks(tasks) { this.active(); this.model.setTasks(tasks); this.selected = null; this.collapsed.clear(); this.render(); }
   updateTask(id, patch) { this.active(); this.model.updateTask(id, patch); this.changed('update', String(id)); }
   addTask(task) { this.active(); this.model.addTask(task); this.changed('add', String(task.id)); }
@@ -129,6 +156,7 @@ class Gantt {
     if (this.options.editable) for (const [label, action, disabled] of [['되돌리기', () => this.undo(), !this.model.past.length], ['다시 실행', () => this.redo(), !this.model.future.length]]) { const b = ganttEl('button', label); b.type = 'button'; b.disabled = disabled; b.addEventListener('click', action); toolbar.append(b); }
     if(this.options.editable){const b=ganttEl('button','선행 일정 맞추기');b.type='button';b.addEventListener('click',()=>this.attempt(()=>this.scheduleDependencies()));toolbar.append(b);}
     this.root.append(toolbar);
+    if(this.model.workCalendar)this.root.append(ganttEl('p','업무일 달력 · 음영은 주말·휴일입니다. 선행 일정 맞추기는 업무일 수를 유지합니다.','moum-gantt-calendar-info'));
     this.status = ganttEl('p', this.getWarnings().map(w => w.message).join(' ') || '작업을 선택해 날짜와 진행률을 확인하세요.', 'moum-gantt-status'); this.status.setAttribute('aria-live', 'polite');
     if (!this.model.tasks.length) { this.root.append(ganttEl('p', '표시할 작업이 없습니다. tasks 데이터로 작업을 추가하세요.', 'moum-gantt-empty'), this.status); return; }
     const tasks = this.visibleTasks(), all = this.model.tasks;
@@ -151,6 +179,7 @@ class Gantt {
       if (all.some(t => t.parentId === task.id)) { const toggle = ganttEl('button', this.collapsed.has(task.id) ? '+' : '−', 'moum-gantt-toggle'); toggle.type = 'button'; toggle.setAttribute('aria-label', `${task.name} 하위 작업`); toggle.setAttribute('aria-expanded', String(!this.collapsed.has(task.id))); toggle.addEventListener('click', () => { if (this.collapsed.has(task.id)) this.collapsed.delete(task.id); else this.collapsed.add(task.id); this.render(); }); name.append(toggle); }
       const choose = ganttEl('button', `${task.name} · ${task.progress}%`, 'moum-gantt-task-name'); choose.type = 'button'; choose.title = task.name; choose.addEventListener('click', () => this.selectTask(task.id)); name.append(choose); row.append(name);
       const lane = ganttEl('div', null, 'moum-gantt-lane'); lane.style.width = `${width}px`; lane.style.backgroundSize = `${dayWidth}px 100%`;
+      this.shadeWorkdays(lane,first,last,dayWidth/width*100);
       const x = (ganttDate(task.start) - first) / ganttDay * dayWidth, barWidth = (ganttDate(task.end) - ganttDate(task.start) + ganttDay) / ganttDay * dayWidth;
       const bar = ganttEl('button', null, 'moum-gantt-bar'); bar.type = 'button'; bar.dataset.taskId = task.id; bar.style.left = `${x}px`; bar.style.width = `${Math.max(16, barWidth)}px`;
       bar.setAttribute('aria-label', `${task.name}, ${task.start} ~ ${task.end}, ${task.progress}%. 방향키 날짜 이동, Alt+방향키 종료일 변경`);
@@ -179,6 +208,7 @@ class Gantt {
     if(options.type==='summary'){
       const summary=this.getSummary(),row=ganttEl('div',null,'moum-gantt-mini-row');if(options.labels)row.append(ganttEl('span','전체 진행','moum-gantt-mini-name'));
       const track=ganttEl('div',null,'moum-gantt-mini-track');track.setAttribute('role','progressbar');track.setAttribute('aria-label',`전체 ${summary.taskCount}개 말단 작업, 마일스톤 ${summary.milestoneCount}개 진행률`);track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');track.setAttribute('aria-valuenow',String(summary.progress));track.title=`${summary.start} ~ ${summary.end} · ${summary.progress}%`;
+      this.shadeWorkdays(track,first,last,ganttDay/total*100);
       const start=ganttDate(summary.start),end=ganttDate(summary.end)+ganttDay,a=Math.max(start,first),b=Math.min(end,last);
       if(b>a){const bar=ganttEl('span',null,'moum-gantt-mini-bar');bar.style.left=`${(a-first)/total*100}%`;bar.style.width=`${(b-a)/total*100}%`;const fill=ganttEl('span',null,'moum-gantt-mini-progress');fill.style.width=`${Math.max(0,Math.min(1,(start+(end-start)*summary.progress/100-a)/(b-a)))*100}%`;bar.append(fill,ganttEl('span',`${summary.progress}%`,'moum-gantt-mini-progress-text'));track.append(bar);}else track.append(ganttEl('span','범위 밖','moum-gantt-mini-outside'));
       row.append(track);list.append(row);this.root.append(list);if(options.status){this.status.textContent=`작업 ${summary.taskCount}개 · 마일스톤 ${summary.milestoneCount}개 · 기간 가중 진행률 ${summary.progress}%`;this.root.append(this.status);}return;
@@ -188,6 +218,7 @@ class Gantt {
     for(const task of tasks){
       const row=ganttEl('div',null,'moum-gantt-mini-row');if(options.labels){const name=ganttEl('span',task.name,'moum-gantt-mini-name');name.title=task.name;row.append(name);}
       const start=ganttDate(task.start),end=ganttDate(task.end)+ganttDay,visible=end>first&&start<last,track=ganttEl('button',null,'moum-gantt-mini-track');track.type='button';track.dataset.miniTask=task.id;track.disabled=!visible;track.setAttribute('aria-pressed',String(this.selected===task.id));track.setAttribute('aria-label',`${task.name}, ${task.start} ~ ${task.end}, 진행률 ${task.progress}%${visible?'':', 표시 범위 밖'}`);track.title=track.getAttribute('aria-label');
+      this.shadeWorkdays(track,first,last,ganttDay/total*100);
       if(visible){const bar=ganttEl('span',null,'moum-gantt-mini-bar');bar.setAttribute('aria-hidden','true');
         if(task.type==='milestone'){bar.classList.add('is-milestone');bar.textContent='◆';bar.style.left=`calc(${((start+ganttDay/2-first)/total)*100}% - 7px)`;}
         else {const a=Math.max(start,first),b=Math.min(end,last);bar.style.left=`${(a-first)/total*100}%`;bar.style.width=`${(b-a)/total*100}%`;const progress=ganttEl('span',null,'moum-gantt-mini-progress'),completed=start+(end-start)*task.progress/100;progress.style.width=`${Math.max(0,Math.min(1,(completed-a)/(b-a)))*100}%`;bar.append(progress,ganttEl('span',`${task.progress}%`,'moum-gantt-mini-progress-text'));}
@@ -216,4 +247,4 @@ class Gantt {
   destroy() { if (this.destroyed) return; this.cancelDrag?.(); this.destroyed = true; this.root.remove(); }
 }
 
-module.exports = { ganttDay, ganttDate, shiftGanttDate, ganttSummary, normalizeTasks, GanttModel, Gantt };
+module.exports = { ganttDay, ganttDate, shiftGanttDate, normalizeWorkCalendar, isGanttWorkday, ganttWorkingDays, ganttSummary, normalizeTasks, GanttModel, Gantt };
