@@ -45,12 +45,14 @@ export class DatePicker {
     picker.popupInput = input; picker.popupHost = host; picker.root.classList.add('moum-datepicker-popup'); picker.root.hidden = true;
     picker.inputClassAdded=!input.classList.contains('moum-datepicker-input');input.classList.add('moum-datepicker-input');
     picker.root.id = `moum-datepicker-popup-${++dpSequence}`; picker.root.setAttribute('role','dialog');
-    picker.savedAttributes = new Map(['role','aria-autocomplete','aria-haspopup','aria-expanded','aria-controls','aria-invalid','aria-describedby'].map(name=>[name,input.getAttribute(name)]));
+    picker.savedAttributes = new Map(['role','aria-autocomplete','aria-haspopup','aria-expanded','aria-controls','aria-invalid','aria-describedby','readonly','aria-disabled'].map(name=>[name,input.getAttribute(name)]));
+    picker.savedReadOnly=input.readOnly;input.readOnly=picker.options.disabled||picker.savedReadOnly;input.setAttribute('aria-disabled',String(picker.options.disabled));
     picker.inputError=dpEl('span',null,'moum-datepicker-input-error');picker.inputError.id=picker.root.id+'-error';picker.inputError.hidden=true;picker.inputError.setAttribute('role','alert');input.insertAdjacentElement('afterend',picker.inputError);
     input.setAttribute('aria-describedby',[input.getAttribute('aria-describedby'),picker.inputError.id].filter(Boolean).join(' '));
     input.setAttribute('role','combobox');input.setAttribute('aria-autocomplete','none');
     input.setAttribute('aria-haspopup','dialog'); input.setAttribute('aria-expanded','false'); input.setAttribute('aria-controls',picker.root.id);
     const open = () => picker.open(), key = e => { if(e.key==='ArrowDown'){e.preventDefault();picker.open();} }, change = () => picker.attempt(()=>{
+      if(picker.options.disabled||input.disabled)return;
       picker.setValue(dpInputValue(input.value,options.mode==='range')); picker.options.onChange?.(picker.getValue());
     });
     const outside = e => { if(!picker.root.contains(e.target)&&e.target!==input)picker.close(false); };
@@ -87,7 +89,7 @@ export class DatePicker {
   }
   getValue() { return this.model.getValue(); }
   setValue(value) { this.active(); this.model.setValue(value); const v=this.getValue(), date=typeof v==='string'?v:v?.start; if(date) {this.focusDate=date;this.month=date.slice(0,7)+'-01';} this.render(); }
-  setDisabled(disabled) { this.active(); this.options.disabled=!!disabled; if(disabled)this.close(false);this.render(); }
+  setDisabled(disabled) { this.active(); this.options.disabled=!!disabled;if(this.popupInput){this.popupInput.readOnly=!!disabled||this.savedReadOnly;this.popupInput.setAttribute('aria-disabled',String(!!disabled));} if(disabled)this.close(false);this.render(); }
   clear() { this.active(); this.model.setValue(null); this.render(); this.options.onChange?.(null); }
   attempt(fn) { try { fn(); } catch(error) { this.root.dataset.state='error';this.status.textContent=error.message;if(this.popupInput){this.popupInput.setAttribute('aria-invalid','true');this.inputError.textContent=error.message;this.inputError.hidden=false;} this.options.onError?.(error); } }
   moveMonth(delta) {

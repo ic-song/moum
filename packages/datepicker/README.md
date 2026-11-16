@@ -31,4 +31,4 @@ const picker = DatePicker.attach('#due', {title:'납기일',mode:'single',onChan
 
 단일 값은 YYYY-MM-DD, 기간 표시/직접 입력은 YYYY-MM-DD ~ YYYY-MM-DD입니다. 기간의 부분 선택은 시작일만 표시합니다. 폼용 외부 입력 name은 호스트가 지정합니다. 잘못된 직접 입력은 모델을 변경하지 않으며 입력 옆 오류와 aria-invalid, onError로 전달하므로 폼 제출 시 getValue()와 입력 유효성을 검사하세요. 명시한 value가 없으면 기존 입력값을 단일/기간 초기값으로 검증합니다.
 
-팝업은 body에 포털로 생성되며 화면 안에서 위치를 조정하고 내부 스크롤합니다. 테마는 body의 공통 토큰 또는 .moum-datepicker-popup에 지정하세요. z-index는 --moum-datepicker-z-index(기본1000)로 조절합니다. destroy는 이벤트·포털을 제거하고 입력의 기존 ARIA/role을 복구합니다. 월 입력으로 월/연도 이동, 오늘, 기간의 이번 달 버튼을 제공합니다. 프리셋도 min/max·제외일 검사를 거치므로 제외일이 있는 이번 달 선택은 오류를 표시합니다.
+팝업은 body에 포털로 생성되며 화면 안에서 위치를 조정하고 내부 스크롤합니다. 테마는 body의 공통 토큰 또는 .moum-datepicker-popup에 지정하세요. z-index는 --moum-datepicker-z-index(기본1000)로 조절합니다. setDisabled(true)는 연결 입력도 읽기 전용으로 잠그고 팝업을 닫습니다. 호스트의 setValue API는 계속 사용할 수 있습니다. destroy는 이벤트·포털을 제거하고 입력의 기존 ARIA/role/readonly를 복구합니다. 월 입력으로 월/연도 이동, 오늘, 기간의 이번 달 버튼을 제공합니다. 프리셋도 min/max·제외일 검사를 거치므로 제외일이 있는 이번 달 선택은 오류를 표시합니다.
