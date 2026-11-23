@@ -12,9 +12,10 @@ jobs:
         with:
           node-version: 22
       - run: npm run check
-      - run: mkdir -p output/npm && npm pack --workspaces --pack-destination output/npm
+      - run: npm run pack:offline
       - uses: actions/upload-artifact@v4
         with:
-          name: javascript-library-packages
-          path: output/npm/*.tgz
+          name: moum-offline
+          path: output/moum-offline.tar.gz
+          if-no-files-found: error
           retention-days: 30

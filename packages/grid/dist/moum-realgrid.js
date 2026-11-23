@@ -1,4 +1,4 @@
-/*! MOUM Grid v0.7.1 | MIT License | See LICENSE */
+/*! MOUM Grid v0.8.0 | MIT License | See LICENSE */
 (function () {
 'use strict';
 // A bounded expression parser. No JavaScript evaluation or property access.
@@ -184,13 +184,15 @@ function toTSV(rows) {
 }
 
 class GridModel {
-  constructor(columns, rows = [], { editable = true, historyLimit = 100, formulas = false } = {}) {
+  constructor(columns, rows = [], { editable = true, historyLimit = 100, formulas = false, validateRow } = {}) {
     if (!Array.isArray(columns) || !columns.length) throw new Error('컬럼이 필요합니다.');
     const keys = columns.map(column => column.field);
     if (keys.some(key => typeof key !== 'string' || !key || ['__proto__', 'constructor', 'prototype'].includes(key)) || new Set(keys).size !== keys.length) {
       throw new Error('컬럼 field는 중복되지 않는 안전한 문자열이어야 합니다.');
     }
     if (!Number.isInteger(historyLimit) || historyLimit < 1) throw new Error('historyLimit은 양의 정수여야 합니다.');
+    if (validateRow !== undefined && typeof validateRow !== 'function') throw new TypeError('validateRow는 함수여야 합니다.');
+    this.rowValidator = validateRow;
     this.columns = columns.map(column => ({ ...column }));
     this.editable = editable;
     this.historyLimit = historyLimit;
@@ -207,6 +209,36 @@ class GridModel {
   }
 
   getData() { return this.rows.map(row => ({ ...row })); }
+  validate() {
+    const errors = [], sheet = this.formulas ? new FormulaSheet(this.rows, this.columns) : null;
+    this.rows.forEach((item, row) => {
+      const previousErrors = errors.length;
+      const values = this.rowValidator ? { ...item } : null;
+      this.columns.forEach((column, col) => {
+        const value = item[column.field];
+        try {
+          let normalized;
+          if (sheet && column.formulas !== false && isFormula(value)) {
+            const result = sheet.cell(row, col);
+            if (result.error) throw new Error(result.error);
+            normalized = this.convert({ ...column, formulas: false }, result.value);
+          } else normalized = this.convert(column, value);
+          if (values) values[column.field] = normalized;
+        } catch (error) {
+          errors.push({ row, field: column.field, value, message: error instanceof Error ? error.message : String(error) });
+        }
+      });
+      if (!values || errors.length !== previousErrors) return;
+      try {
+        const message = this.rowValidator(values, row);
+        if (message != null && typeof message !== 'string') throw new TypeError('validateRow는 오류 문구나 undefined를 반환해야 합니다.');
+        if (message) errors.push({ row, field: null, value: undefined, message });
+      } catch (error) {
+        errors.push({ row, field: null, value: undefined, message: error instanceof Error ? error.message : String(error) });
+      }
+    });
+    return { valid: errors.length === 0, errors };
+  }
   getComputedData() { return this.formulas ? this.formulaSheet().getData() : this.getData(); }
   formulaSheet() { return this.sheet ||= new FormulaSheet(this.rows, this.columns); }
   subscribe(listener) { this.listeners.add(listener); return () => this.listeners.delete(listener); }
@@ -341,32 +373,64 @@ class GridModel {
 
 const FILTER_OPERATORS = ['contains', 'startsWith', 'equals', 'notEquals', 'gt', 'gte', 'lt', 'lte', 'between', 'empty', 'notEmpty'];
 
-function compareCellValues(a, b, direction = 1) {
+const defaultCellCompare = new Intl.Collator('ko', { numeric: true }).compare;
+
+function compareCellValues(a, b, direction = 1, compareText = defaultCellCompare) {
   const emptyA = a == null || a === '', emptyB = b == null || b === '';
   if (emptyA || emptyB) return emptyA === emptyB ? 0 : emptyA ? 1 : -1;
-  return direction * (typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b), 'ko', { numeric: true }));
+  return direction * (typeof a === 'number' && typeof b === 'number' ? a - b : compareText(String(a), String(b)));
+}
+
+const lower = value => String(value ?? '').toLocaleLowerCase();
+const empty = value => value == null || value === '';
+const comparisons = {
+  equals: (a, b) => a === b,
+  notEquals: (a, b) => a !== b,
+  gt: (a, b) => a > b,
+  gte: (a, b) => a >= b,
+  lt: (a, b) => a < b,
+  lte: (a, b) => a <= b,
+  between: (a, b, end) => a >= b && a <= end
+};
+
+function numericFilterValue(value) {
+  // Preserve lazy coercion for non-primitive filter values.
+  if (typeof value === 'symbol' || (value != null && typeof value === 'object') || typeof value === 'function') return () => Number(value);
+  const number = Number(value);
+  return () => number;
+}
+
+function compileFilter({ field, operator, value, value2 }) {
+  if (operator === 'empty') return row => empty(row[field]);
+  if (operator === 'notEmpty') return row => !empty(row[field]);
+  const input = lower(value);
+  if (operator === 'contains') return row => lower(row[field]).includes(input);
+  if (operator === 'startsWith') return row => lower(row[field]).startsWith(input);
+  if (!Object.hasOwn(comparisons, operator)) return () => false;
+  const compare = comparisons[operator], numeric = numericFilterValue(value);
+  const end = operator === 'between' ? String(value2).toLocaleLowerCase() : undefined;
+  const numericEnd = operator === 'between' ? numericFilterValue(value2) : undefined;
+  return row => {
+    const current = row[field];
+    if (empty(current)) return operator === 'notEquals';
+    if (typeof current !== 'number') return compare(lower(current), input, end);
+    if (numericEnd) return current >= numeric() && current <= numericEnd();
+    return compare(current, numeric());
+  };
+}
+
+function compileFilters(filters, logic) {
+  if (!filters.length) return () => true;
+  const checks = filters.map(compileFilter);
+  const any = logic === 'or';
+  return row => {
+    for (const check of checks) if (check(row) === any) return any;
+    return !any;
+  };
 }
 
 function matchesFilters(row, filters, logic = 'and') {
-  if (!filters.length) return true;
-  return filters[logic === 'or' ? 'some' : 'every'](({ field, operator, value, value2 }) => {
-    const current = row[field], text = String(current ?? '').toLocaleLowerCase(), input = String(value ?? '').toLocaleLowerCase();
-    if (operator === 'empty') return current == null || current === '';
-    if (operator === 'notEmpty') return current != null && current !== '';
-    if (operator === 'contains') return text.includes(input);
-    if (operator === 'startsWith') return text.startsWith(input);
-    if (current == null || current === '') return operator === 'notEquals';
-    const a = typeof current === 'number' ? current : text;
-    const b = typeof current === 'number' ? Number(value) : input;
-    if (operator === 'equals') return a === b;
-    if (operator === 'notEquals') return a !== b;
-    if (operator === 'gt') return a > b;
-    if (operator === 'gte') return a >= b;
-    if (operator === 'lt') return a < b;
-    if (operator === 'lte') return a <= b;
-    if (operator === 'between') return a >= b && a <= (typeof current === 'number' ? Number(value2) : String(value2).toLocaleLowerCase());
-    return false;
-  });
+  return compileFilters(filters, logic)(row);
 }
 
 function treeIndex(rows, tree) {
@@ -397,11 +461,13 @@ function treeIndex(rows, tree) {
   return { byId, children };
 }
 
-function buildDisplay(rows, { columns, query = '', filters = [], filterLogic = 'and', sorts = [], groupBy = [], collapsedGroups = new Set(), tree = null, collapsedNodes = new Set() }) {
+function buildDisplay(rows, { columns, allColumns = columns, query = '', filters = [], filterLogic = 'and', sorts = [], groupBy = [], collapsedGroups = new Set(), tree = null, collapsedNodes = new Set(), compareText = defaultCellCompare }) {
   const text = query.trim().toLocaleLowerCase();
-  const matches = row => matchesFilters(row, filters, filterLogic) && (!text || columns.some(column => String(row[column.field] ?? '').toLocaleLowerCase().includes(text)));
+  const searchFields = text ? allColumns.filter(column => column.searchable !== false).map(column => column.field) : [];
+  const matchesFilter = compileFilters(filters, filterLogic);
+  const matches = row => matchesFilter(row) && (!text || searchFields.some(field => lower(row[field]).includes(text)));
   const compare = (a, b) => {
-    for (const sort of sorts) { const result = compareCellValues(a.row[sort.field], b.row[sort.field], sort.direction); if (result) return result; }
+    for (const sort of sorts) { const result = compareCellValues(a.row[sort.field], b.row[sort.field], sort.direction, compareText); if (result) return result; }
     return a.index - b.index;
   };
   const display = [], view = [];
@@ -423,7 +489,13 @@ function buildDisplay(rows, { columns, query = '', filters = [], filterLogic = '
       if (expanded) for (const child of [...descendants].sort(compare).reverse()) stack.push({ ...child, depth: item.depth + 1 });
     }
   } else {
-    const items = rows.map((row, index) => ({ row, index })).filter(item => matches(item.row)).sort(compare);
+    const items = [];
+    if (!groupBy.length && !sorts.length) {
+      rows.forEach((row, index) => { if (matches(row)) addData({ row, index }); });
+      return { display, view };
+    }
+    rows.forEach((row, index) => { if (matches(row)) items.push({ row, index }); });
+    if (sorts.length) items.sort(compare);
     const group = (members, depth, path) => {
       if (depth === groupBy.length) { members.forEach(addData); return; }
       const field = groupBy[depth], buckets = new Map();
@@ -890,11 +962,16 @@ class Grid {
     this.host = typeof target === 'string' ? document.querySelector(target) : target;
     if (!this.host || this.host.childNodes.length) throw new Error('비어 있는 그리드 컨테이너가 필요합니다.');
     this.options = options;
+    if (!options.dataSource && options.sortLocale !== undefined) {
+      this.compareText = new Intl.Collator(options.sortLocale, { numeric: true }).compare;
+    }
     if (options.recovery && (options.model || options.dataSource && !options.dataSource.save || options.editable === false)) throw Error('복구 기능은 편집 가능한 독립 로컬/서버 save 그리드에서 사용하세요.');
     if (options.dataSource && (options.model || options.data?.length || options.formulas || options.tree || options.groupBy?.length)) throw new Error('서버 데이터는 공유 모델·초기 데이터·A1 수식·그룹·트리와 함께 사용하지 않습니다.');
     this.model = options.model || new GridModel(options.columns, options.data || [], { ...options, editable: options.dataSource ? false : options.editable });
-    if (options.dataSource) this.remote = new RemoteData(options.dataSource, { onChange: () => this.renderRemote(), convertRow: row => { const item = { ...row }; for (const column of this.columns) item[column.field] = this.model.convert(column, row[column.field]); this.remoteChanges?.validateVersions([item]); return item; } });
-    this.columns = options.model ? options.columns.map(column => ({ ...column })) : this.model.columns;
+    if (options.dataSource) this.remote = new RemoteData(options.dataSource, { onChange: () => this.renderRemote(), convertRow: row => { const item = { ...row }; for (const column of this.allColumns) item[column.field] = this.model.convert(column, row[column.field]); this.remoteChanges?.validateVersions([item]); return item; } });
+    this.allColumns = options.model ? options.columns.map(column => ({ ...column })) : this.model.columns;
+    this.columns = this.allColumns.slice();
+    this.columnOrder = this.allColumns.slice();
     this.baseEditable = this.model.editable;
     if (options.dataSource?.save != null && typeof options.dataSource.save !== 'function') throw Error('dataSource.save는 함수여야 합니다.');
     if (options.dataSource?.save && options.editable !== false) this.remoteChanges = new RemoteChanges(this.remote, this.model);
@@ -1193,6 +1270,13 @@ class Grid {
     if (!this.remoteChanges || this.destroyed) return Promise.resolve(false);
     if (this.savePromise) return this.savePromise;
     if (this.remote.loading || this.editor && !this.finishEdit()) return Promise.resolve(false);
+    if (this.model.rowValidator && !this.remoteChanges.locked && this.remoteChanges.dirty) {
+      const { errors } = this.validate();
+      if (errors.length) {
+        this.message(errors[0].message, true);
+        return Promise.resolve(false);
+      }
+    }
     this.exportRequest?.abort();
     const pending = this.remoteChanges.save(() => { if (!this.destroyed) this.renderRemote(); }, async () => { if (!await this.flushDraft()) throw Object.assign(Error('저장 요청의 복구 정보를 기록하지 못했습니다. 임시 저장 오류를 먼저 해결하세요.'), { committed: false }); });
     this.savePromise = pending.then(async rows => {
@@ -1591,7 +1675,7 @@ class Grid {
     if (!Array.isArray(filters)) throw new Error('filters는 배열이어야 합니다.');
     if (!['and', 'or'].includes(logic)) throw new Error('필터 연결은 and 또는 or여야 합니다.');
     const prepared = filters.map(filter => {
-      const column = this.columns.find(column => column.field === filter.field);
+      const column = this.allColumns.find(column => column.field === filter.field);
       if (!column || !FILTER_OPERATORS.includes(filter.operator)) throw new Error('지원하지 않는 필터입니다.');
       const item = { ...filter };
       if (column.type === 'number' && !['contains', 'startsWith', 'empty', 'notEmpty'].includes(item.operator)) {
@@ -1611,7 +1695,7 @@ class Grid {
   updateFilterControls() {
     this.logicSelect.value = this.filterLogic; this.filterList.replaceChildren();
     this.filters.forEach((filter, index) => {
-      const column = this.columns.find(column => column.field === filter.field);
+      const column = this.allColumns.find(column => column.field === filter.field);
       const remove = node('button', `${column.header || column.field}: ${filter.operator} ${filter.value ?? ''}${filter.operator === 'between' ? ' ~ ' + filter.value2 : ''} ×`); remove.type = 'button';
       remove.setAttribute('aria-label', `${index + 1}번 필터 제거`); remove.addEventListener('click', () => this.setFilters(this.filters.filter((_, item) => item !== index))); this.filterList.append(remove);
     });
@@ -1621,7 +1705,7 @@ class Grid {
     if (!this.canLeaveRemote()) return false;
     if (!Array.isArray(sorts) || new Set(sorts.map(sort => sort.field)).size !== sorts.length) throw new Error('중복 없는 정렬 배열이 필요합니다.');
     const prepared = sorts.map(sort => {
-      if (!this.columns.some(column => column.field === sort.field)) throw new Error('정렬할 컬럼이 없습니다.');
+      if (!this.allColumns.some(column => column.field === sort.field)) throw new Error('정렬할 컬럼이 없습니다.');
       const direction = [1, 'asc', 'ascending'].includes(sort.direction) ? 1 : [-1, 'desc', 'descending'].includes(sort.direction) ? -1 : null;
       if (!direction) throw new Error('정렬 방향은 asc 또는 desc여야 합니다.');
       return { field: sort.field, direction };
@@ -1631,10 +1715,49 @@ class Grid {
   }
 
   setColumnWidth(field, width) {
-    const column = this.columns.find(column => column.field === field);
+    const column = this.allColumns.find(column => column.field === field);
     if (!column || !Number.isFinite(Number(width))) throw new Error('올바른 컬럼과 너비가 필요합니다.');
     column.width = Math.max(64, Math.min(1000, Math.round(Number(width)))); if (this.virtualActive && !this.editor) this.renderViewport(); else this.updateColumnGeometry();
     this.options.onColumnResize?.({ field, width: column.width });
+  }
+
+  getColumnLayout() {
+    const visible = new Set(this.columns.map(column => column.field));
+    return this.columnOrder.map(({ field, width }) => ({
+      field, width: Math.max(64, Math.min(1000, Number(width) || 140)),
+      visible: visible.has(field)
+    }));
+  }
+
+  setColumnLayout(layout) {
+    if (!Array.isArray(layout) || layout.length !== this.allColumns.length) throw new Error('모든 컬럼의 레이아웃을 지정하세요.');
+    const remaining = new Map(this.allColumns.map(column => [column.field, column]));
+    const order = Array.from(layout, item => {
+      const column = remaining.get(item?.field);
+      if (!column) throw new Error('중복되거나 알 수 없는 레이아웃 컬럼입니다.');
+      remaining.delete(item.field);
+      const { width, visible = true } = item;
+      if (typeof visible !== 'boolean') throw new Error('visible은 boolean이어야 합니다.');
+      if (width !== undefined && (!Number.isFinite(width) || width < 64 || width > 1000)) throw new Error('컬럼 너비는 64~1000이어야 합니다.');
+      return { column, width, visible };
+    });
+    const visible = order.filter(item => item.visible).map(item => item.column);
+    if (!visible.length || (this.tree && !visible.some(column => column.field === this.tree.labelField))) throw new Error('표시할 컬럼과 트리 이름 컬럼을 유지하세요.');
+    if (this.editor && !this.finishEdit()) return false;
+    const focused = this.table.contains(document.activeElement);
+    for (const { column, width } of order) if (width !== undefined) column.width = width;
+    this.columnOrder = order.map(item => item.column);
+    this.columns = visible;
+    this.frozenColumns = Math.min(this.frozenColumns, visible.length);
+    const fixedWidth = columnWindow(visible, 0, 0, this.frozenColumns, false).offsets[this.frozenColumns];
+    if (fixedWidth > this.viewport.clientWidth - 64) this.frozenColumns = 0;
+    for (const option of this.frozenSelect.options) option.disabled = Number(option.value) > visible.length;
+    this.viewport.scrollLeft = 0;
+    this.merges = [];
+    this.resetSelection();
+    this.applyRowWindow();
+    if (focused) this.focusCell();
+    return true;
   }
 
   setFrozenColumns(count) {
@@ -1660,13 +1783,13 @@ class Grid {
 
   setGroupBy(fields) {
     if (this.remote && fields.length) throw new Error('서버 데이터의 그룹/소계는 이 API에서 지원하지 않습니다.');
-    if (!Array.isArray(fields) || new Set(fields).size !== fields.length || fields.some(field => !this.columns.some(column => column.field === field))) throw new Error('그룹 컬럼 배열이 올바르지 않습니다.');
+    if (!Array.isArray(fields) || new Set(fields).size !== fields.length || fields.some(field => !this.allColumns.some(column => column.field === field))) throw new Error('그룹 컬럼 배열이 올바르지 않습니다.');
     if (fields.length && this.tree) throw new Error('트리와 행 그룹은 별도 모드로 사용하세요.');
     if (this.editor && !this.finishEdit()) return false;
     this.groupBy = [...fields]; this.collapsedGroups.clear(); this.merges = []; this.resetSelection();
     this.groupSelect.querySelector('[data-multiple]')?.remove();
     if (fields.length > 1) {
-      const option = node('option', fields.map(field => this.columns.find(column => column.field === field).header || field).join(' → ')); option.value = '__multiple'; option.disabled = true; option.dataset.multiple = 'true'; this.groupSelect.append(option); this.groupSelect.value = '__multiple';
+      const option = node('option', fields.map(field => this.allColumns.find(column => column.field === field).header || field).join(' → ')); option.value = '__multiple'; option.disabled = true; option.dataset.multiple = 'true'; this.groupSelect.append(option); this.groupSelect.value = '__multiple';
     } else this.groupSelect.value = fields[0] || '';
     this.render(); return true;
   }
@@ -1675,7 +1798,7 @@ class Grid {
     const row = node('tr', null, descriptor.type === 'group' ? 'moum-grid__group' : 'moum-grid__subtotal'), group = descriptor.group;
     if (descriptor.type === 'group') {
       const cell = node('td'); cell.colSpan = this.layout.slots.length + 1;
-      const column = this.columns.find(column => column.field === group.field);
+      const column = this.allColumns.find(column => column.field === group.field);
       const toggle = node('button', `${group.expanded ? '−' : '+'} ${column.header || group.field}: ${group.value === '' ? '(빈 값)' : group.value} · ${group.count}행`); toggle.type = 'button'; toggle.dataset.groupKey = group.key; toggle.style.paddingInlineStart = `${12 + group.depth * 18}px`; toggle.setAttribute('aria-expanded', String(group.expanded));
       toggle.addEventListener('click', () => { if (this.collapsedGroups.has(group.key)) this.collapsedGroups.delete(group.key); else this.collapsedGroups.add(group.key); this.resetSelection(); this.render(); [...this.table.querySelectorAll('[data-group-key]')].find(button => button.dataset.groupKey === group.key)?.focus(); });
       cell.append(toggle); row.append(cell);
@@ -1775,7 +1898,7 @@ class Grid {
       if (bytes.byteLength > 20 * 1024 * 1024) throw new Error('20MB 이하의 XLSX 파일을 선택하세요.');
       if (this.destroyed || sequence !== this.importSequence) return false;
       if (revision !== this.dataRevision) throw new Error('파일을 읽는 동안 데이터가 변경됐습니다. 다시 가져오세요.');
-      rows = readXLSX(bytes, this.xlsx, this.columns, { formulas: this.model.formulas, ...options }); changes = this.mutateModel('replaceRows', rows, 'import');
+      rows = readXLSX(bytes, this.xlsx, this.allColumns, { formulas: this.model.formulas, ...options }); changes = this.mutateModel('replaceRows', rows, 'import');
     } catch (error) { this.message(error.message, true); return false; }
     this.resetRowWindow(); this.query = ''; this.search.value = ''; this.setFilters([]); this.changed(changes, 'import'); this.message(`${rows.length}행 XLSX 가져오기 완료 · Ctrl+Z로 원복`); return true;
   }
@@ -1788,7 +1911,7 @@ class Grid {
     try {
       if (!['view', 'filtered', 'all', 'selection'].includes(scope)) throw new Error('내보내기 scope는 view, filtered, all, selection 중 선택하세요.');
       if (formulas && (!this.model.formulas || scope !== 'all')) throw new Error('수식 보존은 formulas 모드에서 scope: all로 내보내세요.');
-      let columns = this.columns, merges = scope === 'view' ? this.merges : [];
+      let columns = formulas ? this.model.columns : this.columns, merges = scope === 'view' ? this.merges : [];
       let rows = scope === 'all' ? this.getData({ raw: formulas }) : scope === 'filtered' ? this.fullResult.view.map(item => item.row) : this.view.map(item => item.row);
       if (scope === 'filtered' && this.dataMode === 'virtual') merges = this.merges;
       if (scope === 'selection') {
@@ -1959,6 +2082,7 @@ class Grid {
     if (changes.length) this.options.onChange?.({ reason, changes, data: this.getData() });
   }
   getData({ raw = false } = {}) { return raw ? this.model.getData() : this.model.getComputedData(); }
+  validate() { return this.model.validate(); }
   mutateModel(method, ...args) { this.localWrite = true; try { return this.model[method](...args); } finally { this.localWrite = false; } }
   setSearch(query) { clearTimeout(this.searchTimer); if (!this.canLeaveRemote()) return false; if (this.editor) this.cancelEdit(); this.query = String(query); this.search.value = this.query; this.merges = []; this.resetSelection(); this.render(); return true; }
   setData(rows) {

@@ -1,6 +1,6 @@
 # 기여하기
 
-MOUM는 폐쇄망에서도 실행하는 JavaScript 도구 모음입니다. 이슈와 PR은 한국어·영어로 작성할 수 있습니다. 변경 전 [지원 범위](docs/feature-catalog.md)와 [검증 기록](docs/verification.md)을 확인하세요.
+MOUM은 여러 분야의 웹 앱에 가져다 쓰는 범용 JavaScript 도구 모음입니다. 신규 기능은 공통으로 쓰이는 동작과 앱이 연결할 분야별 규칙을 구분해 제안해 주세요. 이슈와 PR은 한국어·영어로 작성할 수 있습니다. [개발 방향](docs/roadmap.md) · [지원 범위](docs/feature-catalog.md) · [검증 기록](docs/verification.md)
 
 ## 개발 환경
 

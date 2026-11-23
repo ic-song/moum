@@ -9,6 +9,21 @@ import { readXLSX, writeXLSX } from '../src/xlsx.js';
 const columns = [{ field: 'id', header: '코드', editable: false }, { field: 'name', header: '이름' }, { field: 'qty', header: '수량', type: 'number' }, { field: 'team', header: '부서' }];
 const rows = [{ id: '1', name: '키보드', qty: 20, team: 'A' }, { id: '2', name: '마우스', qty: 3, team: 'A' }, { id: '3', name: '모니터', qty: 8, team: 'B' }];
 
+test('local search can exclude columns and locale sorting preserves natural numbers and original indices', () => {
+  const data = [
+    { name: 'z 10', note: 'secret' }, { name: 'ä 2', note: 'other' },
+    { name: 'z 2', note: 'hidden' }, { name: 'z 2', note: 'second' }, { name: null }
+  ];
+  const options = { columns: [{ field: 'name' }, { field: 'note', searchable: false }] };
+  assert.deepEqual(buildDisplay(data, { ...options, query: 'secret' }).view, []);
+  assert.deepEqual(buildDisplay(data, { ...options, query: 'Z' }).view.map(item => item.index), [0, 2, 3]);
+  for (const [locale, order] of [['sv', [2, 3, 0, 1, 4]], ['en', [1, 2, 3, 0, 4]]]) {
+    const compareText = new Intl.Collator(locale, { numeric: true }).compare;
+    const result = buildDisplay(data, { ...options, compareText, sorts: [{ field: 'name', direction: 1 }] });
+    assert.deepEqual(result.view.map(item => item.index), order);
+  }
+});
+
 test('Excel formatted numbers convert strictly, with malformed separators rejected atomically', () => {
   const model = new GridModel(columns, rows);
   for (const [input, expected] of [['1,234', 1234], ['12,345.50', 12345.5], ['−1,234', -1234], ['1e3', 1000]]) {

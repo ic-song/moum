@@ -1,4 +1,4 @@
-/*! MOUM calendar v0.3.0 | MIT License | See LICENSE */
+/*! MOUM calendar v0.4.0 | MIT License | See LICENSE */
 export const calendarDay = 86400000;
 export function calendarDate(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new TypeError('날짜는 YYYY-MM-DD 형식입니다.');
@@ -140,6 +140,31 @@ export class Calendar {
   restoreOccurrence(id,date){this.active();this.model.restoreOccurrence(id,date);this.changed('restore-occurrence',String(id));}
   getResource(){return this.resourceId;}
   setResource(id){this.active();id=id==null?null:String(id);if(id!==null&&!this.resources.some(r=>r.id===id))throw new Error('자원을 찾을 수 없습니다.');this.resourceId=id;this.render();this.options.onResourceChange?.(id);if(this.options.load)void this.reload();}
+  getViewState() {
+    this.active();
+    const { date, view, weekStartsOn } = this.options;
+    return { version: 1, date, view, weekStartsOn, resourceId: this.resourceId };
+  }
+  setViewState(state) {
+    const previous = this.getViewState();
+    if (state?.version !== 1 || !['month', 'week', 'day', 'agenda'].includes(state.view)
+        || !Number.isInteger(state.weekStartsOn) || state.weekStartsOn < 0 || state.weekStartsOn > 6
+        || (state.resourceId !== null && typeof state.resourceId !== 'string')) {
+      throw new TypeError('올바른 캘린더 보기 설정이 필요합니다.');
+    }
+    const { date, view, weekStartsOn, resourceId } = state;
+    calendarRange(date, view, weekStartsOn);
+    if (resourceId !== null && !this.resources.some(resource => resource.id === resourceId)) throw new Error('자원을 찾을 수 없습니다.');
+    const viewChanged = previous.date !== date || previous.view !== view || previous.weekStartsOn !== weekStartsOn;
+    const resourceChanged = previous.resourceId !== resourceId;
+    if (!viewChanged && !resourceChanged) return;
+    Object.assign(this.options, { date, view, weekStartsOn });
+    this.resourceId = resourceId;
+    if (this.options.load) void this.reload();
+    else this.render();
+    if (viewChanged) this.options.onViewChange?.({ view, date });
+    if (resourceChanged) this.options.onResourceChange?.(resourceId);
+  }
   getLoadState(){return {loading:this.loading,error:this.loadError?.message||null,range:this.loadedRange?{...this.loadedRange}:null};}
   cancelLoad(render=true){this.loadVersion++;this.loadController?.abort();this.loadController=null;this.loading=false;this.loadError=null;if(render&&!this.destroyed)this.render();}
   async reload(){this.active();if(!this.options.load)return false;this.cancelLoad(false);const version=this.loadVersion,controller=new AbortController(),range=calendarRange(this.options.date,this.options.view,this.options.weekStartsOn);this.loadController=controller;this.loading=true;this.render();

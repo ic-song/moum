@@ -13,6 +13,9 @@ const metadata = JSON.parse(await readFile(path.join(grid, 'package.json'), 'utf
 const banner = `/*! MOUM Grid v${metadata.version} | MIT License | See LICENSE */\n`;
 const plain = source.replace(/^export /gm, '');
 await mkdir(path.join(grid, 'dist'), { recursive: true });
+// CJS has named exports only; its declarations must not advertise the ESM default.
+await writeFile(path.join(grid, 'dist/moum-grid.d.cts'), (await readText(path.join(grid, 'index.d.ts'))).replace('export default Grid;\n', ''));
+await writeFile(path.join(grid, 'dist/moum-realgrid.d.cts'), await readText(path.join(grid, 'realgrid-compat.d.ts')));
 await writeFile(path.join(grid, 'dist/moum-grid.mjs'), banner + source + '\nexport default Grid;\n');
 await writeFile(path.join(grid, 'dist/moum-grid.js'), banner + '(function () {\n\'use strict\';\n' + plain + '\nglobalThis.MoumGrid = Grid;\n})();\n');
 await writeFile(path.join(grid, 'dist/moum-grid.cjs'), banner + "'use strict';\n" + plain + '\nmodule.exports = { Grid, GridModel, RemoteData, FormulaSheet, isFormula, translateFormula, columnName, parseTSV, toTSV, readXLSX, writeXLSX, virtualWindow, columnWindow };\n');
@@ -25,6 +28,7 @@ await writeFile(path.join(grid, 'LICENSE'), await readText(path.join(root, 'LICE
 const notices = path.join(grid, 'THIRD_PARTY_NOTICES.md');
 await writeFile(notices, await readText(notices));
 const hashes = [];
+for (const name of ['index.d.ts', 'realgrid-compat.d.ts', 'dist/moum-grid.d.cts', 'dist/moum-realgrid.d.cts']) hashes.push(`${createHash('sha256').update(await readFile(path.join(grid, name))).digest('hex')}  ${name}`);
 for (const name of ['dist/moum-grid.js', 'dist/moum-grid.mjs', 'dist/moum-grid.cjs', 'dist/moum-grid.css', 'dist/moum-realgrid.js', 'dist/moum-realgrid.mjs', 'dist/moum-realgrid.cjs', 'vendor/sheetjs/xlsx.full.min.js', 'vendor/sheetjs/LICENSE', 'LICENSE', 'THIRD_PARTY_NOTICES.md']) hashes.push(`${createHash('sha256').update(await readFile(path.join(grid, name))).digest('hex')}  ${name}`);
 await writeFile(path.join(grid, 'SHA256SUMS.txt'), hashes.join('\n') + '\n');
 console.log('Built browser JS, ESM, CommonJS, CSS and license without external dependencies.');

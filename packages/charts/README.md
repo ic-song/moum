@@ -1,4 +1,4 @@
-# @moum/charts 0.3.0
+# @moum/charts 0.4.0
 
 외부 런타임 의존성 없는 MIT SVG 차트. Chart.js 호환 API가 아닌 독립 라이브러리입니다.
 
@@ -27,6 +27,18 @@ const chart = new MoumCharts('#chart', {
 - `toSVG()`는 독립 SVG 문자열입니다. Blob으로 파일 저장할 수 있습니다. `destroy()`는 제거합니다.
 
 범례로 계열/조각을 켜고 끄며 원본은 보존합니다. 항목은 Enter/Space로 선택할 수 있고 데이터 표는 전체 값을 제공합니다. CSS는 `.moum-charts`와 `--moum-chart-ink/line/action/surface` 변수로 제한됩니다.
+
+## 화면별 보기 저장과 복원
+
+`getViewState()`는 숨긴 계열 또는 원형·도넛 조각과 데이터 표의 열림 상태를 JSON으로 저장할 수 있게 반환합니다.
+
+```js
+const savedView = JSON.stringify(chart.getViewState());
+// 화면을 다시 열 때 차트에 데이터를 먼저 설정합니다.
+chart.setViewState(JSON.parse(savedView));
+```
+
+차트 유형과 범례 이름의 순서가 같은 화면에서 복원하세요. 값이나 막대·선의 X축 항목은 새로 조회한 데이터로 바뀌어도 됩니다. 같은 이름을 쓰는 범례는 배열 순서로 구분합니다. 맞지 않는 저장본은 예외를 발생시키고 현재 보기를 유지합니다. 저장 위치는 사용하는 앱에서 선택합니다. 보기 변경은 원본 데이터나 데이터 표의 값을 바꾸지 않습니다.
 
 최대 항목 2,000·계열 50개, 숫자 절댓값 10^15 이하입니다. 상한은 성능 보증이 아니며 대규모 데이터는 호스트에서 집계하세요. 줌/팬·로그 축·PDF 출력은 포함하지 않습니다. 현대 브라우저의 SVG·ResizeObserver·structuredClone·CSS OKLCH를 사용합니다. [오프라인 예제](../../examples/charts/index.html).
 

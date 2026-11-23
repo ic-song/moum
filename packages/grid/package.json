@@ -1,6 +1,6 @@
 {
   "name": "@moum/grid",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "type": "module",
   "description": "Dependency-free editable data grid with range selection and transactional clipboard operations.",
   "license": "MIT",
@@ -9,13 +9,25 @@
   "browser": "dist/moum-grid.js",
   "exports": {
     ".": {
-      "import": "./dist/moum-grid.mjs",
-      "require": "./dist/moum-grid.cjs"
+      "import": {
+        "types": "./index.d.ts",
+        "default": "./dist/moum-grid.mjs"
+      },
+      "require": {
+        "types": "./dist/moum-grid.d.cts",
+        "default": "./dist/moum-grid.cjs"
+      }
     },
     "./style.css": "./dist/moum-grid.css",
     "./realgrid-compat": {
-      "import": "./dist/moum-realgrid.mjs",
-      "require": "./dist/moum-realgrid.cjs"
+      "import": {
+        "types": "./realgrid-compat.d.ts",
+        "default": "./dist/moum-realgrid.mjs"
+      },
+      "require": {
+        "types": "./dist/moum-realgrid.d.cts",
+        "default": "./dist/moum-realgrid.cjs"
+      }
     }
   },
   "files": [
@@ -24,7 +36,9 @@
     "README.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",
-    "SHA256SUMS.txt"
+    "SHA256SUMS.txt",
+    "index.d.ts",
+    "realgrid-compat.d.ts"
   ],
   "repository": {
     "type": "git",
@@ -42,5 +56,6 @@
     "offline",
     "spreadsheet",
     "clipboard"
-  ]
+  ],
+  "types": "index.d.ts"
 }

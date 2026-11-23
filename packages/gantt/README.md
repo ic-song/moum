@@ -1,6 +1,6 @@
-# @moum/gantt 0.3.0
+# @moum/gantt 0.6.0
 
-작업 계층·선후관계·일정 편집을 제공하는 MIT 독립 간트 라이브러리. 외부 런타임 의존성이 없습니다.
+개인 계획, 학습·행사 준비, 제작, 프로젝트 일정에 사용할 수 있는 MIT 간트 라이브러리입니다. 작업 계층·선후관계·일정 편집을 제공하며 외부 런타임 의존성이 없습니다.
 
 ```html
 <link rel="stylesheet" href="./moum-gantt.css">
@@ -20,7 +20,7 @@ JS/CSS/LICENSE 복사 또는 `npm pack ./packages/gantt`로 tgz 설치. npm 등�
 
 `{id,name,start,end,progress?,dependencies?,parentId?,type?}`. id는 고유한 문자열/숫자(내부 문자열), 날짜는 엄격한 YYYY-MM-DD이며 **종료일 포함**입니다. 계산은 UTC 일 단위입니다. progress는 0~100, type은 task/milestone이며 마일스톤은 시작=종료입니다.
 
-dependencies는 선행 id 배열, parentId는 표시 계층입니다. 누락/순환 관계를 거절합니다. 부모 날짜/진행률은 별도 값이며 자동 집계하지 않습니다. 연결은 finish-to-start이며 날짜 충돌은 `getWarnings()`와 화면에 알립니다. 일반 편집은 다른 작업 날짜를 자동 변경하거나 강제 차단하지 않습니다.
+dependencies는 선행 ID 또는 관계 객체 배열, parentId는 표시 계층입니다. 누락·순환 관계는 거절하며, 날짜 충돌은 `getWarnings()`와 화면에 표시합니다. 부모 기간과 진행률은 별도로 입력합니다.
 
 ## API와 편집
 
@@ -32,11 +32,67 @@ dependencies는 선행 id 배열, parentId는 표시 계층입니다. 누락/순
 
 `onChange({type,id,tasks,warnings})`, `onSelect(task)`, `onError(error)`. 서버 저장은 호스트가 연결합니다. onChange는 저장 성공이 아니므로 실패/충돌/재조회 정책을 별도 구현하세요.
 
-최대 작업 3,000·전체 기간 10년. 행 가상화·자원 배정·임계 경로·상시 자동 일정 계산·SS/FF/SF 연결은 포함하지 않습니다. CSS: `.moum-gantt`, `--moum-gantt-ink/line/action/paper`. [오프라인 예제](../../examples/gantt/index.html).
+최대 작업 3,000개, 전체 기간 10년입니다. 행 가상화·자원 배정·임계 경로·상시 자동 일정 계산은 후속 범위입니다. CSS는 `.moum-gantt`와 `--moum-gantt-ink/line/action/paper`를 사용합니다. [오프라인 예제](../../examples/gantt/index.html)
+
+## 적용 사례 · 분할 납품과 입고 수량
+
+`summarizeDeliveries()`는 브라우저 화면 없이 발주 품목 한 건의 납품 회차와 실제 입고 내역을 집계합니다. 브라우저 전역에서는 `MoumGantt.summarizeDeliveries`, ESM과 CommonJS에서는 이름으로 가져옵니다.
+
+```js
+const { lines, totals } = summarizeDeliveries(
+  [{ id: 'first', dueDate: '2026-11-20', quantity: 60 },
+   { id: 'second', dueDate: '2026-11-27', quantity: 40 }],
+  [{ id: 'dock-101', lineId: 'first', date: '2026-11-20', quantity: 30 },
+   { id: 'dock-102', lineId: 'first', date: '2026-11-23', quantity: 15 }],
+  { asOf: '2026-11-23', precision: 0 }
+);
+// 첫 회차는 45개 입고, 15개 납기 초과. 전체 미입고는 55개입니다.
+```
+
+회차별·전체 `planned`(예정), `received`(입고), `open`(미입고), `excess`(초과 입고), `overdue`(납기 초과 미입고) 수량을 반환합니다. 입고는 지정한 회차에만 배정됩니다. 기준일에 발생한 입고까지 반영하고 납기 다음 날부터 초과를 계산합니다. 기준일이 없으면 전체 입고를 집계하며 납기 초과는 0입니다. 같은 품목·수량 단위끼리 집계하고, 취소·반품 내역은 호스트에서 유효한 입고 내역으로 정리해 전달하세요. 양수 수량, 중복되지 않은 ID, 소수 정밀도 0~6(기본 3)을 검증합니다.
+
+## 선후행 관계와 대기일
+
+기존 `dependencies: ['order']`는 FS 대기 0일입니다. `dependencies: [{ taskId: 'design', type: 'SS', lagDays: 2 }]`로 관계와 대기일을 설정할 수 있습니다.
+
+| 관계 | 후속 작업의 최소 날짜 |
+| --- | --- |
+| FS | 선행 종료 다음 날 + 대기일에 시작 |
+| SS | 선행 시작일 + 대기일에 시작 |
+| FF | 선행 종료일 + 대기일에 종료 |
+| SF | 선행 시작일 + 대기일에 종료 |
+
+`lagDays`는 0~3650일의 정수입니다. 업무일 달력에서는 FS의 다음 날과 양수 대기일을 업무일로 계산합니다. SS·FF·SF의 대기 0일은 선행 기준일을 사용하고 실제 조정은 가능한 첫 업무일에 맞춥니다. 여러 관계를 만족하도록 작업을 필요할 때만 뒤로 옮기며 원래 기간을 유지합니다. 명시적으로 `scheduleDependencies()`를 호출하면 전체 조정이 한 번의 실행 취소로 기록됩니다. 기준 일정과 납기는 유지됩니다.
+
+## 기준 일정과 납기 초과 조회
+
+PMS에서 승인한 계획이나 SRM에서 합의한 납품 일정을 작업별 `baseline: { start, end }`으로 보관할 수 있습니다. 현재 일정 전체를 새 기준으로 잡으려면 `captureBaseline()`을 호출하세요. 달라진 기준이 있으면 한 번의 변경으로 기록되고 `undo()`로 복원됩니다.
+
+```js
+gantt.updateTask('receipt', { deadline: '2026-12-04' });
+const report = gantt.getScheduleStatus({ asOf: '2026-12-07' });
+const openLate = report.filter(task => task.overdue);
+```
+
+조회 결과에는 작업 ID, 기준 대비 시작·종료 편차, 납기 대비 계획 종료일 편차, `overdue`가 포함됩니다. 편차는 달력 일수이며 양수는 늦음, 음수는 빠름입니다. 기준 또는 납기 입력이 없으면 해당 편차는 `null`입니다. `overdue`는 조회 기준일이 납기를 지나고 진행률이 100% 미만일 때만 참입니다. `asOf`를 생략하면 편차만 계산합니다. 일정 이동과 선행 일정 맞추기는 기존 기준·납기를 보존하고, 납기는 일정 조정의 제약으로 쓰이지 않습니다.
+
+기준과 납기는 `getTasks()` 및 `onChange`의 작업 데이터에 포함됩니다. `updateTask(id, { baseline: null, deadline: null })`로 제거할 수 있습니다. 작업의 완료 진행률에는 호스트의 실제 입고·검수 또는 완료 상태를 연결하세요. 결과를 기존 그리드나 대시보드에서 사용할 수 있습니다.
+
+## 업무 화면별 보기 저장과 복원
+
+`getViewState()`는 일·주·월 단위, 전체/미니 보기, 미니 유형과 표시 옵션, 지정 기간, 접힌 상위 작업 ID를 JSON으로 보관할 수 있게 반환합니다.
+
+```js
+const savedView = JSON.stringify(gantt.getViewState());
+// 다음에 화면을 열면 같은 프로젝트의 최신 작업을 먼저 넣습니다.
+gantt.setViewState(JSON.parse(savedView));
+```
+
+새 작업 목록에서는 현재 하위 작업이 있는 ID의 접힘 상태만 복원합니다. `range: null`은 자동 기간을 뜻합니다. 복원 시 일정·업무일 달력·실행 취소 이력은 유지됩니다. 선택한 작업과 스크롤 위치는 화면이 관리합니다. 저장 위치는 사용하는 앱에서 정하며, 잘못된 저장본은 예외로 처리합니다.
 
 ## 0.2.0 선행 일정 맞추기
 
-`scheduleDependencies()` 또는 툴바의 선행 일정 맞추기로 FS 연결을 위상 순서로 계산합니다. 각 작업은 현재 시작일과 모든 선행 작업 종료 다음 날 중 가장 늦은 날에 시작하며 원래 일수와 마일스톤을 보존합니다. 작업을 앞당기지 않고 주말·공휴일도 달력 일수로 계산합니다. 부모 범위는 자동 집계하지 않습니다. 전체 결과는 원자적으로 검증하고 변경 전체를 한 번에 undo합니다. 자동 실행되지 않으며 사용자가 명시적으로 실행할 때만 다른 작업 일정이 이동합니다.
+`scheduleDependencies()` 또는 툴바의 선행 일정 맞추기로 작업을 위상 순서로 계산합니다. FS의 기존 사용 방식과 자동 조정 규칙은 위의 선후행 관계 표를 참고하세요.
 
 ## 미니 간트 4종
 
@@ -71,6 +127,6 @@ getSummary()/ganttSummary(tasks)는 {start,end,progress,taskCount,milestoneCount
 
 `new Gantt(target,{tasks,workCalendar:{weekendDays:[0,6],holidays:['2026-11-18']}})`로 켭니다. workCalendar를 생략하면 기존 달력일 방식입니다. 빈 객체는 토·일 휴무, weekendDays:[]는 매일 업무일입니다. 요일은 일요일0~토요일6, 최소 하루는 업무일이어야 합니다. 휴일은 프로젝트가 지정한 YYYY-MM-DD 목록(최대10,000개)이며 국가 공휴일을 자동 조회하지 않습니다.
 
-입력·직접 편집·드래그는 날짜를 그대로 보존합니다. **선행 일정 맞추기/scheduleDependencies()를 명시적으로 실행할 때만** 각 작업을 현재 시작일 이상이면서 선행 작업 종료 다음 날 이후인 업무일로 이동합니다. 기존 기간에 포함된 업무일 수(종료일 포함)를 유지하고 마지막 업무일에 종료합니다. 업무일이 하나도 없는 작업은1일, 마일스톤은 같은 날입니다. 부모 기간도 독립 작업으로 처리하며 자식 기간으로 자동 집계하지 않습니다. 전체 조정은 단일 undo이고 범위/관계 오류 시 전부 보존합니다. 최대 표시 기간10년 제한은 그대로입니다.
+입력·직접 편집·드래그는 날짜를 그대로 보존합니다. **선행 일정 맞추기/scheduleDependencies()를 명시적으로 실행할 때만** 기존 업무일 수(종료일 포함)를 유지하면서 작업을 업무일에 맞춥니다. 업무일이 하나도 없는 작업은 1일로 계산하며, 마일스톤은 같은 날입니다. 부모 기간은 독립 작업으로 처리합니다. 전체 조정은 단일 undo로 기록되며 범위·관계 오류가 있으면 이전 일정을 보존합니다.
 
-전체·미니4종에서 주말/휴일을 음영으로 표시합니다. 기본 날짜 눈금/미니 가중 진행률은 실제 달력 기간을 유지하므로 업무량 진행률이 아닙니다. `--moum-gantt-offday`로 음영 색을 설정하세요. 함수 `ganttWorkingDays(start,end,calendar)`, `isGanttWorkday(date,calendar)`와 `new GanttModel(tasks,{workCalendar})`도 독립 사용합니다. 자원별 달력·연결 지연·임계 경로는 지원하지 않습니다.
+전체·미니 4종에서 주말과 휴일을 음영으로 표시합니다. 기본 날짜 눈금과 미니 가중 진행률은 달력 기간을 기준으로 합니다. `--moum-gantt-offday`로 음영 색을 설정하세요. `ganttWorkingDays(start,end,calendar)`, `isGanttWorkday(date,calendar)`와 `new GanttModel(tasks,{workCalendar})`도 독립 사용합니다.

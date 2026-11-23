@@ -1,4 +1,4 @@
-/*! MOUM Grid v0.7.1 | MIT License | See LICENSE */
+/*! MOUM Grid v0.8.0 | MIT License | See LICENSE */
 const { Grid, GridModel } = require('./moum-grid.cjs');
 
 class UnsupportedFeatureError extends Error {

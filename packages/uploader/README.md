@@ -1,6 +1,23 @@
-# @moum/uploader 0.3.0
+# @moum/uploader 0.4.0
 
 파일 선택/드롭 → 로컬 파싱 → 시트/헤더 선택 → 열 매핑 → 행 검증 → 미리보기 → 명시적 서버 전송. MOUM Grid 없이 독립 실행하며 결과를 선택적으로 그리드에 넘깁니다.
+
+## 첨부 목록 제한
+
+사진 첨부, 과제 제출, CSV 일괄 검토처럼 파일 여러 개를 받는 화면에서 개별 한도와 전체 한도를 함께 지정할 수 있습니다.
+
+```js
+const uploader = new Uploader('#attachments', {
+  maxTotalFileSize: 20 * 1024 * 1024,
+  rejectDuplicates: true,
+  onReject: ({ file, reason }) => console.log(file.name, reason)
+});
+const queuedBytes = uploader.getQueueBytes();
+```
+
+전체 한도는 큐에 남은 항목의 바이트 합계이며 제거하거나 비우면 용량이 회복됩니다. 중복은 이름·크기·MIME 유형·수정 시각·상대 경로가 모두 같은 경우입니다. 내용 해시와 전송 서버의 중복 검사는 호스트에서 처리합니다.
+
+파일 선택·드롭·`addFiles()`에 같은 제한을 적용합니다. 전체 용량 초과와 중복 파일은 큐에 추가하지 않고 `onReject`에 각각 `totalSize`, `duplicate`로 알립니다. 같은 묶음에 있는 다른 파일은 계속 처리합니다. 두 제한은 옵션을 지정하면 활성화됩니다.
 
 ```html
 <link rel="stylesheet" href="./moum-uploader.css">

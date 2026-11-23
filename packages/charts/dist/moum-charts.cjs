@@ -1,4 +1,4 @@
-/*! MOUM charts v0.3.0 | MIT License | See LICENSE */
+/*! MOUM charts v0.4.0 | MIT License | See LICENSE */
 'use strict';
 const chartTypes = Object.freeze(['bar', 'horizontalBar', 'stackedBar', 'stackedHorizontalBar', 'line', 'area', 'pie', 'donut', 'scatter', 'mixed']);
 
@@ -54,6 +54,7 @@ const chartMetrics = { width: 900, height: 360, left: 76, right: 24, top: 24, bo
 function chartEl(tag, text, className) { const el = document.createElement(tag); if (text != null) el.textContent = text; if (className) el.className = className; return el; }
 function chartSvg(tag, attrs = {}, text) { const el = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value); if (text != null) el.textContent = text; return el; }
 function chartOptions(options) { new Intl.NumberFormat(options.locale||'ko-KR');for(const axis of ['left','right'])for(const key of ['title','unit'])if(options.axes?.[axis]?.[key]!=null&&typeof options.axes[axis][key]!=='string')throw new TypeError('축 제목과 단위는 문자열입니다.');return options; }
+const isCircularChart = type => type === 'pie' || type === 'donut';
 
 class Charts {
   constructor(target, options = {}) {
@@ -69,7 +70,46 @@ class Charts {
   getData() { return structuredClone(this.data); }
   setType(type) { this.assertActive(); const data=normalizeChart(this.data, type); this.options.type = type;this.data=data; this.hiddenPoints.clear(); this.render(); }
   setOptions(options) { this.assertActive(); const next = chartOptions({ ...this.options, ...options }); const data = normalizeChart(options.data || this.data, next.type); this.options = next; this.data = data; this.hidden.clear(); this.hiddenPoints.clear(); this.render(); }
-  formatValue(value, axis = 'left') { return new Intl.NumberFormat(this.options.locale||'ko-KR',{maximumFractionDigits:2,notation:Math.abs(value)>=100000?'compact':'standard'}).format(value)+(this.options.axes?.[axis]?.unit||''); }
+  formatValue(value, axis = 'left') {
+    const locale = this.options.locale || 'ko-KR';
+    if (this.formatterLocale !== locale) {
+      this.formatters = {};
+      this.formatterLocale = locale;
+    }
+    const notation = Math.abs(value) >= 100000 ? 'compact' : 'standard';
+    const formatter = this.formatters[notation] ??= new Intl.NumberFormat(locale, { maximumFractionDigits: 2, notation });
+    return formatter.format(value) + (this.options.axes?.[axis]?.unit || '');
+  }
+
+  getViewState() {
+    this.assertActive();
+    const circular = isCircularChart(this.options.type);
+    return {
+      version: 1,
+      type: this.options.type,
+      labels: circular ? this.data.labels.slice() : this.data.datasets.map(series => series.label),
+      hidden: [...(circular ? this.hiddenPoints : this.hidden)].sort((a, b) => a - b),
+      tableOpen: this.root.querySelector('details')?.open ?? false
+    };
+  }
+
+  setViewState(state) {
+    const current = this.getViewState();
+    if (state?.version !== 1 || state.type !== current.type || typeof state.tableOpen !== 'boolean'
+        || !Array.isArray(state.labels) || state.labels.length !== current.labels.length
+        || !current.labels.every((label, index) => state.labels[index] === label)) {
+      throw new TypeError('차트 유형과 범례 순서가 일치하는 보기 설정이 필요합니다.');
+    }
+    if (!Array.isArray(state.hidden)) throw new TypeError('숨길 범례 인덱스 배열이 필요합니다.');
+    const hidden = new Set();
+    for (const index of state.hidden) {
+      if (!Number.isInteger(index) || index < 0 || index >= current.labels.length || hidden.has(index)) throw new RangeError('숨길 범례 인덱스가 올바르지 않습니다.');
+      hidden.add(index);
+    }
+    if (isCircularChart(current.type)) this.hiddenPoints = hidden;
+    else this.hidden = hidden;
+    this.render(state.tableOpen);
+  }
   assertActive() { if (this.destroyed) throw new Error('이미 제거된 차트입니다.'); }
   measureWidth() { return Math.max(240, Math.min(chartMetrics.width, this.root.clientWidth - 32)); }
   selectPoint(seriesIndex, pointIndex) {
@@ -79,14 +119,14 @@ class Charts {
     this.status.textContent = `${series?.label || ''} · ${this.data.labels[pointIndex] ?? pointIndex + 1}: ${value && typeof value === 'object' ? `${value.x}, ${value.y}` : value==null?'값 없음':this.formatValue(value,series.axis)}`;
     this.options.onSelect?.({ seriesIndex, pointIndex, label: this.data.labels[pointIndex], value: structuredClone(value) });
   }
-  render() {
-    this.tableOpen = this.root.querySelector('details')?.open ?? this.tableOpen ?? false;
+  render(tableOpen = this.root.querySelector('details')?.open ?? false) {
+    this.tableOpen = tableOpen;
     this.plotWidth = this.measureWidth(); this.metrics = { ...chartMetrics, width: this.plotWidth, right:this.options.type==='mixed'?76:chartMetrics.right };
     this.root.replaceChildren();
     this.root.append(chartEl('h3', this.options.title));
     this.status = chartEl('p', '항목을 선택하면 값을 확인할 수 있습니다.', 'moum-charts-status'); this.status.setAttribute('aria-live', 'polite');
     const legend = chartEl('div', null, 'moum-charts-legend');
-    const circular = ['pie', 'donut'].includes(this.options.type);
+    const circular = isCircularChart(this.options.type);
     const items = circular ? this.data.labels : this.data.datasets.map(s => s.label);
     items.forEach((label, index) => {
       const hidden = circular ? this.hiddenPoints : this.hidden;
@@ -98,7 +138,7 @@ class Charts {
     const svg = chartSvg('svg', { viewBox: `0 0 ${this.metrics.width} ${this.metrics.height}`, role: 'group', 'aria-label': this.options.title, class: 'moum-charts-plot' });
     svg.append(chartSvg('title', {}, this.options.title));
     this.svg = svg;
-    const hasValues = this.data.datasets.some((s, i) => !this.hidden.has(i) && s.data.some((v, p) => v != null && (!circular || (!this.hiddenPoints.has(p) && v > 0))));
+    const hasValues = this.data.datasets.some((s, i) => (circular || !this.hidden.has(i)) && s.data.some((v, p) => v != null && (!circular || (!this.hiddenPoints.has(p) && v > 0))));
     if (!hasValues) svg.append(chartSvg('text', { x: this.metrics.width / 2, y: 180, 'text-anchor': 'middle', fill: 'currentColor' }, '표시할 데이터가 없습니다.'));
     else if (circular) this.drawPie(svg); else this.drawCartesian(svg);
     this.root.append(svg, this.status, this.renderTable());

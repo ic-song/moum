@@ -1,6 +1,18 @@
-# @moum/calendar 0.3.0
+# @moum/calendar 0.4.0
 
 월·주·일·목록, 종일/시간 일정, 반복과 편집을 제공하는 MIT 독립 캘린더. 런타임 의존성 없음.
+
+## 보기 저장과 복원
+
+개인 일정, 수업 시간표, 모임·시설 예약에 같은 API를 사용합니다. `getViewState()`는 기준 날짜, 월·주·일·목록 보기, 주 시작 요일, 현재 자원 필터를 JSON에 저장할 수 있게 반환합니다.
+
+```js
+const savedView = JSON.stringify(calendar.getViewState());
+// 같은 자원 목록으로 캘린더를 만든 뒤 적용합니다.
+calendar.setViewState(JSON.parse(savedView));
+```
+
+`weekStartsOn`은 일요일 0부터 토요일 6까지, 전체 자원은 `resourceId: null`입니다. 여러 설정을 함께 복원하면 범위 조회는 한 번만 요청하며 이미 진행 중인 조회는 취소합니다. 같은 상태를 다시 적용하면 추가 요청이 없습니다. 잘못된 날짜나 자원이 들어간 저장본은 예외로 처리합니다. 로컬 모드는 일정과 실행 취소 이력을 보존합니다. 서버 모드는 기존 조회 정책에 따라 성공한 응답으로 일정 목록을 교체합니다.
 
 ```html
 <link rel="stylesheet" href="./moum-calendar.css">

@@ -1,4 +1,11 @@
 export type CalendarView = 'month' | 'week' | 'day' | 'agenda';
+export interface CalendarViewState {
+  version: 1;
+  date: string;
+  view: CalendarView;
+  weekStartsOn: number;
+  resourceId: string | null;
+}
 export interface CalendarRecurrence { frequency: 'daily' | 'weekly'; interval?: number; until: string }
 export interface CalendarEvent { id: string | number; title?: string; start: string; end: string; allDay?: boolean; description?: string; recurrence?: CalendarRecurrence | null; exceptions?: string[]; resourceId?: string | number | null; overrides?: Record<string,CalendarOccurrencePatch> }
 export interface CalendarOccurrencePatch {title?:string;start?:string;end?:string;allDay?:boolean;description?:string;resourceId?:string|number|null}
@@ -46,6 +53,8 @@ export declare class Calendar {
   cancelLoad():void;
   setView(view: CalendarView): void;
   setDate(date: string): void;
+  getViewState(): CalendarViewState;
+  setViewState(state: CalendarViewState): void;
   undo(): void;
   redo(): void;
   destroy(): void;

@@ -33,13 +33,15 @@ export function toTSV(rows) {
 }
 
 export class GridModel {
-  constructor(columns, rows = [], { editable = true, historyLimit = 100, formulas = false } = {}) {
+  constructor(columns, rows = [], { editable = true, historyLimit = 100, formulas = false, validateRow } = {}) {
     if (!Array.isArray(columns) || !columns.length) throw new Error('컬럼이 필요합니다.');
     const keys = columns.map(column => column.field);
     if (keys.some(key => typeof key !== 'string' || !key || ['__proto__', 'constructor', 'prototype'].includes(key)) || new Set(keys).size !== keys.length) {
       throw new Error('컬럼 field는 중복되지 않는 안전한 문자열이어야 합니다.');
     }
     if (!Number.isInteger(historyLimit) || historyLimit < 1) throw new Error('historyLimit은 양의 정수여야 합니다.');
+    if (validateRow !== undefined && typeof validateRow !== 'function') throw new TypeError('validateRow는 함수여야 합니다.');
+    this.rowValidator = validateRow;
     this.columns = columns.map(column => ({ ...column }));
     this.editable = editable;
     this.historyLimit = historyLimit;
@@ -56,6 +58,36 @@ export class GridModel {
   }
 
   getData() { return this.rows.map(row => ({ ...row })); }
+  validate() {
+    const errors = [], sheet = this.formulas ? new FormulaSheet(this.rows, this.columns) : null;
+    this.rows.forEach((item, row) => {
+      const previousErrors = errors.length;
+      const values = this.rowValidator ? { ...item } : null;
+      this.columns.forEach((column, col) => {
+        const value = item[column.field];
+        try {
+          let normalized;
+          if (sheet && column.formulas !== false && isFormula(value)) {
+            const result = sheet.cell(row, col);
+            if (result.error) throw new Error(result.error);
+            normalized = this.convert({ ...column, formulas: false }, result.value);
+          } else normalized = this.convert(column, value);
+          if (values) values[column.field] = normalized;
+        } catch (error) {
+          errors.push({ row, field: column.field, value, message: error instanceof Error ? error.message : String(error) });
+        }
+      });
+      if (!values || errors.length !== previousErrors) return;
+      try {
+        const message = this.rowValidator(values, row);
+        if (message != null && typeof message !== 'string') throw new TypeError('validateRow는 오류 문구나 undefined를 반환해야 합니다.');
+        if (message) errors.push({ row, field: null, value: undefined, message });
+      } catch (error) {
+        errors.push({ row, field: null, value: undefined, message: error instanceof Error ? error.message : String(error) });
+      }
+    });
+    return { valid: errors.length === 0, errors };
+  }
   getComputedData() { return this.formulas ? this.formulaSheet().getData() : this.getData(); }
   formulaSheet() { return this.sheet ||= new FormulaSheet(this.rows, this.columns); }
   subscribe(listener) { this.listeners.add(listener); return () => this.listeners.delete(listener); }

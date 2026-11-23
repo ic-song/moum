@@ -15,6 +15,9 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run check
+      - run: npm run test:grid-types
+      - run: npm run pack:offline
+      - run: npm run test:offline-browser
       - name: Run integration checks
         shell: bash
         run: |
@@ -23,6 +26,11 @@ jobs:
           trap 'kill "$server_pid" || true' EXIT
           node -e "(async()=>{for(let i=0;i<100;i++){try{if((await fetch('http://127.0.0.1:4173/examples/grid/index.html')).ok)return;}catch{}await new Promise(r=>setTimeout(r,100));}process.exit(1)})()"
           npm run test:browser
+          npm run test:validation-browser
+          npm run test:column-layout
+          npm run test:chart-view
+          npm run test:gantt-view
+          npm run test:reusable-options
           npm run test:recovery
           npm run test:resilience
           npm run test:usage
@@ -32,6 +40,7 @@ jobs:
           npm run test:navigation-browser
           npm run test:mini-gantt
           npm run test:packages
+          node node_modules/typescript/bin/tsc -p output/suite-consumer
       - uses: actions/upload-artifact@v4
         if: always()
         with:

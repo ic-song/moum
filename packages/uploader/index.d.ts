@@ -8,10 +8,16 @@ export interface UploadValidation { data: Record<string, unknown>[]; validData: 
 export type UploadParseStage = 'starting'|'reading'|'parsing'|'complete';
 export interface UploadFileInfo { id: string; name: string; size: number; type: string; status: 'reading' | 'ready' | 'invalid' | 'uploading' | 'uploaded' | 'error' | 'cancelled'; progress: number; parseStage: UploadParseStage | null; error: string; sheetName: string | null; rowCount: number; errorCount: number }
 export interface UploadMetadata { sheetName: string | null; headerRow: number; mapping: Record<string, string>; edited?: boolean }
+export interface UploadRejection { file: File; reason: 'duplicate' | 'totalSize'; message: string }
+export interface UploadQueueOptions {
+  maxTotalFileSize?: number;
+  rejectDuplicates?: boolean;
+  onReject?: (detail: UploadRejection) => void;
+}
 export interface UploadRequest { file: File; data: Record<string, unknown>[] | null; signal: AbortSignal; onProgress: (percent: number) => void; metadata: UploadMetadata }
 export type UploadTransport = (request: UploadRequest) => Promise<unknown>;
 export interface XHRTransportOptions { method?: string; fieldName?: string; timeout?: number; withCredentials?: boolean; headers?: Record<string, string> }
-export interface UploaderOptions extends UploadLimits { workerURL?: string | URL; parseTimeout?: number; onParseProgress?: (detail:{id:string;stage:UploadParseStage})=>void; onParseStage?: (stage:UploadParseStage)=>void; title?: string; editable?: boolean; maxFiles?: number; pageSize?: number; uploadTimeout?: number; uploadConcurrency?: number; accept?: string; schema?: UploadSchemaField[]; encoding?: 'utf-8' | 'euc-kr' | 'utf-16le'; delimiter?: ',' | '\t' | ';' | '|'; excelLibrary?: unknown; url?: string; transportOptions?: XHRTransportOptions; onUpload?: UploadTransport; onChange?: (files: UploadFileInfo[]) => void; onError?: (detail: { id: string; error: Error }) => void; onUploaded?: (detail: { id: string; file: File; result: unknown }) => void }
+export interface UploaderOptions extends UploadLimits, UploadQueueOptions { workerURL?: string | URL; parseTimeout?: number; onParseProgress?: (detail:{id:string;stage:UploadParseStage})=>void; onParseStage?: (stage:UploadParseStage)=>void; title?: string; editable?: boolean; maxFiles?: number; pageSize?: number; uploadTimeout?: number; uploadConcurrency?: number; accept?: string; schema?: UploadSchemaField[]; encoding?: 'utf-8' | 'euc-kr' | 'utf-16le'; delimiter?: ',' | '\t' | ';' | '|'; excelLibrary?: unknown; url?: string; transportOptions?: XHRTransportOptions; onUpload?: UploadTransport; onChange?: (files: UploadFileInfo[]) => void; onError?: (detail: { id: string; error: Error }) => void; onUploaded?: (detail: { id: string; file: File; result: unknown }) => void }
 export declare const uploadLimits: Required<UploadLimits>;
 export declare function normalizeUploadLimits(options?: UploadLimits): Required<UploadLimits>;
 export declare function parseDelimited(text: string, options?: UploadLimits & { delimiter?: string }): { rows: string[][]; rowNumbers: number[]; delimiter: string };
@@ -31,6 +37,7 @@ export declare class Uploader {
   constructor(target: string | HTMLElement, options?: UploaderOptions);
   addFiles(files: File[] | FileList): Promise<string[]>;
   getFiles(): UploadFileInfo[];
+  getQueueBytes(): number;
   getData(id: string, options?: { validOnly?: boolean }): Record<string, unknown>[];
   getErrors(id: string): UploadError[];
   getMapping(id: string): Record<string, string>;

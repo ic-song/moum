@@ -21,7 +21,7 @@ export class Gantt {
   constructor(target, options = {}) {
     this.target = typeof target === 'string' ? document.querySelector(target) : target;
     if (!this.target || this.target.childNodes.length) throw new Error('비어 있는 간트 컨테이너가 필요합니다.');
-    if (options.scale && !ganttScales[options.scale]) throw new Error('scale은 day/week/month입니다.');
+    if (options.scale !== undefined && !Object.hasOwn(ganttScales, options.scale)) throw new Error('scale은 day/week/month입니다.');
     if(options.view!=null&&!['full','mini'].includes(options.view))throw new TypeError('view는 full 또는 mini입니다.');
     this.options = { scale: 'day', editable: true, view:'full', ...options, range:miniGanttRange(options.range), mini:miniGanttOptions(options.mini) };this.miniOverrides={...options.mini}; this.model = new GanttModel(options.tasks || [],options); this.collapsed = new Set(); this.selected = null; this.sequence = ++ganttSequence;
     this.root = ganttEl('section', null, 'moum-gantt'); this.root.setAttribute('aria-label', options.title || '작업 일정'); this.target.append(this.root); this.render();
@@ -41,21 +41,92 @@ export class Gantt {
   setTasks(tasks) { this.active(); this.model.setTasks(tasks); this.selected = null; this.collapsed.clear(); this.render(); }
   updateTask(id, patch) { this.active(); this.model.updateTask(id, patch); this.changed('update', String(id)); }
   addTask(task) { this.active(); this.model.addTask(task); this.changed('add', String(task.id)); }
+  captureBaseline() {
+    this.active();
+    if (!this.model.captureBaseline()) return false;
+    this.changed('baseline');
+    return true;
+  }
+  getScheduleStatus(options) { this.active(); return this.model.getScheduleStatus(options); }
   scheduleDependencies() { this.active(); this.model.scheduleDependencies(); this.changed('schedule'); }
   removeTask(id) { this.active(); this.model.removeTask(id); if (this.selected === String(id)) this.selected = null; this.changed('remove', String(id)); }
-  setScale(scale) { this.active(); if (!ganttScales[scale]) throw new Error('scale은 day/week/month입니다.'); this.options.scale = scale; this.render(); }
+  setScale(scale) { this.active(); if (!Object.hasOwn(ganttScales, scale)) throw new Error('scale은 day/week/month입니다.'); this.options.scale = scale; this.render(); }
   setView(view) { this.active();if(!['full','mini'].includes(view))throw new TypeError('view는 full 또는 mini입니다.');this.options.view=view;this.render(); }
   setMiniType(type) { this.active();const overrides={...this.miniOverrides,type},next=miniGanttOptions(overrides);this.miniOverrides=overrides;this.options.mini=next;this.render(); }
   getSummary() { return ganttSummary(this.model.tasks); }
   setRange(range) { this.active();const next=miniGanttRange(range);this.options.range=next;this.render(); }
   getRange() { if(this.options.range)return {...this.options.range};const tasks=this.model.tasks;if(!tasks.length)return null;return {start:tasks.reduce((d,t)=>t.start<d?t.start:d,tasks[0].start),end:tasks.reduce((d,t)=>t.end>d?t.end:d,tasks[0].end)}; }
+  getViewState() {
+    this.active();
+    const { scale, view, range, mini } = this.options;
+    const { type, header, labels, status } = this.miniOverrides;
+    const overrides = { type: type ?? mini.type };
+    for (const [key, value] of Object.entries({ header, labels, status })) {
+      if (value !== undefined) overrides[key] = value;
+    }
+    const children = this.taskChildren();
+    return {
+      version: 1, scale, view, range: range ? { ...range } : null, mini: overrides,
+      collapsedTaskIds: [...this.collapsed].filter(id => children.has(id))
+    };
+  }
+
+  setViewState(state) {
+    this.active();
+    if (state?.version !== 1 || !['full', 'mini'].includes(state.view)
+        || !Object.hasOwn(ganttScales, state.scale) || !Array.isArray(state.collapsedTaskIds)
+        || !state.mini || typeof state.mini !== 'object' || Array.isArray(state.mini)
+        || state.range === undefined) {
+      throw new TypeError('올바른 간트 보기 설정이 필요합니다.');
+    }
+    const { type, header, labels, status } = state.mini;
+    if (typeof type !== 'string') throw new TypeError('미니 간트 유형이 필요합니다.');
+    const overrides = { type };
+    for (const [key, value] of Object.entries({ header, labels, status })) {
+      if (value !== undefined) overrides[key] = value;
+    }
+    const mini = miniGanttOptions(overrides);
+    const range = miniGanttRange(state.range);
+    const collapsed = new Set();
+    const children = this.taskChildren();
+    for (const id of state.collapsedTaskIds) {
+      if (typeof id !== 'string' || !id) throw new TypeError('접을 작업 ID는 문자열입니다.');
+      if (children.has(id)) collapsed.add(id);
+    }
+    Object.assign(this.options, { scale: state.scale, view: state.view, range, mini });
+    this.miniOverrides = overrides;
+    this.collapsed = collapsed;
+    this.render();
+  }
   undo() { this.active(); if (this.model.undo()) this.changed('undo'); }
   redo() { this.active(); if (this.model.redo()) this.changed('redo'); }
   changed(type, id) { this.render(); this.options.onChange?.({ type, id, tasks: this.getTasks(), warnings: this.getWarnings() }); }
   attempt(action) { try { action(); } catch (error) { this.status.textContent = error.message; this.status.setAttribute('role', 'alert'); this.options.onError?.(error); } }
-  visibleTasks() {
-    const rows = [], tasks = this.model.tasks;
-    const walk = (parent, depth) => { for (const task of tasks.filter(t => t.parentId === parent)) { rows.push({ ...task, depth }); if (!this.collapsed.has(task.id)) walk(task.id, depth + 1); } }; walk(null, 0); return rows;
+  taskChildren() {
+    if (this.indexedTasks !== this.model.tasks) {
+      const children = new Map();
+      for (const task of this.model.tasks) {
+        if (!children.has(task.parentId)) children.set(task.parentId, []);
+        children.get(task.parentId).push(task);
+      }
+      this.indexedTasks = this.model.tasks;
+      this.childrenByParent = children;
+    }
+    return this.childrenByParent;
+  }
+  visibleTasks(children = this.taskChildren()) {
+    const rows = [], stack = [];
+    const push = (parentId, depth) => {
+      const siblings = children.get(parentId) ?? [];
+      for (let i = siblings.length - 1; i >= 0; i--) stack.push({ ...siblings[i], depth });
+    };
+    push(null, 0);
+    while (stack.length) {
+      const task = stack.pop();
+      rows.push(task);
+      if (!this.collapsed.has(task.id)) push(task.id, task.depth + 1);
+    }
+    return rows;
   }
   selectTask(id) { this.active();id=String(id);const task=this.getTasks().find(t=>t.id===id);if(!task)throw new Error('작업을 찾을 수 없습니다.');this.selected = id; this.render(); this.options.onSelect?.(task); }
   render() {
@@ -73,7 +144,7 @@ export class Gantt {
     if(this.model.workCalendar)this.root.append(ganttEl('p','업무일 달력 · 음영은 주말·휴일입니다. 선행 일정 맞추기는 업무일 수를 유지합니다.','moum-gantt-calendar-info'));
     this.status = ganttEl('p', this.getWarnings().map(w => w.message).join(' ') || '작업을 선택해 날짜와 진행률을 확인하세요.', 'moum-gantt-status'); this.status.setAttribute('aria-live', 'polite');
     if (!this.model.tasks.length) { this.root.append(ganttEl('p', '표시할 작업이 없습니다. tasks 데이터로 작업을 추가하세요.', 'moum-gantt-empty'), this.status); return; }
-    const tasks = this.visibleTasks(), all = this.model.tasks;
+    const children = this.taskChildren(), tasks = this.visibleTasks(children), all = this.model.tasks;
     const first = Math.min(...all.map(t => ganttDate(t.start))) - ganttDay * 2, last = Math.max(...all.map(t => ganttDate(t.end))) + ganttDay * 3;
     const days = Math.round((last - first) / ganttDay), dayWidth = ganttScales[this.options.scale], width = Math.max(400, days * dayWidth), rowHeight = 48, listWidth = 230;
     const scroll = ganttEl('div', null, 'moum-gantt-scroll'); this.scroll = scroll; scroll.tabIndex = 0; scroll.setAttribute('role', 'region'); scroll.setAttribute('aria-label', '작업 목록과 일정표, 가로 스크롤 가능');
@@ -90,7 +161,7 @@ export class Gantt {
     tasks.forEach((task, rowIndex) => {
       const row = ganttEl('div', null, 'moum-gantt-row'); row.style.height = `${rowHeight}px`; if (task.id === this.selected) row.classList.add('is-selected');
       const name = ganttEl('div', null, 'moum-gantt-name'); name.style.paddingLeft = `${12 + Math.min(task.depth, 6) * 16}px`;
-      if (all.some(t => t.parentId === task.id)) { const toggle = ganttEl('button', this.collapsed.has(task.id) ? '+' : '−', 'moum-gantt-toggle'); toggle.type = 'button'; toggle.setAttribute('aria-label', `${task.name} 하위 작업`); toggle.setAttribute('aria-expanded', String(!this.collapsed.has(task.id))); toggle.addEventListener('click', () => { if (this.collapsed.has(task.id)) this.collapsed.delete(task.id); else this.collapsed.add(task.id); this.render(); }); name.append(toggle); }
+      if (children.has(task.id)) { const toggle = ganttEl('button', this.collapsed.has(task.id) ? '+' : '−', 'moum-gantt-toggle'); toggle.type = 'button'; toggle.setAttribute('aria-label', `${task.name} 하위 작업`); toggle.setAttribute('aria-expanded', String(!this.collapsed.has(task.id))); toggle.addEventListener('click', () => { if (this.collapsed.has(task.id)) this.collapsed.delete(task.id); else this.collapsed.add(task.id); this.render(); }); name.append(toggle); }
       const choose = ganttEl('button', `${task.name} · ${task.progress}%`, 'moum-gantt-task-name'); choose.type = 'button'; choose.title = task.name; choose.addEventListener('click', () => this.selectTask(task.id)); name.append(choose); row.append(name);
       const lane = ganttEl('div', null, 'moum-gantt-lane'); lane.style.width = `${width}px`; lane.style.backgroundSize = `${dayWidth}px 100%`;
       this.shadeWorkdays(lane,first,last,dayWidth/width*100);
@@ -108,7 +179,15 @@ export class Gantt {
     });
     const lines = ganttSvg('svg', { width, height: tasks.length * rowHeight, class: 'moum-gantt-links', 'aria-hidden': 'true' }); lines.style.left = `${listWidth}px`;
     const defs = ganttSvg('defs', {}), marker = ganttSvg('marker', { id: `moum-gantt-arrow-${this.sequence}`, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' }); marker.append(ganttSvg('path', { d: 'M0 0 L10 5 L0 10 Z', fill: 'currentColor' })); defs.append(marker); lines.append(defs);
-    tasks.forEach(task => task.dependencies.forEach(dep => { const a = coordinates.get(dep), b = coordinates.get(task.id); if (!a || !b) return; const elbow = Math.max(a.end + 10, b.x - 10); lines.append(ganttSvg('path', { d: `M${a.end},${a.y} H${elbow} V${b.y} H${b.x}`, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.5, 'marker-end': `url(#moum-gantt-arrow-${this.sequence})` })); }));
+    tasks.forEach(task => task.dependencies.forEach(link => {
+      const { taskId, type, lagDays } = typeof link === 'string' ? { taskId: link, type: 'FS', lagDays: 0 } : link;
+      const a = coordinates.get(taskId), b = coordinates.get(task.id);
+      if (!a || !b) return;
+      const from = type[0] === 'F' ? a.end : a.x;
+      const to = type[1] === 'F' ? b.end : b.x;
+      const elbow = type[1] === 'F' ? Math.max(from, to) + 10 : Math.max(from + 10, to - 10);
+      lines.append(ganttSvg('path', { d: `M${from},${a.y} H${elbow} V${b.y} H${to}`, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.5, 'marker-end': `url(#moum-gantt-arrow-${this.sequence})`, 'data-dependency-type': type, 'data-lag-days': lagDays }));
+    }));
     content.append(lines); canvas.append(content); scroll.append(canvas); this.root.append(scroll, this.status);
     if (oldScroll) { scroll.scrollLeft = oldScroll.left; scroll.scrollTop = oldScroll.top; }
     const selected = this.model.tasks.find(t => t.id === this.selected); if (selected) this.renderEditor(selected);

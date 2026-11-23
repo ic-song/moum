@@ -6,7 +6,7 @@
 2. Node 22에서 `npm ci`, `npm run check`를 실행합니다. 생성된 dist/해시/카탈로그가 커밋 내용과 일치하는지 확인합니다.
 3. 브라우저·복구·프로세스 종료·적용 예제 검사를 실행하고 해당 커밋 CI 결과를 확인합니다. 운영 DB/인증 수용시험 결과와 자동 검사 결과를 혼용하지 않습니다.
 4. `npm pack ./packages/grid --dry-run`으로 포함 파일을 확인합니다. 비밀 값·output·테스트 프로필·고객 데이터는 넣지 않습니다. 자체/동봉 라이선스와 SHA256SUMS를 확인합니다.
-5. Actions의 **Package**를 수동 실행하면 검증한 커밋의 tgz를 아티팩트로 받을 수 있습니다. 이 워크플로우는 npm 게시나 GitHub Release 생성을 수행하지 않습니다.
+5. `npm run pack:offline` 또는 Actions의 **Package**를 실행해 8개 tgz와 브라우저 예제를 묶은 배포본을 생성합니다. 빌드 중 파일 해시와 빈 npm 캐시에서 8개 패키지의 오프라인 설치 및 ESM/CJS/CSS 접근을 검사합니다. [배포본 구성과 사용법](offline-kit.md)
 6. 공개 릴리스가 필요하면 유지관리자가 버전 태그/릴리스 노트/파일을 별도로 게시합니다. npm 게시도 계정·권한·패키지 이름을 확인한 뒤 별도로 수행합니다.
 
 JavaScript 라이브러리 패키지에는 React/Vue/Playwright 등 개발 도구를 런타임 의존성으로 포함하지 않습니다. 배포 소비자는 npm build 없이 사용합니다. tgz를 다른 디렉터리에 오프라인 설치하는 검사는 `npm run test:usage`에 포함됩니다.

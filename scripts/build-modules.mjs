@@ -7,7 +7,7 @@ import { Script } from 'node:vm';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const modules = {
   charts: { entry: 'Charts', global: 'MoumCharts', parts: ['model', 'charts'] },
-  gantt: { entry: 'Gantt', global: 'MoumGantt', parts: ['model', 'gantt'] },
+  gantt: { entry: 'Gantt', global: 'MoumGantt', parts: ['model', 'deliveries', 'gantt'] },
   uploader: { entry: 'Uploader', global: 'MoumUploader', parts: ['parser', 'transport', 'worker-client', 'uploader'] },
   calendar: { entry: 'Calendar', global: 'MoumCalendar', parts: ['model', 'calendar'] },
   datepicker: { entry: 'DatePicker', global: 'MoumDatePicker', parts: ['datepicker'] },

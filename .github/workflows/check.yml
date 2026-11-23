@@ -10,5 +10,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - run: npm ci
       - run: npm run check
+      - run: npm run test:grid-types
       - run: git diff --exit-code -- packages docs/feature-catalog.md

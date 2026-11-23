@@ -1,10 +1,12 @@
-# @moum/grid 0.7.1
+# @moum/grid 0.8.0
 
 폐쇄망용 데이터 그리드입니다. 코어는 외부 런타임 의존성이 없으며, XLSX 파일 기능만 동봉한 SheetJS Community Edition 0.20.3을 선택적으로 사용합니다. npm에는 아직 등록하지 않았습니다.
 
 처음 사용한다면 [HTML·JSP·로컬 npm 빠른 시작](https://github.com/ic-song/moum/blob/main/docs/getting-started.md), [React·Vue 연결](https://github.com/ic-song/moum/blob/main/docs/frameworks.md), [목적별 예제](https://github.com/ic-song/moum/blob/main/examples/README.md)를 먼저 확인하세요. 파일 복사는 JS/CSS와 LICENSE, 설치형 프로젝트는 저장소에서 `npm pack ./packages/grid`로 만든 tgz를 사용합니다. 아래는 API 참조입니다.
 
 ## 배포
+
+0.8.0은 전체 입력 검증 `validate()`, 행 규칙 `validateRow`, 검색 대상 컬럼과 정렬 locale 설정을 제공합니다. TypeScript는 ESM 기본/이름 export, CommonJS 이름 export와 `@moum/grid/realgrid-compat`를 지원합니다. [검증·검색·정렬 사용법](https://github.com/ic-song/moum/blob/main/docs/grid-validation-types.md)
 
 | 파일 | 사용 방식 |
 | --- | --- |
@@ -106,6 +108,24 @@ grid.setTree(null);
 그룹과 트리는 별도 모드입니다. 트리 ID는 비어 있거나 중복될 수 없고 부모가 존재해야 하며 순환 관계는 거부합니다. 검색·필터는 일치 노드의 상위 경로도 표시하고 정렬은 형제 사이에서 적용합니다. 트리 모드 설정은 유효하지 않은 이전 데이터로의 Undo를 막기 위해 데이터 이력을 초기화합니다.
 
 `mergeSelection()` / `unmergeSelection()`은 일반 모드에서 사각형을 시각적으로 병합·해제합니다. 가려진 원본 값은 보존하며 직접 편집은 좌상단 셀에 적용합니다. Delete는 병합 범위 전체를 지우고 Undo로 복원합니다. 병합 대상에 붙여넣기는 차단하고 고정 열 경계를 넘는 병합은 거부합니다. 정렬·필터·검색·고정 설정·모드·행 구조 변경 시 병합을 해제합니다. 병합·너비·정렬 같은 뷰 변경은 데이터 Undo 이력에 포함하지 않습니다. 자동 같은 값 병합·그룹 병합은 후속 대상입니다.
+
+## 열 배치 읽기와 복원
+
+`getColumnLayout()`은 모든 컬럼의 `field`, `width`, `visible`을 현재 배치 순서대로 반환합니다. 화면별로 저장한 JSON을 `setColumnLayout(layout)`에 넘기면 복원됩니다.
+
+```js
+const original = grid.getColumnLayout();
+const layout = original.map(column =>
+  column.field === 'internalMemo' ? { ...column, visible: false } : column
+);
+grid.setColumnLayout(layout);
+// 화면 설정 저장 시 JSON.stringify(grid.getColumnLayout()) 사용
+grid.setColumnLayout(original);
+```
+
+배열 순서가 표시 순서입니다. 전체 필드를 한 번씩 지정하고 적어도 하나는 표시하세요. `visible`을 생략하면 표시하며 `width`를 생략하면 기존 너비를 유지합니다. 필드가 추가되거나 삭제된 화면은 저장본을 현재 필드와 맞춘 뒤 복원하세요. 잘못된 설정은 예외를 발생시키고 기존 배치를 보존합니다. 입력 중인 셀을 확정할 수 없으면 `false`를 반환합니다.
+
+열을 숨겨도 데이터·검색·필터·검증 대상은 유지됩니다. 전체 검색에서 특정 열을 제외하려면 `searchable: false`를 사용하세요. 표시 순서는 복사·붙여넣기, CSV, 일반 XLSX 출력에 적용합니다. XLSX 가져오기와 수식 보존 출력은 원본 컬럼을 사용합니다. 트리 이름 컬럼은 계속 표시해야 하고, 숨은 열에 미확정 편집 복구본이 있으면 그 열을 다시 표시한 뒤 복원하세요. 배치 변경 시 화면 좌표 기반의 선택과 수동 병합을 초기화하며 고정 영역은 새 배치와 화면 너비에 맞춰 조정합니다.
 
 ## Excel 클립보드와 XLSX
 

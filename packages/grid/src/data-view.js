@@ -1,31 +1,63 @@
 export const FILTER_OPERATORS = ['contains', 'startsWith', 'equals', 'notEquals', 'gt', 'gte', 'lt', 'lte', 'between', 'empty', 'notEmpty'];
 
-export function compareCellValues(a, b, direction = 1) {
+const defaultCellCompare = new Intl.Collator('ko', { numeric: true }).compare;
+
+export function compareCellValues(a, b, direction = 1, compareText = defaultCellCompare) {
   const emptyA = a == null || a === '', emptyB = b == null || b === '';
   if (emptyA || emptyB) return emptyA === emptyB ? 0 : emptyA ? 1 : -1;
-  return direction * (typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b), 'ko', { numeric: true }));
+  return direction * (typeof a === 'number' && typeof b === 'number' ? a - b : compareText(String(a), String(b)));
+}
+
+const lower = value => String(value ?? '').toLocaleLowerCase();
+const empty = value => value == null || value === '';
+const comparisons = {
+  equals: (a, b) => a === b,
+  notEquals: (a, b) => a !== b,
+  gt: (a, b) => a > b,
+  gte: (a, b) => a >= b,
+  lt: (a, b) => a < b,
+  lte: (a, b) => a <= b,
+  between: (a, b, end) => a >= b && a <= end
+};
+
+function numericFilterValue(value) {
+  // Preserve lazy coercion for non-primitive filter values.
+  if (typeof value === 'symbol' || (value != null && typeof value === 'object') || typeof value === 'function') return () => Number(value);
+  const number = Number(value);
+  return () => number;
+}
+
+function compileFilter({ field, operator, value, value2 }) {
+  if (operator === 'empty') return row => empty(row[field]);
+  if (operator === 'notEmpty') return row => !empty(row[field]);
+  const input = lower(value);
+  if (operator === 'contains') return row => lower(row[field]).includes(input);
+  if (operator === 'startsWith') return row => lower(row[field]).startsWith(input);
+  if (!Object.hasOwn(comparisons, operator)) return () => false;
+  const compare = comparisons[operator], numeric = numericFilterValue(value);
+  const end = operator === 'between' ? String(value2).toLocaleLowerCase() : undefined;
+  const numericEnd = operator === 'between' ? numericFilterValue(value2) : undefined;
+  return row => {
+    const current = row[field];
+    if (empty(current)) return operator === 'notEquals';
+    if (typeof current !== 'number') return compare(lower(current), input, end);
+    if (numericEnd) return current >= numeric() && current <= numericEnd();
+    return compare(current, numeric());
+  };
+}
+
+function compileFilters(filters, logic) {
+  if (!filters.length) return () => true;
+  const checks = filters.map(compileFilter);
+  const any = logic === 'or';
+  return row => {
+    for (const check of checks) if (check(row) === any) return any;
+    return !any;
+  };
 }
 
 export function matchesFilters(row, filters, logic = 'and') {
-  if (!filters.length) return true;
-  return filters[logic === 'or' ? 'some' : 'every'](({ field, operator, value, value2 }) => {
-    const current = row[field], text = String(current ?? '').toLocaleLowerCase(), input = String(value ?? '').toLocaleLowerCase();
-    if (operator === 'empty') return current == null || current === '';
-    if (operator === 'notEmpty') return current != null && current !== '';
-    if (operator === 'contains') return text.includes(input);
-    if (operator === 'startsWith') return text.startsWith(input);
-    if (current == null || current === '') return operator === 'notEquals';
-    const a = typeof current === 'number' ? current : text;
-    const b = typeof current === 'number' ? Number(value) : input;
-    if (operator === 'equals') return a === b;
-    if (operator === 'notEquals') return a !== b;
-    if (operator === 'gt') return a > b;
-    if (operator === 'gte') return a >= b;
-    if (operator === 'lt') return a < b;
-    if (operator === 'lte') return a <= b;
-    if (operator === 'between') return a >= b && a <= (typeof current === 'number' ? Number(value2) : String(value2).toLocaleLowerCase());
-    return false;
-  });
+  return compileFilters(filters, logic)(row);
 }
 
 export function treeIndex(rows, tree) {
@@ -56,11 +88,13 @@ export function treeIndex(rows, tree) {
   return { byId, children };
 }
 
-export function buildDisplay(rows, { columns, query = '', filters = [], filterLogic = 'and', sorts = [], groupBy = [], collapsedGroups = new Set(), tree = null, collapsedNodes = new Set() }) {
+export function buildDisplay(rows, { columns, allColumns = columns, query = '', filters = [], filterLogic = 'and', sorts = [], groupBy = [], collapsedGroups = new Set(), tree = null, collapsedNodes = new Set(), compareText = defaultCellCompare }) {
   const text = query.trim().toLocaleLowerCase();
-  const matches = row => matchesFilters(row, filters, filterLogic) && (!text || columns.some(column => String(row[column.field] ?? '').toLocaleLowerCase().includes(text)));
+  const searchFields = text ? allColumns.filter(column => column.searchable !== false).map(column => column.field) : [];
+  const matchesFilter = compileFilters(filters, filterLogic);
+  const matches = row => matchesFilter(row) && (!text || searchFields.some(field => lower(row[field]).includes(text)));
   const compare = (a, b) => {
-    for (const sort of sorts) { const result = compareCellValues(a.row[sort.field], b.row[sort.field], sort.direction); if (result) return result; }
+    for (const sort of sorts) { const result = compareCellValues(a.row[sort.field], b.row[sort.field], sort.direction, compareText); if (result) return result; }
     return a.index - b.index;
   };
   const display = [], view = [];
@@ -82,7 +116,13 @@ export function buildDisplay(rows, { columns, query = '', filters = [], filterLo
       if (expanded) for (const child of [...descendants].sort(compare).reverse()) stack.push({ ...child, depth: item.depth + 1 });
     }
   } else {
-    const items = rows.map((row, index) => ({ row, index })).filter(item => matches(item.row)).sort(compare);
+    const items = [];
+    if (!groupBy.length && !sorts.length) {
+      rows.forEach((row, index) => { if (matches(row)) addData({ row, index }); });
+      return { display, view };
+    }
+    rows.forEach((row, index) => { if (matches(row)) items.push({ row, index }); });
+    if (sorts.length) items.sort(compare);
     const group = (members, depth, path) => {
       if (depth === groupBy.length) { members.forEach(addData); return; }
       const field = groupBy[depth], buckets = new Map();

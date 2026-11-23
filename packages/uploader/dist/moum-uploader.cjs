@@ -1,4 +1,4 @@
-/*! MOUM uploader v0.3.0 | MIT License | See LICENSE */
+/*! MOUM uploader v0.4.0 | MIT License | See LICENSE */
 'use strict';
 const uploadLimits = { maxFileSize: 20 * 1024 * 1024, maxRows: 10000, maxColumns: 200, maxExpandedBytes: 100 * 1024 * 1024, maxCellLength: 100000 };
 function normalizeUploadLimits(options = {}) {
@@ -217,6 +217,7 @@ function parseUploadFileInWorker(file, options = {}, signal, onStage) {
 
 function uploadEl(tag, text, cls) { const el = document.createElement(tag); if (text != null) el.textContent = text; if (cls) el.className = cls; return el; }
 const uploadStatus = { reading: '읽는 중', ready: '검토 완료', invalid: '검증 오류', uploading: '전송 중', uploaded: '전송 완료', error: '오류', cancelled: '취소됨' };
+const sameUploadFile = (a, b) => a.name === b.name && a.size === b.size && a.type === b.type && a.lastModified === b.lastModified && (a.webkitRelativePath || '') === (b.webkitRelativePath || '');
 let uploadSequence = 0;
 function downloadUploadFile(content, name, type = 'application/json;charset=utf-8') {
   const blob = new Blob([content], { type }), url = URL.createObjectURL(blob), link = document.createElement('a'); link.href = url; link.download = name; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -226,6 +227,8 @@ class Uploader {
     this.target = typeof target === 'string' ? document.querySelector(target) : target;
     if (!this.target || this.target.childNodes.length) throw new Error('비어 있는 업로더 컨테이너가 필요합니다.');
     const limits = normalizeUploadLimits(options); this.options = { ...limits, maxFiles: 10, pageSize: 25, uploadTimeout: 120000, uploadConcurrency: 1, accept: '', ...options }; this.schema = normalizeUploadSchema(options.schema || []);
+    if (options.maxTotalFileSize !== undefined && (!Number.isSafeInteger(options.maxTotalFileSize) || options.maxTotalFileSize <= 0)) throw new RangeError('maxTotalFileSize는 양의 정수 바이트입니다.');
+    if (options.rejectDuplicates !== undefined && typeof options.rejectDuplicates !== 'boolean') throw new TypeError('rejectDuplicates는 boolean입니다.');
     if(!Number.isInteger(this.options.uploadConcurrency)||this.options.uploadConcurrency<1||this.options.uploadConcurrency>6)throw new RangeError('uploadConcurrency는 1~6 정수입니다.');
     this.batchVersion=0;
     if(options.parseTimeout!=null&&(!Number.isFinite(options.parseTimeout)||options.parseTimeout<=0))throw new RangeError('parseTimeout은 양수입니다.');
@@ -241,6 +244,15 @@ class Uploader {
   async addFiles(files) {
     this.active(); const added = []; this.message = '';
     for (const file of Array.from(files)) {
+      if (this.destroyed) break;
+      const duplicate = this.options.rejectDuplicates && this.items.some(item => sameUploadFile(item.file, file));
+      const overBudget = this.options.maxTotalFileSize !== undefined && file.size > this.options.maxTotalFileSize - this.getQueueBytes();
+      if (duplicate || overBudget) {
+        const reason = duplicate ? 'duplicate' : 'totalSize';
+        this.message = duplicate ? `${file.name}: 같은 파일이 목록에 있습니다.` : `${file.name}: 파일 목록의 전체 용량 제한을 넘습니다.`;
+        this.options.onReject?.({ file, reason, message: this.message });
+        continue;
+      }
       if (this.items.length >= this.options.maxFiles) { this.message = `최대 ${this.options.maxFiles}개 파일까지 추가할 수 있습니다.`; break; }
       const item = { id: `file-${++uploadSequence}`, file, status: 'reading', progress: 0, version: 0, parsed: null, result: null, error: '', sheetIndex: 0, headerRow: 1, mapping: {}, page: 0, edited: false, controller: null, objectURL: null };
       this.items.push(item); added.push(item.id); if (!this.activeId) this.activeId = item.id;
@@ -251,6 +263,7 @@ class Uploader {
     }
     if (!this.destroyed) this.notify(); return added;
   }
+  getQueueBytes() { return this.items.reduce((total, item) => total + item.file.size, 0); }
   async readItem(item) {
     const version = ++item.version,controller=new AbortController();item.controller=controller; item.status = 'reading'; item.error = ''; item.errorStage = null;item.parseStage='starting'; this.notify();
     try {
@@ -296,8 +309,8 @@ class Uploader {
   selectFile(id) { this.active(); this.find(id); this.activeId = id; this.render(); }
   notify() { if (this.destroyed) return; this.render(); this.options.onChange?.(this.getFiles()); }
   cancel(id) { this.active(); const item = this.find(id); item.version++; item.controller?.abort(); item.controller = null; item.status = 'cancelled'; item.error = '취소했습니다. 서버 전송 중이었다면 서버의 수신 여부는 별도로 확인하세요.'; this.notify(); }
-  removeFile(id) { this.active(); const item = this.find(id); item.version++; item.controller?.abort(); if (item.objectURL) URL.revokeObjectURL(item.objectURL); this.items = this.items.filter(i => i !== item); if (this.activeId === id) this.activeId = this.items[0]?.id || null; this.notify(); }
-  clear() { this.active(); this.batchVersion++; for (const item of this.items) { item.version++; item.controller?.abort(); if (item.objectURL) URL.revokeObjectURL(item.objectURL); } this.items = []; this.activeId = null; this.notify(); }
+  removeFile(id) { this.active(); const item = this.find(id); item.version++; item.controller?.abort(); if (item.objectURL) URL.revokeObjectURL(item.objectURL); this.items = this.items.filter(i => i !== item); if (this.activeId === id) this.activeId = this.items[0]?.id || null; this.message = ''; this.notify(); }
+  clear() { this.active(); this.batchVersion++; for (const item of this.items) { item.version++; item.controller?.abort(); if (item.objectURL) URL.revokeObjectURL(item.objectURL); } this.items = []; this.activeId = null; this.message = ''; this.notify(); }
   async retry(id) { this.active(); const item = this.find(id); if (item.status === 'uploading' || item.status === 'reading') return; if (!this.accepts(item.file)) throw new Error('허용하지 않는 파일 형식입니다.'); if (item.parsed) return this.upload(id); return this.readItem(item); }
   async upload(id) {
     this.active(); const item = this.find(id); if (!this.transport) throw new Error('onUpload 또는 url을 연결하세요.'); if (['reading', 'uploading', 'uploaded'].includes(item.status)) throw new Error('현재 상태에서는 전송할 수 없습니다.'); if (!item.parsed || (item.result && !item.result.valid)) throw new Error('파싱과 검증을 먼저 완료하세요.');

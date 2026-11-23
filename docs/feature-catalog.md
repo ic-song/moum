@@ -20,9 +20,9 @@
 
 | 상태 | 항목 수 |
 | --- | ---: |
-| 초기 구현 | 50 |
-| 일부 구현 | 18 |
-| 계획 | 103 |
+| 초기 구현 | 51 |
+| 일부 구현 | 21 |
+| 계획 | 99 |
 
 중요한 구분과 구현 순서는 [로드맵](roadmap.md), 사용자 지정 단축키는 [셀 조작 계약](grid-interaction-contract.md)을 참고한다.
 
@@ -90,8 +90,8 @@
 | EDIT-010 | 동적 목록 편집기 | M2 | 계획 | 행 값에 따라 선택 목록 갱신 | [목차 확인](https://docs.realgrid.com/guides/editor/list-callback) |
 | EDIT-011 | 동적 편집기 전환 | M2 | 계획 | 셀별 편집기 결정 및 생성·해제 수명 관리 | [목차 확인](https://docs.realgrid.com/guides/tip/dynamic-editor) |
 | EDIT-012 | 컬럼 사용자 검증 | M0 | 초기 구현 | 검증 오류 시 값 반영 차단 및 오류 안내 | [본문 검토](https://docs.realgrid.com/guides/validation/custom-column-validation) |
-| EDIT-013 | 행 사용자 검증 | M1 | 계획 | 여러 필드 조합을 검증한 뒤 확정 | [목차 확인](https://docs.realgrid.com/guides/validation/custom-row-validation) |
-| EDIT-014 | 전체 데이터 검증 | M1 | 계획 | 오류 셀 목록과 첫 오류 위치 이동 제공 | [목차 확인](https://docs.realgrid.com/guides/validation/check-validation) |
+| EDIT-013 | 행 사용자 검증 | M1 | 일부 구현 | 여러 필드 조합을 검증한 뒤 확정 | [목차 확인](https://docs.realgrid.com/guides/validation/custom-row-validation) |
+| EDIT-014 | 전체 데이터 검증 | M1 | 일부 구현 | 오류 셀 목록과 첫 오류 위치 이동 제공 | [목차 확인](https://docs.realgrid.com/guides/validation/check-validation) |
 | EDIT-015 | 오류·경고 확정 수준 | M2 | 계획 | 경고 허용과 오류 차단 규칙 분리 | [목차 확인](https://docs.realgrid.com/guides/validation/commit-level-validation) |
 | EDIT-016 | 병합 셀 일괄 편집 | M3 | 계획 | 병합된 실제 대상 행 전체를 한 작업으로 수정 | [목차 확인](https://docs.realgrid.com/guides/editing/edit-merge) |
 
@@ -214,7 +214,7 @@
 | STYLE-004 | CSS 테마 | M0 | 일부 구현 | 현재 CSS 변수 테마 구현; 여러 테마·전환은 후속 | [목차 확인](https://docs.realgrid.com/guides/grid-style/themes) |
 | STYLE-005 | 행·셀 동적 스타일 | M1 | 계획 | 값·행 상태별 클래스 지정 | [목차 확인](https://docs.realgrid.com/guides/grid-style/cell-dynamic-style) |
 | STYLE-006 | 영역별 스타일 | M1 | 일부 구현 | 기본 CSS 분리 완료; 공개 스타일 계약 정리 필요 | [목차 확인](https://docs.realgrid.com/guides/grid-style/realgrid-2-custom-styles-0-intro) |
-| STYLE-007 | 개인화 저장·복원 | M2 | 계획 | 컬럼·정렬·필터 상태 직렬화와 버전 처리 | [목차 확인](https://docs.realgrid.com/guides/personal/personal) |
+| STYLE-007 | 개인화 저장·복원 | M2 | 일부 구현 | 컬럼·정렬·필터 상태 직렬화와 버전 처리 | [목차 확인](https://docs.realgrid.com/guides/personal/personal) |
 | STYLE-008 | 이벤트 순서 | M1 | 일부 구현 | 현재 onChange·onSelectionChange 제공; 취소·사전 이벤트 정리 필요 | [목차 확인](https://docs.realgrid.com/guides/events/event-order) |
 | STYLE-009 | 클릭·렌더 완료 이벤트 | M1 | 계획 | 데이터 좌표와 화면 좌표 구분 | [목차 확인](https://docs.realgrid.com/guides/events/click-event) |
 | STYLE-010 | 복수 그리드 스크롤 동기화 | M3 | 계획 | 재귀 이벤트와 서로 다른 행 높이 처리 | [목차 확인](https://docs.realgrid.com/guides/events/scroll-event) |
@@ -236,7 +236,7 @@
 | EXT-006 | 가상 스크롤 | M2 | 초기 구현 | 200행/30열 초과 시 행·열 가상 렌더링, 고정 열·키보드·화면 밖 범위 조작; 고정 48px·수동 병합 제외 | 자체 요구 |
 | EXT-007 | 선택 영역 채우기 핸들 | M3 | 계획 | 동일 값 복제와 연속값 채우기를 구분 | 자체 요구 |
 | EXT-008 | 엑셀식 수식 엔진 | M3 | 일부 구현 | opt-in A1/$ 참조·범위·산술·비교·13개 함수·오류·Undo/Redo·XLSX; 주소 구조 자동 재작성·전체 Excel 문법 제외 | 자체 요구 |
-| EXT-009 | TypeScript 타입 선언 | M1 | 계획 | 공개 옵션·이벤트·좌표·변경 레코드의 타입 계약 | 자체 요구 |
+| EXT-009 | TypeScript 타입 선언 | M1 | 초기 구현 | 공개 옵션·이벤트·좌표·변경 레코드의 타입 계약 | 자체 요구 |
 | EXT-010 | 오프라인 배포 검증 | M1 | 초기 구현 | 배포 파일 SHA256SUMS·선택 의존성 라이선스·로컬 동봉·망 차단 검증 | 자체 요구 |
 | EXT-011 | 성능·호환 회귀 스위트 | M1 | 일부 구현 | 단위·기존Chromium·실제Excel·서버HTTP 3엔진·자동WCAG검사; 전체기능 타엔진·네이티브IME·스크린리더는 후속 | 자체 요구 |
 | EXT-012 | 패키지별 배포·독립 사용 | M0 | 일부 구현 | 현재 grid JS·CSS 독립 제공; npm 등록과 향후 모듈은 미실행 | 자체 요구 |

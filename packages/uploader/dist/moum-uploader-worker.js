@@ -1,4 +1,4 @@
-/*! MOUM uploader v0.3.0 | MIT License | See LICENSE */
+/*! MOUM uploader v0.4.0 | MIT License | See LICENSE */
 const uploadLimits = { maxFileSize: 20 * 1024 * 1024, maxRows: 10000, maxColumns: 200, maxExpandedBytes: 100 * 1024 * 1024, maxCellLength: 100000 };
 function normalizeUploadLimits(options = {}) {
   const result = { ...uploadLimits }; for (const key of Object.keys(result)) if (options[key] != null) { if (!Number.isSafeInteger(options[key]) || options[key] < 1) throw new RangeError(`${key}는 양의 정수입니다.`); result[key] = options[key]; } return result;

@@ -3,7 +3,7 @@
   "version": "0.7.0",
   "private": true,
   "type": "module",
-  "description": "Framework independent JavaScript tools for offline business applications.",
+  "description": "General-purpose JavaScript components for online and offline applications.",
   "license": "MIT",
   "workspaces": [
     "packages/*"
@@ -23,7 +23,15 @@
     "test:packages": "node scripts/prepare-suite-packages.mjs",
     "test:mini-gantt": "node scripts/browser-mini-gantt-check.mjs",
     "test:business-browser": "node scripts/browser-business-check.mjs",
-    "test:navigation-browser": "node scripts/browser-navigation-check.mjs"
+    "test:navigation-browser": "node scripts/browser-navigation-check.mjs",
+    "test:grid-types": "node scripts/grid-types-check.mjs",
+    "test:validation-browser": "node scripts/browser-validation-check.mjs",
+    "pack:offline": "npm run build && node scripts/pack-offline.mjs",
+    "test:offline-browser": "node scripts/browser-offline-check.mjs",
+    "test:column-layout": "node scripts/browser-column-layout-check.mjs",
+    "test:chart-view": "node scripts/browser-chart-view-check.mjs",
+    "test:gantt-view": "node scripts/browser-gantt-view-check.mjs",
+    "test:reusable-options": "node scripts/browser-reusable-options-check.mjs"
   },
   "engines": {
     "node": ">=22"
@@ -35,6 +43,7 @@
     "playwright": "1.66.0-alpha-1794252756000",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "typescript": "5.9.3",
     "vue": "3.5.45"
   }
 }
