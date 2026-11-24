@@ -32,6 +32,10 @@ try {
       await page.locator('#open-dialog').click();
       await page.getByRole('dialog').getByRole('button', { name: '초기화' }).click();
       await page.waitForFunction(() => document.querySelector('#result').textContent.includes('초기화했습니다'));
+      await page.locator('#popup-inline').click();
+      await page.locator('#popup-help').waitFor();
+      await page.keyboard.press('Escape');
+      await page.locator('#popup-help').waitFor({ state: 'hidden' });
       await page.goto(pathToFileURL(path.join(kit, 'examples/quick-start/index.html')).href);
       await page.getByRole('button', { name: '다른 데이터 불러오기' }).click();
       await page.getByRole('button', { name: '현재 데이터 확인' }).click();

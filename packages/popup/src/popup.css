@@ -1,0 +1,15 @@
+.moum-popover {
+  position: fixed;
+  inset: auto;
+  top: var(--moum-popover-y, 0);
+  left: var(--moum-popover-x, 0);
+  margin: 0;
+  inline-size: max-content;
+  max-inline-size: min(22rem, var(--moum-popover-width, calc(100vw - 1rem)));
+  max-block-size: var(--moum-popover-height, calc(100dvh - 1rem));
+  overflow: auto;
+  padding: calc(2 * var(--moum-control-space));
+  border: 1px solid var(--moum-control-line);
+  border-radius: var(--moum-control-radius);
+  box-shadow: 0 .25rem 1rem oklch(20% .02 165 / .16);
+}

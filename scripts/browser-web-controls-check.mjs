@@ -64,6 +64,61 @@ for (const engine of [chromium, firefox, webkit]) {
     await page.waitForFunction(() => document.querySelector('#result').textContent.includes('초기화했습니다'));
     assert.deepEqual(await page.evaluate(() => [tabs.getActive(), accordion.getOpen()]), ['overview', []]);
 
+    await page.locator('#popup-alert').click();
+    const popupModal = page.locator('#popup-mount').getByRole('dialog');
+    assert.equal(await popupModal.getByRole('button').count(), 1);
+    assert.equal(await page.evaluate(() => document.activeElement.textContent), '확인');
+    await popupModal.getByRole('button', { name: '확인' }).click();
+    await page.waitForFunction(() => document.querySelector('#popup-result').textContent === '알림을 닫았습니다.');
+    await page.getByRole('tab', { name: '규격' }).click();
+    await page.locator('#popup-confirm').click();
+    await popupModal.getByRole('button', { name: '아니오' }).click();
+    await page.waitForFunction(() => document.querySelector('#popup-result').textContent === '현재 탭을 유지했습니다.');
+    assert.equal(await page.evaluate(() => tabs.getActive()), 'specs');
+    await page.locator('#popup-confirm').click();
+    await popupModal.getByRole('button', { name: '예', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('#popup-result').textContent === '소개 탭으로 돌아갔습니다.');
+    assert.equal(await page.evaluate(() => tabs.getActive()), 'overview');
+
+    const trigger = page.locator('#popup-inline');
+    const panel = page.locator('#popup-help');
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await panel.waitFor();
+    // WebKit's default keyboard mode skips links unless full keyboard access is enabled.
+    if (engine === webkit) await panel.getByRole('link').focus();
+    else await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.closest('#popup-help') !== null), true);
+    await page.keyboard.press('Escape');
+    await panel.waitFor({ state: 'hidden' });
+    assert.equal(await trigger.evaluate(el => el === document.activeElement), true);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await trigger.evaluate(el => { el.style.cssText = 'position: fixed; right: 8px; bottom: 8px'; });
+    await trigger.click();
+    await page.waitForFunction(() => Number.parseFloat(document.querySelector('#popup-help').style.getPropertyValue('--moum-popover-y')) > 0);
+    const popoverBox = await panel.boundingBox(), anchorBox = await trigger.boundingBox();
+    assert.ok(popoverBox.x >= 0 && popoverBox.x + popoverBox.width <= 390 && popoverBox.y + popoverBox.height < anchorBox.y);
+    if (engine === chromium) await page.screenshot({ path: path.join(output, 'popover-390.png') });
+    await page.getByRole('heading', { level: 1 }).click();
+    await panel.waitFor({ state: 'hidden' });
+    await trigger.evaluate(el => { el.style.removeProperty('position'); el.style.removeProperty('right'); el.style.removeProperty('bottom'); });
+
+    const callbacks = await page.evaluate(async () => {
+      const host = document.body.appendChild(document.createElement('div'));
+      const manager = new MoumPopup(host);
+      const calls = [];
+      const pending = manager.confirm({
+        onYes: async () => { await Promise.resolve(); calls.push('yes'); },
+        onNo: () => { calls.push('no'); }
+      });
+      host.querySelector('.moum-dialog-confirm').click();
+      const accepted = await pending;
+      const cancelled = manager.confirm({ onNo: () => { calls.push('no'); } });
+      manager.destroy();
+      return [accepted, await cancelled, calls];
+    });
+    assert.deepEqual(callbacks, [true, false, ['yes', 'no']]);
+
     if (engine === chromium) {
       for (const [width, height] of [[320, 760], [390, 844], [768, 1024], [844, 390], [1024, 768], [1280, 800], [1440, 900], [1920, 1080], [2560, 1080]]) {
         await page.setViewportSize({ width, height });

@@ -15,7 +15,7 @@ const tar = args => execFileSync('tar', args);
 const entries = {
   grid: 'Grid', charts: 'Charts', gantt: 'Gantt', uploader: 'Uploader', calendar: 'Calendar',
   datepicker: 'DatePicker', pagination: 'Pagination', 'infinite-scroll': 'InfiniteScroll',
-  tabs: 'Tabs', accordion: 'Accordion', dialog: 'Dialog'
+  tabs: 'Tabs', accordion: 'Accordion', dialog: 'Dialog', popup: 'Popup'
 };
 
 await mkdir(output, { recursive: true });

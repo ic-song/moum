@@ -1,0 +1,35 @@
+{
+  "name": "@moum/popup",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Alert and confirm with callback or Promise results, plus anchored inline popovers.",
+  "license": "MIT",
+  "main": "dist/moum-popup.cjs",
+  "module": "dist/moum-popup.mjs",
+  "browser": "dist/moum-popup.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/moum-popup.mjs",
+      "require": "./dist/moum-popup.cjs"
+    },
+    "./style.css": "./dist/moum-popup.css"
+  },
+  "files": [
+    "dist",
+    "index.d.ts",
+    "README.md",
+    "LICENSE",
+    "SHA256SUMS.txt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ic-song/moum.git",
+    "directory": "packages/popup"
+  },
+  "homepage": "https://github.com/ic-song/moum/tree/main/packages/popup",
+  "bugs": {
+    "url": "https://github.com/ic-song/moum/issues"
+  }
+}

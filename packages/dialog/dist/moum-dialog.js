@@ -1,4 +1,4 @@
-/*! MOUM dialog v0.2.0 | MIT License | See LICENSE */
+/*! MOUM dialog v0.3.0 | MIT License | See LICENSE */
 (function () {
 'use strict';
 let moumDialogSequence = 0;
@@ -44,14 +44,18 @@ class Dialog {
   async open(options = {}) {
     if (this.destroyed) throw new Error('이미 제거된 대화상자입니다.');
     if (this.resolve) throw new Error('대화상자가 이미 열렸습니다.');
-    const { title = '확인', message = '', cancelLabel = '취소', confirmLabel = '확인', onConfirm } = { ...this.options, ...options };
+    const { title = '확인', message = '', cancelLabel = '취소', confirmLabel = '확인', onConfirm, showCancel = true } = { ...this.options, ...options };
     if (![title, cancelLabel, confirmLabel].every(text => typeof text === 'string' && text.trim()) || typeof message !== 'string') throw new TypeError('제목과 버튼 이름은 비어 있지 않은 문자열이어야 합니다.');
     if (onConfirm !== undefined && typeof onConfirm !== 'function') throw new TypeError('onConfirm은 함수여야 합니다.');
+    if (typeof showCancel !== 'boolean') throw new TypeError('showCancel은 boolean입니다.');
     this.onConfirm = onConfirm;
     this.title.textContent = title;
     this.message.textContent = message;
     this.cancelButton.textContent = cancelLabel;
     this.confirmButton.textContent = confirmLabel;
+    this.cancelButton.hidden = !showCancel;
+    this.cancelButton.autofocus = showCancel;
+    this.confirmButton.autofocus = !showCancel;
     this.setFeedback('');
     this.root.returnValue = '';
     const result = new Promise(resolve => { this.resolve = resolve; });

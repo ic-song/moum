@@ -10,7 +10,7 @@ const consumer = path.resolve('output/suite-consumer'); await mkdir(consumer, { 
 await writeFile(path.join(consumer, 'package.json'), '{"private":true,"type":"module"}');
 const require = createRequire(path.join(consumer, 'consumer.cjs'));
 const declarations = [], imports = [];
-for (const [name, entry] of Object.entries({charts:'Charts',gantt:'Gantt',uploader:'Uploader',calendar:'Calendar',datepicker:'DatePicker',pagination:'Pagination','infinite-scroll':'InfiniteScroll',tabs:'Tabs',accordion:'Accordion',dialog:'Dialog'})) {
+for (const [name, entry] of Object.entries({charts:'Charts',gantt:'Gantt',uploader:'Uploader',calendar:'Calendar',datepicker:'DatePicker',pagination:'Pagination','infinite-scroll':'InfiniteScroll',tabs:'Tabs',accordion:'Accordion',dialog:'Dialog',popup:'Popup'})) {
   const target = path.join(consumer, 'node_modules/@moum', name); await mkdir(target, { recursive: true });
   const metadata=JSON.parse(await readFile(`packages/${name}/package.json`,'utf8'));
   const archive = path.resolve(`output/packages/moum-${name}-${metadata.version}.tgz`);
@@ -59,5 +59,8 @@ const storedCalendar=new Calendar(document.createElement('div'));storedCalendar.
 const tabs=new Tabs('#tabs',{activation:'manual',items:[{id:'intro',label:'소개',content:'본문'}]}); const active:string=tabs.getActive(); tabs.setActive(active);tabs.destroy();
 const accordion=new Accordion('#faq',{items:[{id:'info',label:'안내'}]}); const opened:boolean=accordion.toggle('info'); if(opened)accordion.setOpen([]);accordion.destroy();
 const dialog=new Dialog('#dialog'); const confirmed:boolean=await dialog.open({title:'확인',onConfirm:async ({signal})=>{if(signal.aborted)throw Error('cancelled');}});if(!confirmed)dialog.close();dialog.destroy();
+import { Popover } from '@moum/popup';
+const popupManager=new Popup('#popup');await popupManager.alert({message:'안내'});const yes:boolean=await popupManager.confirm({onYes:async()=>{},onNo:()=>{}});console.log(yes);popupManager.destroy();
+const popover=new Popover('#panel',{trigger:'#trigger',placement:'top',onChange:open=>console.log(open)});popover.open();popover.destroy();
 `);
 await writeFile(path.join(consumer, 'tsconfig.json'), JSON.stringify({compilerOptions:{target:'ES2022',module:'NodeNext',moduleResolution:'NodeNext',strict:true,noEmit:true,lib:['ES2022','DOM']},files:['usage.mts']},null,2));

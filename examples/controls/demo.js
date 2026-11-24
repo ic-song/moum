@@ -27,3 +27,22 @@ document.querySelector('#open-dialog').addEventListener('click', async () => {
   }
   document.querySelector('#result').textContent = confirmed ? '선택을 초기화했습니다.' : '현재 선택을 유지했습니다.';
 });
+
+const popups = new MoumPopup('#popup-mount');
+const popupResult = document.querySelector('#popup-result');
+document.querySelector('#popup-alert').addEventListener('click', () => {
+  void popups.alert({
+    title: '배송 안내',
+    message: '배송 예정일은 주문 상세 화면에서 확인할 수 있습니다.',
+    onClose: () => { popupResult.textContent = '알림을 닫았습니다.'; }
+  });
+});
+document.querySelector('#popup-confirm').addEventListener('click', () => {
+  void popups.confirm({
+    title: '소개 탭으로 돌아갈까요?',
+    onYes: () => { tabs.setActive('overview'); popupResult.textContent = '소개 탭으로 돌아갔습니다.'; },
+    onNo: () => { popupResult.textContent = '현재 탭을 유지했습니다.'; }
+  });
+});
+const shippingHelp = new MoumPopup.Popover('#popup-help', { trigger: '#popup-inline' });
+document.querySelector('#popup-help a').addEventListener('click', () => shippingHelp.close());

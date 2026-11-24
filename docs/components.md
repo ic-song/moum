@@ -1,8 +1,8 @@
 # MOUM 컴포넌트와 공통 UI
 
-탭·아코디언·확인 대화상자는 상품 정보, FAQ, 초기화 확인 같은 화면에 쓸 수 있습니다. 세 컴포넌트의 CSS도 공통 `--moum-ui-*` 변수로 조정할 수 있습니다. [실행 예제](../examples/controls/index.html)
+탭·아코디언·팝업은 상품 정보, FAQ, 알림, 초기화 확인과 인라인 안내에 쓸 수 있습니다. CSS는 공통 `--moum-ui-*` 변수로 조정할 수 있습니다. [실행 예제](../examples/controls/index.html)
 
-각 패키지는 독립 JS/CSS·ESM·CommonJS·라이선스·SHA256SUMS를 제공합니다. 11개 패키지 모두 TypeScript 선언을 포함합니다. **npm 미게시**, 저장소에서 `npm pack ./packages/<이름>` 후 tgz 설치 또는 dist 파일 복사로 사용합니다. 다른 컴포넌트를 설치할 필요가 없습니다. 각 컴포넌트는 비어 있는 요소에 생성하며 화면 제거 시 destroy()로 정리합니다.
+각 패키지는 독립 JS/CSS·ESM·CommonJS·라이선스·SHA256SUMS를 제공합니다. 12개 패키지 모두 TypeScript 선언을 포함합니다. **npm 미게시**, 저장소에서 `npm pack ./packages/<이름>` 후 tgz 설치 또는 dist 파일 복사로 사용합니다. 다른 컴포넌트를 설치할 필요가 없습니다. 각 컴포넌트는 비어 있는 요소에 생성하며 화면 제거 시 destroy()로 정리합니다.
 
 | 패키지 | 이번 버전 | 확인한 기존 기능 | 이번 고도화 | 범위 밖 |
 | --- | --- | --- | --- | --- |

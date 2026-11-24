@@ -1,4 +1,4 @@
-# @moum/dialog 0.2.0
+# @moum/dialog 0.3.0
 
 삭제, 초기화, 이동 등 실행 전에 사용자의 선택을 확인합니다. 네이티브 `dialog.showModal()`을 지원하는 브라우저에서 사용합니다. 일반 script 전역은 `MoumDialog`, ESM 기본 export와 CommonJS 이름 export는 `Dialog`입니다. CSS는 `@moum/dialog/style.css` 또는 `dist/moum-dialog.css`를 사용하세요.
 
@@ -24,3 +24,5 @@ const saved = await dialog.open({
 ```
 
 취소·Esc·제거 시 `AbortSignal`이 중단됩니다. 이미 서버에서 처리된 요청의 취소 여부는 앱에서 확인하세요.
+
+알림처럼 버튼 하나만 표시하려면 `showCancel: false`를 지정하세요. 이때 확인 버튼이 기본 포커스를 받습니다. 알림·확인·인라인 팝업을 함께 쓰려면 [@moum/popup](../popup/README.md)을 사용할 수 있습니다.

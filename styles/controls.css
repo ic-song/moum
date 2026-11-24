@@ -1,4 +1,4 @@
-:where(.moum-tabs, .moum-accordion, .moum-dialog) {
+:where(.moum-tabs, .moum-accordion, .moum-dialog, .moum-popover) {
   --moum-control-ink: var(--moum-ui-ink, oklch(27% .02 165));
   --moum-control-paper: var(--moum-ui-paper, white);
   --moum-control-line: var(--moum-ui-line, oklch(85% .012 165));
@@ -15,7 +15,7 @@
   overflow-wrap: anywhere;
 }
 
-:is(.moum-tabs, .moum-accordion, .moum-dialog) :focus-visible {
+:is(.moum-tabs, .moum-accordion, .moum-dialog, .moum-popover) :focus-visible {
   outline: 2px solid var(--moum-control-action);
   outline-offset: 2px;
 }
