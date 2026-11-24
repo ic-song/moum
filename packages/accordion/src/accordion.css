@@ -1,0 +1,16 @@
+.moum-accordion > details {
+  border: 1px solid var(--moum-control-line);
+  border-radius: var(--moum-control-radius);
+}
+.moum-accordion > details + details { margin-block-start: var(--moum-control-space); }
+.moum-accordion > details > summary {
+  box-sizing: border-box;
+  min-block-size: var(--moum-control-height);
+  padding: var(--moum-control-space) calc(2 * var(--moum-control-space));
+  border-radius: var(--moum-control-radius);
+  font-weight: 600;
+  cursor: pointer;
+}
+.moum-accordion > details > summary:hover,
+.moum-accordion > details[open] > summary { background: var(--moum-control-tint); }
+.moum-accordion-body { padding: calc(2 * var(--moum-control-space)); }

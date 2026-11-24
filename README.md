@@ -2,7 +2,7 @@
 
 [![Check](https://github.com/ic-song/moum/actions/workflows/check.yml/badge.svg)](https://github.com/ic-song/moum/actions/workflows/check.yml) [![Browser](https://github.com/ic-song/moum/actions/workflows/browser.yml/badge.svg)](https://github.com/ic-song/moum/actions/workflows/browser.yml) [MIT License](LICENSE)
 
-**개발에 필요한 것들의 모음, MOUM.** 개인 도구, 교육·연구, 커뮤니티, 기업 시스템에서 필요한 기능을 골라 쓰는 범용 JavaScript 라이브러리입니다. 그리드·차트·간트·업로더·캘린더·날짜 선택·페이지네이션·무한 스크롤을 독립 패키지로 제공하며 오프라인에서도 사용할 수 있습니다.
+**개발에 필요한 것들의 모음, MOUM.** 개인 도구, 교육·연구, 커뮤니티, 기업 시스템에서 필요한 기능을 골라 쓰는 범용 JavaScript 라이브러리입니다. 그리드·차트·간트·업로더·캘린더·날짜 선택·페이지네이션·무한 스크롤·탭·아코디언·대화상자를 독립 패키지로 제공하며 오프라인에서도 사용할 수 있습니다.
 
 한글 이름은 **모음**, 영문 브랜드는 **MOUM**입니다. 기존 Moa JS의 그리드 0.7.0과 독립 라이브러리 작업을 통합한 새 저장소입니다. [이름 전환 안내](docs/moum-migration.md)와 [검증 기록](docs/moum-verification.md)을 참고하세요.
 
@@ -16,14 +16,17 @@
 | `@moum/datepicker` | 0.2.0 | 인라인/팝업·단일 날짜·기간·프리셋 | [날짜 선택](examples/datepicker/index.html) | [문서](packages/datepicker/README.md) |
 | `@moum/pagination` | 0.2.0 | 페이지 직접 이동·URL/뒤로가기·서버 조회 | [페이지](examples/pagination/index.html) | [문서](packages/pagination/README.md) |
 | `@moum/infinite-scroll` | 0.2.0 | 가상 목록·커서·위치 복원·세션 캐시 | [무한 스크롤](examples/infinite-scroll/index.html) | [문서](packages/infinite-scroll/README.md) |
+| `@moum/tabs` | 0.2.0 | 탭 콘텐츠 전환·자동/수동 키보드 선택 | [예제](examples/controls/index.html) | [문서](packages/tabs/README.md) |
+| `@moum/accordion` | 0.2.0 | FAQ·설정 접기와 펼치기 | [예제](examples/controls/index.html) | [문서](packages/accordion/README.md) |
+| `@moum/dialog` | 0.2.0 | 확인·취소·비동기 처리와 재시도 | [예제](examples/controls/index.html) | [문서](packages/dialog/README.md) |
 
-[미니 간트 4종 예제](examples/gantt-mini/index.html) · [8개 컴포넌트 현황·고도화 범위·공통 UI/UX](docs/components.md)를 확인하세요.
+[미니 간트 4종 예제](examples/gantt-mini/index.html) · [11개 컴포넌트 현황·고도화 범위·공통 UI/UX](docs/components.md)를 확인하세요.
 
 DatePicker 팝업·복합/이중 축 차트·업무일 간트·Worker 파싱의 [고도화 검증 기록](docs/business-components-verification.md)을 제공합니다.
 
 캘린더 회차 수정·기간 조회, 페이지 URL 복원, 가상 목록·위치/캐시는 [목록 탐색 고도화 검증](docs/navigation-components-verification.md)을 확인하세요.
 
-각 패키지는 browser JS·ESM·CommonJS·CSS·라이선스를 포함하며 여덟 패키지 모두 TypeScript 선언을 제공합니다. 서로 런타임 의존성이 없고 npm 등록 전이므로 `npm pack ./packages/<이름>` 또는 파일 복사로 사용합니다. 각 패키지는 API 문서에 명시한 범위로 제공하며 서버 저장·인증은 호스트가 연결합니다.
+각 패키지는 browser JS·ESM·CommonJS·CSS·라이선스를 포함하며 11개 패키지 모두 TypeScript 선언을 제공합니다. 서로 런타임 의존성이 없고 npm 등록 전이므로 `npm pack ./packages/<이름>` 또는 파일 복사로 사용합니다. 각 패키지는 API 문서에 명시한 범위로 제공하며 서버 저장·인증은 호스트가 연결합니다.
 
 코어는 외부 런타임 의존성·CDN·웹폰트·온라인 인증·텔레메트리 없이 실행합니다. XLSX 파일 기능에는 로컬 동봉한 SheetJS Community Edition을 선택적으로 사용합니다. 프레임워크와 분리된 JS·CSS 파일을 제공하며 MOUM 자체 코드는 상업적 사용과 수정·재배포가 가능한 MIT 라이선스입니다. 동봉 라이브러리는 [별도 Apache-2.0 라이선스](packages/grid/THIRD_PARTY_NOTICES.md)를 유지합니다.
 
@@ -31,7 +34,7 @@ DatePicker 팝업·복합/이중 축 차트·업무일 간트·Worker 파싱의 
 
 ## 다른 프로젝트에서 시작하기
 
-폐쇄망에는 8개 tgz, 브라우저 파일, 예제, 라이선스를 묶은 배포본 하나를 가져가면 됩니다. `npm run pack:offline`으로 생성하거나 GitHub Actions의 **Package** 작업에서 받으세요. [오프라인 배포본 사용법](docs/offline-kit.md)
+폐쇄망에는 11개 tgz, 브라우저 파일, 예제, 라이선스를 묶은 배포본 하나를 가져가면 됩니다. `npm run pack:offline`으로 생성하거나 GitHub Actions의 **Package** 작업에서 받으세요. [오프라인 배포본 사용법](docs/offline-kit.md)
 
 MOUM Grid는 표 조회·편집·입력 검증·Excel 교환에 사용할 수 있습니다. `getColumnLayout()`과 `setColumnLayout()`으로 화면별 열 순서·표시 여부·너비를 저장하고 복원할 수 있습니다. [그리드 API](packages/grid/README.md) · [입력 검증과 TypeScript](docs/grid-validation-types.md)
 

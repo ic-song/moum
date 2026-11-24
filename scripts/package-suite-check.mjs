@@ -10,7 +10,7 @@ const consumer = path.resolve('output/suite-consumer'); await mkdir(consumer, { 
 await writeFile(path.join(consumer, 'package.json'), '{"private":true,"type":"module"}');
 const require = createRequire(path.join(consumer, 'consumer.cjs'));
 const declarations = [], imports = [];
-for (const [name, entry] of Object.entries({charts:'Charts',gantt:'Gantt',uploader:'Uploader',calendar:'Calendar',datepicker:'DatePicker',pagination:'Pagination','infinite-scroll':'InfiniteScroll'})) {
+for (const [name, entry] of Object.entries({charts:'Charts',gantt:'Gantt',uploader:'Uploader',calendar:'Calendar',datepicker:'DatePicker',pagination:'Pagination','infinite-scroll':'InfiniteScroll',tabs:'Tabs',accordion:'Accordion',dialog:'Dialog'})) {
   const target = path.join(consumer, 'node_modules/@moum', name); await mkdir(target, { recursive: true });
   const metadata=JSON.parse(await readFile(`packages/${name}/package.json`,'utf8'));
   const archive = path.resolve(`output/packages/moum-${name}-${metadata.version}.tgz`);
@@ -56,5 +56,8 @@ const calendar=new Calendar(document.createElement('div'),{events:[{id:'a',start
 const uploader=new Uploader(document.createElement('div'),{schema:[{field:'qty',type:'integer'}],onUpload:async ({file,data,signal,onProgress})=>{onProgress(100);return {name:file.name,data,aborted:signal.aborted};}}); uploader.addFiles([new File(['a'],'a.txt')]); uploader.destroy();
 const uploadBudget=new Uploader(document.createElement('div'),{maxTotalFileSize:1024,rejectDuplicates:true,onReject:({reason})=>console.log(reason)});const queuedBytes:number=uploadBudget.getQueueBytes();uploadBudget.destroy();
 const storedCalendar=new Calendar(document.createElement('div'));storedCalendar.setViewState({...storedCalendar.getViewState(),weekStartsOn:1});storedCalendar.destroy();
+const tabs=new Tabs('#tabs',{activation:'manual',items:[{id:'intro',label:'소개',content:'본문'}]}); const active:string=tabs.getActive(); tabs.setActive(active);tabs.destroy();
+const accordion=new Accordion('#faq',{items:[{id:'info',label:'안내'}]}); const opened:boolean=accordion.toggle('info'); if(opened)accordion.setOpen([]);accordion.destroy();
+const dialog=new Dialog('#dialog'); const confirmed:boolean=await dialog.open({title:'확인',onConfirm:async ({signal})=>{if(signal.aborted)throw Error('cancelled');}});if(!confirmed)dialog.close();dialog.destroy();
 `);
 await writeFile(path.join(consumer, 'tsconfig.json'), JSON.stringify({compilerOptions:{target:'ES2022',module:'NodeNext',moduleResolution:'NodeNext',strict:true,noEmit:true,lib:['ES2022','DOM']},files:['usage.mts']},null,2));

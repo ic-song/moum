@@ -24,13 +24,21 @@ try {
         await page.goto(pathToFileURL(path.join(kit, 'examples', name, 'index.html')).href);
         await page.locator('.moum-' + name).first().waitFor({ timeout: 5000 });
       }
+      await page.goto(pathToFileURL(path.join(kit, 'examples/controls/index.html')).href);
+      await page.getByRole('tab', { name: '규격' }).click();
+      assert.match(await page.getByRole('tabpanel').textContent(), /A5/);
+      await page.locator('#accordion summary').first().click();
+      assert.equal(await page.locator('#accordion details').first().evaluate(el => el.open), true);
+      await page.locator('#open-dialog').click();
+      await page.getByRole('dialog').getByRole('button', { name: '초기화' }).click();
+      await page.waitForFunction(() => document.querySelector('#result').textContent.includes('초기화했습니다'));
       await page.goto(pathToFileURL(path.join(kit, 'examples/quick-start/index.html')).href);
       await page.getByRole('button', { name: '다른 데이터 불러오기' }).click();
       await page.getByRole('button', { name: '현재 데이터 확인' }).click();
       assert.match(await page.locator('#result').textContent(), /B001/);
       assert.deepEqual(errors, []);
       assert.deepEqual(outgoing, []);
-      console.log(`PASS ${engine.name()}: 8 offline examples and quick-start interaction.`);
+      console.log(`PASS ${engine.name()}: offline examples including tabs, accordion and dialog.`);
     } finally {
       await browser.close();
     }

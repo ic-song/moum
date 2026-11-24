@@ -1,0 +1,35 @@
+{
+  "name": "@moum/tabs",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Accessible tabs with keyboard navigation and programmatic selection.",
+  "license": "MIT",
+  "main": "dist/moum-tabs.cjs",
+  "module": "dist/moum-tabs.mjs",
+  "browser": "dist/moum-tabs.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/moum-tabs.mjs",
+      "require": "./dist/moum-tabs.cjs"
+    },
+    "./style.css": "./dist/moum-tabs.css"
+  },
+  "files": [
+    "dist",
+    "index.d.ts",
+    "README.md",
+    "LICENSE",
+    "SHA256SUMS.txt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ic-song/moum.git",
+    "directory": "packages/tabs"
+  },
+  "homepage": "https://github.com/ic-song/moum/tree/main/packages/tabs",
+  "bugs": {
+    "url": "https://github.com/ic-song/moum/issues"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@moum/dialog",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Native modal confirmation with an asynchronous result.",
+  "license": "MIT",
+  "main": "dist/moum-dialog.cjs",
+  "module": "dist/moum-dialog.mjs",
+  "browser": "dist/moum-dialog.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/moum-dialog.mjs",
+      "require": "./dist/moum-dialog.cjs"
+    },
+    "./style.css": "./dist/moum-dialog.css"
+  },
+  "files": [
+    "dist",
+    "index.d.ts",
+    "README.md",
+    "LICENSE",
+    "SHA256SUMS.txt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ic-song/moum.git",
+    "directory": "packages/dialog"
+  },
+  "homepage": "https://github.com/ic-song/moum/tree/main/packages/dialog",
+  "bugs": {
+    "url": "https://github.com/ic-song/moum/issues"
+  }
+}

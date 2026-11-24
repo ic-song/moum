@@ -1,0 +1,38 @@
+:where(.moum-tabs, .moum-accordion, .moum-dialog) {
+  --moum-control-ink: var(--moum-ui-ink, oklch(27% .02 165));
+  --moum-control-paper: var(--moum-ui-paper, white);
+  --moum-control-line: var(--moum-ui-line, oklch(85% .012 165));
+  --moum-control-action: var(--moum-ui-action, oklch(43% .09 165));
+  --moum-control-tint: var(--moum-ui-tint, oklch(94% .035 165));
+  --moum-control-space: var(--moum-ui-space, 8px);
+  --moum-control-radius: var(--moum-ui-radius, 4px);
+  --moum-control-height: var(--moum-ui-control, 44px);
+  box-sizing: border-box;
+  min-inline-size: 0;
+  color: var(--moum-control-ink);
+  background: var(--moum-control-paper);
+  font: var(--moum-ui-font, 14px/1.6 "Segoe UI", "Malgun Gothic", sans-serif);
+  overflow-wrap: anywhere;
+}
+
+:is(.moum-tabs, .moum-accordion, .moum-dialog) :focus-visible {
+  outline: 2px solid var(--moum-control-action);
+  outline-offset: 2px;
+}
+
+:where(.moum-tabs-list > button, .moum-dialog-actions > button) {
+  min-block-size: var(--moum-control-height);
+  max-inline-size: 100%;
+  padding: var(--moum-control-space) calc(2 * var(--moum-control-space));
+  border: 1px solid var(--moum-control-line);
+  border-radius: var(--moum-control-radius);
+  color: inherit;
+  background: var(--moum-control-paper);
+  font: inherit;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+:where(.moum-tabs-list > button, .moum-dialog-actions > button):not(:disabled):hover {
+  border-color: var(--moum-control-action);
+}

@@ -1,0 +1,15 @@
+.moum-dialog {
+  inline-size: min(32rem, calc(100% - 2rem));
+  max-block-size: calc(100% - 2rem);
+  overflow: auto;
+  padding: calc(3 * var(--moum-control-space));
+  border: 1px solid var(--moum-control-line);
+  border-radius: var(--moum-control-radius);
+}
+.moum-dialog::backdrop { background: var(--moum-ui-backdrop, oklch(20% .02 165 / .55)); }
+.moum-dialog > h2 { margin: 0; font-size: 1.25em; }
+.moum-dialog > p { margin-block: var(--moum-control-space) calc(3 * var(--moum-control-space)); }
+.moum-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--moum-control-space); }
+.moum-dialog-confirm { border-color: var(--moum-control-action); background: var(--moum-control-tint); font-weight: 700; }
+.moum-dialog-confirm[aria-disabled="true"] { cursor: wait; opacity: .7; }
+.moum-dialog > .moum-dialog-feedback { margin-block-end: var(--moum-control-space); }

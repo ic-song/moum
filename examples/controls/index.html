@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MOUM · 탭, 아코디언, 대화상자</title>
+  <link rel="stylesheet" href="../suite/demo.css">
+  <link rel="stylesheet" href="demo.css">
+  <link rel="stylesheet" href="../../packages/tabs/dist/moum-tabs.css">
+  <link rel="stylesheet" href="../../packages/accordion/dist/moum-accordion.css">
+  <link rel="stylesheet" href="../../packages/dialog/dist/moum-dialog.css">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>탭, 아코디언, 대화상자</h1>
+      <p>정보를 나누고, 필요한 설명을 펼치고, 실행 전에 확인합니다.</p>
+    </header>
+    <section aria-labelledby="tabs-title">
+      <h2 id="tabs-title">상품 정보 탭</h2>
+      <div id="tabs"></div>
+    </section>
+    <section aria-labelledby="faq-title">
+      <h2 id="faq-title">자주 묻는 질문</h2>
+      <div id="accordion"></div>
+    </section>
+    <section aria-labelledby="dialog-title">
+      <h2 id="dialog-title">선택 초기화</h2>
+      <div class="demo-tools"><button id="open-dialog" type="button">선택 초기화…</button></div>
+      <p id="result" role="status">탭과 FAQ를 선택한 뒤 초기화할 수 있습니다.</p>
+      <div id="dialog"></div>
+    </section>
+  </main>
+  <script src="../../packages/tabs/dist/moum-tabs.js"></script>
+  <script src="../../packages/accordion/dist/moum-accordion.js"></script>
+  <script src="../../packages/dialog/dist/moum-dialog.js"></script>
+  <script src="demo.js"></script>
+</body>
+</html>

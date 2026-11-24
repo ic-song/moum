@@ -1,10 +1,10 @@
 # MOUM 오프라인 배포본
 
-배포본은 8개 독립 라이브러리의 설치 파일, 브라우저용 JS·CSS, 한국어 예제, API 문서와 라이선스를 담습니다.
+배포본은 11개 독립 라이브러리의 설치 파일, 브라우저용 JS·CSS, 한국어 예제, API 문서와 라이선스를 담습니다.
 
 ## 브라우저에서 바로 사용
 
-압축을 푼 뒤 [그리드 빠른 시작](../examples/quick-start/index.html)을 열어 셀을 편집하세요. [전체 예제](../examples/grid/index.html)의 상단 메뉴에서 나머지 7개 도구도 열 수 있습니다. 일반 HTML이나 JSP에는 필요한 패키지의 `packages/<이름>/dist/moum-<이름>.js`와 CSS를 복사하세요. 패키지의 LICENSE도 배포에 포함하세요.
+압축을 푼 뒤 [그리드 빠른 시작](../examples/quick-start/index.html)을 열어 셀을 편집하세요. [전체 예제](../examples/grid/index.html)의 상단 메뉴에서 기존 도구를 열 수 있습니다. [탭·아코디언·대화상자](../examples/controls/index.html)도 파일에서 바로 실행할 수 있습니다. 일반 HTML이나 JSP에는 필요한 패키지의 `packages/<이름>/dist/moum-<이름>.js`와 CSS를 복사하세요. 패키지의 LICENSE도 배포에 포함하세요.
 
 서버 조회·편집 예제와 업로더 Worker를 시험하려면 압축을 푼 폴더에서 `node scripts/serve.mjs`를 실행하고 `http://127.0.0.1:4173/`을 여세요. 서버는 로컬 샘플 데이터를 사용합니다. Excel 기능과 업로더 Worker를 배포할 때는 해당 패키지의 `vendor/sheetjs`와 제3자 라이선스도 함께 복사하세요.
 

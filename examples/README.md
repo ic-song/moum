@@ -4,6 +4,7 @@
 
 | 목적 | 파일 | 실행 |
 | --- | --- | --- |
+| 탭·아코디언·확인 대화상자 | [ controls/index.html](controls/index.html) | 파일을 브라우저로 바로 열기 |
 | 처음 사용·최소 코드 | [quick-start/index.html](quick-start/index.html) | 파일을 브라우저로 바로 열기 |
 | Excel 방식 편집·그룹·트리·병합 | [grid/index.html](grid/index.html) | 파일을 브라우저로 바로 열기 |
 | 수식·가상 스크롤·API 일부 이행 | [advanced/index.html](advanced/index.html) | 파일을 브라우저로 바로 열기 |

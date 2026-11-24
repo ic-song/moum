@@ -14,7 +14,8 @@ const npmRun = (args, cwd) => execFileSync(process.execPath, [npm, ...args], { c
 const tar = args => execFileSync('tar', args);
 const entries = {
   grid: 'Grid', charts: 'Charts', gantt: 'Gantt', uploader: 'Uploader', calendar: 'Calendar',
-  datepicker: 'DatePicker', pagination: 'Pagination', 'infinite-scroll': 'InfiniteScroll'
+  datepicker: 'DatePicker', pagination: 'Pagination', 'infinite-scroll': 'InfiniteScroll',
+  tabs: 'Tabs', accordion: 'Accordion', dialog: 'Dialog'
 };
 
 await mkdir(output, { recursive: true });
@@ -88,7 +89,7 @@ for (const pkg of Object.values(lock.packages).slice(1)) {
 `;
   await writeFile(path.join(consumer, 'smoke.mjs'), test);
   execFileSync(process.execPath, ['smoke.mjs'], { cwd: consumer, stdio: 'inherit' });
-  console.log('PASS 8 packages installed offline into a clean consumer with an empty npm cache.');
+  console.log(`PASS ${packed.length} packages installed offline into a clean consumer with an empty npm cache.`);
 
   const archive = path.join(staging, 'moum-offline.tar.gz');
   tar(['-czf', archive, '-C', staging, 'moum-offline']);

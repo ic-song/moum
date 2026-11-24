@@ -1,0 +1,35 @@
+{
+  "name": "@moum/accordion",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Native disclosure groups with single and multiple open items.",
+  "license": "MIT",
+  "main": "dist/moum-accordion.cjs",
+  "module": "dist/moum-accordion.mjs",
+  "browser": "dist/moum-accordion.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/moum-accordion.mjs",
+      "require": "./dist/moum-accordion.cjs"
+    },
+    "./style.css": "./dist/moum-accordion.css"
+  },
+  "files": [
+    "dist",
+    "index.d.ts",
+    "README.md",
+    "LICENSE",
+    "SHA256SUMS.txt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ic-song/moum.git",
+    "directory": "packages/accordion"
+  },
+  "homepage": "https://github.com/ic-song/moum/tree/main/packages/accordion",
+  "bugs": {
+    "url": "https://github.com/ic-song/moum/issues"
+  }
+}

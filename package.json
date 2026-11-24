@@ -31,7 +31,8 @@
     "test:column-layout": "node scripts/browser-column-layout-check.mjs",
     "test:chart-view": "node scripts/browser-chart-view-check.mjs",
     "test:gantt-view": "node scripts/browser-gantt-view-check.mjs",
-    "test:reusable-options": "node scripts/browser-reusable-options-check.mjs"
+    "test:reusable-options": "node scripts/browser-reusable-options-check.mjs",
+    "test:web-controls": "node scripts/browser-web-controls-check.mjs"
   },
   "engines": {
     "node": ">=22"

@@ -12,7 +12,10 @@ const modules = {
   calendar: { entry: 'Calendar', global: 'MoumCalendar', parts: ['model', 'calendar'] },
   datepicker: { entry: 'DatePicker', global: 'MoumDatePicker', parts: ['datepicker'] },
   pagination: { entry: 'Pagination', global: 'MoumPagination', parts: ['pagination'] },
-  'infinite-scroll': { entry: 'InfiniteScroll', global: 'MoumInfiniteScroll', parts: ['infinite-scroll'] }
+  'infinite-scroll': { entry: 'InfiniteScroll', global: 'MoumInfiniteScroll', parts: ['infinite-scroll'] },
+  tabs: { entry: 'Tabs', global: 'MoumTabs', parts: ['tabs'], styles: 'controls' },
+  accordion: { entry: 'Accordion', global: 'MoumAccordion', parts: ['accordion'], styles: 'controls' },
+  dialog: { entry: 'Dialog', global: 'MoumDialog', parts: ['dialog'], styles: 'controls' }
 };
 for (const [name, config] of Object.entries(modules)) {
   const dir = path.join(root, 'packages', name), metadata = JSON.parse(await readFile(path.join(dir, 'package.json'), 'utf8'));
@@ -26,7 +29,8 @@ for (const [name, config] of Object.entries(modules)) {
   await save(`dist/moum-${name}.mjs`, banner + source + `\nexport default ${config.entry};\n`);
   await save(`dist/moum-${name}.cjs`, banner + `'use strict';\n${plain}\nmodule.exports = { ${names.join(', ')} };\n`);
   await save(`dist/moum-${name}.js`, banner + `(function () {\n'use strict';\n${plain}\nglobalThis.${config.global} = ${config.entry};\nObject.assign(globalThis.${config.global}, { ${names.filter(n => n !== config.entry).join(', ')} });\n})();\n`);
-  await save(`dist/moum-${name}.css`, (await readFile(path.join(dir, 'src', `${name}.css`), 'utf8')).replace(/\r\n?/g, '\n') + '\n' + (await readFile(path.join(root, 'styles/components.css'), 'utf8')).replace(/\r\n?/g, '\n'));
+  const sharedStyles = await readFile(path.join(root, 'styles', `${config.styles ?? 'components'}.css`), 'utf8');
+  await save(`dist/moum-${name}.css`, ((await readFile(path.join(dir, 'src', `${name}.css`), 'utf8')) + '\n' + sharedStyles).replace(/\r\n?/g, '\n'));
   await save('LICENSE', (await readFile(path.join(root, 'LICENSE'), 'utf8')).replace(/\r\n?/g, '\n'));
   if (name === 'uploader') {
     const parser=(await readFile(path.join(dir,'src/parser.js'),'utf8')).replace(/\r\n?/g,'\n').replace(/^export /gm,'');
